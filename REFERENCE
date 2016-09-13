@@ -1,0 +1,46 @@
+template<typename T> T safe_log(const T x) {
+    return log(std::max(EPSILON, x));
+};
+
+// Bregman projections
+std::vector<double> compute_barycenter(double* pdfs, double* lambdas) {
+
+    std::vector<double> barycenter(N);
+
+    std::vector<double> a(K*N, 1.);
+    std::vector<double> b(K*N, 1.);
+    std::vector<double> convolution(K*N);
+
+    for (int iter=0; iter<Niters; iter++) {
+        for (int i=0; i<K; i++) {
+            kernel.convolve(&b[i*N], &convolution[i*N]);
+            for (int j=0; j<N; j++) {
+                a[i*N+j] = pdfs[i*N+j] / convolution[i*N+j];
+            }
+            kernel.convolve(&a[i*N], &convolution[i*N]);
+        }
+
+        geomMean(&convolution[0], &barycenter[0], lambdas);
+
+        for (int i=0; i<K; i++) {
+            for (int j=0; j<N; j++) {
+                b[i*N+j] = barycenter[j] / convolution[i*N+j];
+            }
+        }
+    }
+    return barycenter;
+}
+
+
+
+void geomMean(double* convolved_a, double* result, double* lambdas) const {
+
+    memset(&result[0], 0, N*sizeof(result[0]));
+    for (int i=0; i<K; i++) {
+        for (int j=0; j<N; j++) {
+            result[j] += safe_log(convolved_a[i*N+j])*lambdas[i];
+        }
+    }
+    for (int j=0; j<N; j++)
+        result[j] = exp(result[j]);
+}
