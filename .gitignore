@@ -1,10 +1,6 @@
-/playground/recycle/
-/forte/recycle/
-/forte/build
-/forte/build/topy/*
-/forte/*.bmp
-/forte/*.skeleton
-/forte/*data/
+recycle/*
+build/*
+*data/
 *.stl
 *.vxg
 *.disp
@@ -12,4 +8,5 @@
 *.vtk
 *.forte
 *.pyc
+*.bmp
 .DS_Store
