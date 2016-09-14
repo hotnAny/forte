@@ -70,28 +70,7 @@ def get_distance_field(vxg, nelx, nely):
 
     return np_df
 
-# Create a data volume (30 x 30 x 30)
-# X, Y, Z = np.mgrid[:30, :30, :30]
-# u = (X-15)**2 + (Y-15)**2 + (Z-15)**2 - 8**2
-#
-# for i in xrange(0, 30):
-#     for j in xrange(0, 30):
-#         print u[i, j, 0]
-
-# Extract the 0-isosurface
-
-# vxg_path = '../forte_1473283630_64_0.074_optimized.vxg'
-
-
-#
-#   main entrance
-#
-if __name__ == "__main__":
-    if len(argv) < 2:
-        print 'usage: /marching_cube.py <path_to_vxg_file>'
-        quit()
-
-    vxg_path = argv[1]
+def marching_cube(vxg_path):
     str_vxg = open(vxg_path, 'r').read()
     rows_vxg = str_vxg.split('\n')
 
@@ -107,5 +86,15 @@ if __name__ == "__main__":
 
     vertices, triangles = mcubes.marching_cubes(df, 0)
 
-    # Export the result to sphere.dae
     mcubes.export_mesh(vertices, triangles, "vxg.dae", "MyVXG")
+
+#
+#   main entrance
+#
+if __name__ == "__main__":
+    if len(argv) < 2:
+        print 'usage: /marching_cube.py <path_to_vxg_file>'
+        quit()
+
+    vxg_path = argv[1]
+    marching_cube(vxg_path)
