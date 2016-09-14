@@ -6,6 +6,7 @@
 #
 ##########################################################################
 
+from sys import argv
 from numpy import ndarray, matrix, identity, linalg, array, hstack
 from copy import copy
 
@@ -47,7 +48,7 @@ def node_nums_3d(nelx, nely, nelz, mpx, mpy, mpz):
     return nn
 
 # def comp_stress(disp_str, nelx, nely, nelz, vxg):
-def comp_stress(disp_path, vxg_path):
+def comp_stress(disp_path, vxg_path, exclusive=False):
     str_vxg = open(vxg_path).read()
     rows_vxg = str_vxg.split('\n')
     nely = len(rows_vxg)
@@ -109,8 +110,11 @@ def comp_stress(disp_path, vxg_path):
                         positions.append([x, y, z])
 
                     xe = vxg[j][i] # density at this voxel
-                    stress = comp_tetra_stress(positions, displacements) * pow(xe, p)
+                    if exclusive == True:
+                        if xe < 0.1:
+                            continue
 
+                    stress = comp_tetra_stress(positions, displacements) * pow(xe, p)
                     elm_max_stress = max(elm_max_stress, stress)
                     # max_stress = max(max_stress, stress)
                     stressData.append(stress)
@@ -119,15 +123,22 @@ def comp_stress(disp_path, vxg_path):
             stress_elms_yz.append(stress_elms_z)
         stress_elms.append(stress_elms_yz)
 
-    print 'avg stress', mean(stressData)
-    print 'std stress', pstdev(stressData)
+    mean_stress = mean(stressData)
+    std_stress = pstdev(stressData)
     max_stress = max(stressData)
+    stressData.sort()
+    perc = 0.75
+    high_stress = stressData[int(len(stressData) * perc)]
+    print 'avg stress', mean_stress
+    print 'std stress', std_stress
+    # max_stress = mean_stress + 3 * std_stress
     print 'max stress', max_stress
+    print 'high stress', high_stress
 
     for i in xrange(0, nelx):
         for j in xrange(0, nely):
             for k in xrange(0, nelz):
-                stress_elms[i][j][k] /= (max_stress * 0.5)
+                stress_elms[i][j][k] /= max_stress
 
     print 'stress computed'
 
@@ -156,9 +167,12 @@ def pstdev(data):
     return pvar**0.5
 
 if __name__ == "__main__":
-    vxg_path = 'forte_1473444030_64_0.113_analyzed.vxg'
-    disp_path = 'forte_1473444030_64_0.113_analyzed.disp'
+    num_req_params = 2
+    if len(argv) < num_req_params + 1:
+        print 'usage: ./comp_stress.py <path_to_displacements> <path_to_voxel_grid>'
 
-    comp_stress(disp_path, vxg_path)
-    # comp_stress(disp_str, n, m, 1, vxg)
-    # print disp_str
+    disp_path = argv[1]
+    vxg_path = argv[2]
+    exclusive = True if len(argv) >= num_req_params + 2 else False
+
+    comp_stress(disp_path, vxg_path, exclusive)
