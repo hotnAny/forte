@@ -28,7 +28,7 @@ OPTIMIZATION = 1
 TOPYPATH = './scripts/optimise.py'
 SHOW_DEBUG = True
 
-tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "2.9", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"50", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
+tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "1.0", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"100", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
 
 #
 #   bound a list of values respectively to bounds
@@ -99,12 +99,12 @@ def safe_retrieve_all(buffer, key, alt):
 #
 #   generate the tpd file for running topy
 #
-def gen_tpd(original, resolution, material):
+def gen_tpd(designObj, resolution, material):
     # read parameters of the design & function spec.
-    design = safe_retrieve_all(original, 'design', None)
-    loads = safe_retrieve_all(original, 'loads', None)
-    clearances = safe_retrieve_all(original, 'clearances', None)
-    boundaries = safe_retrieve_all(original, 'boundaries', None)
+    design = safe_retrieve_all(designObj, 'design', None)
+    loads = safe_retrieve_all(designObj, 'loads', None)
+    clearances = safe_retrieve_all(designObj, 'clearances', None)
+    boundaries = safe_retrieve_all(designObj, 'boundaries', None)
 
     # compute resolution of the voxel grid ---------------------------------------------------------------
     vmin = [INFINITY, INFINITY, INFINITY]
@@ -368,7 +368,7 @@ def gen_tpd(original, resolution, material):
 
     # write to tpd file -----------------------------------------------------------------------------------
     tpd = json.loads(tpd_template)
-    tpd['PROB_NAME'] = 'forte_' + str(long(time.time())) + '_' + str(material) + '_' + str(material)
+    tpd['PROB_NAME'] = 'forte_' + str(long(time.time())%1e8) + '_' + format(material, '1.2f')
     tpd['VOL_FRAC'] = material
     tpd['NUM_ELEM_X'] = nelx
     tpd['NUM_ELEM_Y'] = nely
@@ -380,8 +380,10 @@ def gen_tpd(original, resolution, material):
     tpd['LOAD_VALU_X'] = ';'.join(load_values_x_str)
     tpd['LOAD_NODE_Y']= str_load_points
     tpd['LOAD_VALU_Y'] = ';'.join(load_values_y_str)
-    # tpd['ACTV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
-    tpd['FAVORED'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
+
+    # HACK: need to find way to decide is it actv or fav
+    tpd['ACTV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
+    # tpd['FAVORED'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
     tpd['PASV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in pasv_elms])
 
     return tpd, debug_voxelgrid
@@ -398,7 +400,8 @@ def optimize(tpd, grad):
 def call_topy(tpd, query, grad, imagerize):
     tpd_path = save_tpd(tpd)
     probname = main([TOPYPATH, tpd_path, str(query), grad])
-    if imagerize:
+    subprocess.call('rm ' + tpd_path, shell=True)
+    if imagerize == True:
         fname = str(tpd['VOL_FRAC']) + '_' + probname + '.bmp'
         save_vxg_to_image(probname + '_optimized.vxg', fname)
     return probname
@@ -452,6 +455,6 @@ if __name__ == "__main__":
     tpd, debug_voxelgrid = gen_tpd(design, resolution, material)
     print ''.join(debug_voxelgrid)[::-1]
     probname = optimize(tpd, gradient)
-    sub_outpath = argv[1] + '_' + probname
+    sub_outpath = argv[1] + '_' + str(resolution) + '_' + str(material) + '_' + str(gradient) + '_' + str(long(time.time())%1e8)
     subprocess.call('mkdir ' + sub_outpath, shell=True)
     subprocess.call('mv ' + probname + '* ' + sub_outpath, shell=True)
