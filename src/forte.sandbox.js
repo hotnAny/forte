@@ -2,6 +2,7 @@ function unitTest() {
 	log('---------------- unit test begins ----------------');
 
 	// DEBUG: distance fields
+	FORTE.t = 0;
 	var intval = 0.05;
 	var step = 0.05;
 
@@ -29,7 +30,8 @@ function unitTest() {
 			case 79: //O
 				var strData = FORTE.design.getData();
 				XAC.pingServer(FORTE.xmlhttp, 'localhost', '9898', ['forte', 'query',
-					'resolution', 'material', 'gradient'], [strData, 1, 64, 1, 0.1]);
+					'resolution', 'material', 'gradient'
+				], [strData, 1, 64, 1, 0.1]);
 				log(strData)
 				break;
 			case 68: //D
@@ -39,38 +41,12 @@ function unitTest() {
 				intval = 2 - dfs.length;
 				break;
 			case 37: // left arrow
-				// idxt = XAC.clamp(idxt + 1, 0, dfmts.length - 1);
-				// log(idxt)
-				// mimt._showDistanceField(dfmts[idxt], new THREE.Vector3(0, 50, 0));
-				// mili._interpolateDistanceFields(df1, df2, idxt * 1.0 / (dfmts.length - 1));
-				// FORTE.tmp -= 0.1;
-				// FORTE.design.setInkSize(FORTE.tmp);
-				var t = XAC.clamp(FORTE.t - step, 0, 1);
-				if (FORTE.t != t) {
-					FORTE.t = t;
-					// FORTE.design.interpolate(FORTE.designVariations, [FORTE.t, 1 - FORTE.t]);
-					FORTE.design._medialAxis.updateFromRawData(FORTE.designOriginal.clone().concat(FORTE.interpolation
-						.interpolate(FORTE.t)));
-					log(FORTE.t)
-				}
-				// log(FORTE.canvasScene.children.length)
+				FORTE.t = XAC.clamp(FORTE.t - step, 0, 1);
+				FORTE.design.setGradient(FORTE.t);
 				break;
 			case 39: // right arrow
-				// idxt = XAC.clamp(idxt - 1, 0, dfmts.length - 1);
-				// log(idxt)
-				// mimt._showDistanceField(dfmts[idxt], new THREE.Vector3(0, 50, 0));
-				// mili._interpolateDistanceFields(df1, df2, idxt * 1.0 / (dfmts.length - 1));
-				// FORTE.tmp += 0.1;
-				// FORTE.design.setInkSize(FORTE.tmp);
-				var t = XAC.clamp(FORTE.t + step, 0, 1);
-				if (FORTE.t != t) {
-					FORTE.t = t;
-					// FORTE.design.interpolate(FORTE.designVariations, [FORTE.t, 1 - FORTE.t]);
-					FORTE.design._medialAxis.updateFromRawData(FORTE.designOriginal.clone().concat(FORTE.interpolation
-						.interpolate(FORTE.t)));
-					log(FORTE.t)
-				}
-				// log(FORTE.canvasScene.children.length)
+				FORTE.t = XAC.clamp(FORTE.t + step, 0, 1);
+				FORTE.design.setGradient(FORTE.t);
 				break;
 			case 67: // C
 				// FORTE.voxelGrid.clear();
@@ -85,46 +61,6 @@ function unitTest() {
 				break;
 		}
 	}, false);
-
-	FORTE.tmp = 0.2;
-	// FORTE.design.setInkSize(FORTE.tmp);
-
-	FORTE.t = 1;
-
-	// HACK testing disp vector and stress computing
-	// FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene, new THREE.Vector3());
-	// var resultVoxelGrid =
-	// 	'example_data/mustache_bag_handle.forte_forte_1473775567_0.12349501204_0.12349501204/forte_1473775567_0.12349501204_0.12349501204_optimized.vxg'
-	// var resultDisp =
-	// 	'example_data/mustache_bag_handle.forte_forte_1473775567_0.12349501204_0.12349501204/forte_1473775567_0.12349501204_0.12349501204_optimized.disp'
-	// var dimVoxel = 1;
-	// XAC.readTextFile(resultVoxelGrid, function(dataVoxelGrid) {
-	// 	if (dataVoxelGrid == undefined) return;
-	//
-	// 	FORTE.voxelGrid.load(dataVoxelGrid, dimVoxel);
-	// 	FORTE.visualizer = FORTE.visualizer == undefined ? new FORTE.Visualizer(
-	// 		FORTE.canvasScene) : FORTE.visualizer;
-	// 	FORTE.visualizer.clear();
-	// 	XAC.readTextFile(resultDisp, function(dataDisp) {
-	// 		if (dataDisp != undefined) {
-	// 			// FORTE.visualizer.visualizeStress(dataDisp, FORTE.voxelGrid);
-	// 			FORTE.visualizer.visualizeStressInVivo(dataDisp, FORTE.voxelGrid,
-	// 				FORTE.design.getDesignElements());
-	// 		}
-	// 	});
-	//
-	// });
-
-	// debugging loading DAE
-	// var daeLoader = new THREE.ColladaLoader();
-	// daeLoader.load('post_processing/vxg.dae', function colladaReady(collada) {
-	// 	var object = collada.scene.children[0];
-	// 	log(object)
-	// 	// log(player)
-	// 	// skin = collada.skins[0];
-	// 	FORTE.canvasScene.add(object);
-	// });
-
 
 	log('----------------  unit test ends  ----------------');
 }

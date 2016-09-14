@@ -76,6 +76,9 @@ FORTE.Design = function(canvas, scene, camera) {
 	this._inkSize = 5;
 	this._inkMat = XAC.MATERIALALT.clone();
 	this._inkMat.opacity = 1;
+
+	// marquee selection
+	this._msel = new XAC.MarqueeSelector(canvas.parent);
 }
 
 // editing modes
@@ -161,14 +164,20 @@ FORTE.Design.prototype._mousedown = function(e) {
 			// select design only if no func. elms. selected
 			if (this._funcElm == undefined) {
 				this._medialAxis._mousedown(e);
+
+				// if no elements directly selected, init marquee selection
+				if (this._medialAxis._edgeSelected == undefined) {
+					this._msel.mousedown(e);
+				}
 			}
 
+			// TODO: figure out what this block of code does
 			for (var i = 0; i < this._boundaries.length; i++) {
 				var edge = this._boundaries[i].edge;
 				// redraw the boundary, diff from other design
 				for (var j = edge.visuals.length - 1; j >= 0; j--) {
 					edge.visuals[j].m.material = this._matBoundary;
-					if(this.SHOWJOINTS) edge.joints[j < 1 ? 0 : j - 1].m.material = this._matBoundary;
+					if (this.SHOWJOINTS) edge.joints[j < 1 ? 0 : j - 1].m.material = this._matBoundary;
 				}
 			}
 
@@ -285,6 +294,8 @@ FORTE.Design.prototype._mousemove = function(e) {
 			} else if (this._medialAxis._mousemove(e) != undefined) {
 				this._updateConstraints(); // update functional specification constrained by some edges
 			}
+
+			this._msel.mousemove(e);
 			break;
 
 		case FORTE.Design.LOADPOINT:
@@ -432,6 +443,8 @@ FORTE.Design.prototype._mouseup = function(e) {
 			break;
 
 		case FORTE.Design.EDIT:
+			this._msel.mouseup(e);
+
 			// highlight selection or wrap up design manipulation
 			if (this._selectedTemp.length > 0) {
 				for (var i = this._selectedTemp.length - 1; i >= 0; i--) {
@@ -459,8 +472,8 @@ FORTE.Design.prototype._mouseup = function(e) {
 
 			// editing is a one-time thing
 			this._mode = this._modeSaved;
-			$(FORTE.canvasRenderer.domElement).css('cursor', this._mode == FORTE.Design.SKETCH ? 'crosshair' :
-				'context-menu');
+			$(FORTE.canvasRenderer.domElement).css('cursor',
+				this._mode == FORTE.Design.SKETCH ? 'crosshair' : 'context-menu');
 
 			break;
 
@@ -528,7 +541,7 @@ FORTE.Design.prototype._mouseup = function(e) {
 			// redraw the boundary
 			for (var i = edge.visuals.length - 1; i >= 0; i--) {
 				edge.visuals[i].m.material = this._matBoundary;
-				if(this.SHOWJOINTS)  edge.joints[i < 1 ? 0 : i - 1].m.material = this._matBoundary;
+				if (this.SHOWJOINTS) edge.joints[i < 1 ? 0 : i - 1].m.material = this._matBoundary;
 				this._funcElements.push(edge.visuals[i].m);
 			}
 
@@ -993,6 +1006,7 @@ FORTE.MedialAxis.prototype.pack = function(elm, addNodes) {
 		if (addNodes) {
 			edge.thickness.push(elm.node2.radius);
 			edge.thickness = [elm.node1.radius].concat(edge.thickness);
+			edge.thickness.trim(2);
 		}
 
 		// TODO: impose a min thickness
@@ -1013,4 +1027,8 @@ Array.prototype.trim = function(numDigits) {
 		this[i] = Number(this[i].toFixed(numDigits));
 	}
 	return this;
+}
+
+FORTE.Design.prototype.setGradient = function(t) {
+
 }

@@ -31,7 +31,7 @@ XAC.Maniplane = function(pos, scene, camera, canvas, orthogonal, showPlane) {
 	this._plane.position.copy(pos);
 
 	// var vecView = new THREE.Vector3().subVectors(this._camera.position, this._plane
-		// .position);
+	// .position);
 
 	//HACK
 	var vecView = new THREE.Vector3(0, 0, 1);
@@ -68,6 +68,7 @@ XAC.Maniplane.prototype = {
 //	a sphere based selector for specifying a vector coming from the centroid
 //	@param	pos - position to place the selector
 //	@param	radius - how big should the sphere be
+//	TODO: fix the getty functions
 //
 XAC.SphereSelector = function(pos, radius, scene, camera) {
 	this._pos = pos;
@@ -85,32 +86,87 @@ XAC.SphereSelector = function(pos, radius, scene, camera) {
 }
 
 XAC.SphereSelector.prototype = {
-	hitTest(e) {
-			var intSphere = XAC.rayCast(e.clientX, e.clientY, [this._sphere], this._camera);
-			if (intSphere[0] != undefined) {
-				this._pt = intSphere[0].point;
-				this._scene.remove(this._line);
-				this._line = XAC.addAnArrow(this._scene, this._pos, this._pt.clone().sub(
-					this._pos), this._radius * 1.5, 2.5);
-			}
-		},
-
-		clear() {
-			this._scene.remove(this._sphere);
-			this._scene.remove(this._dot);
+	hitTest: function(e) {
+		var intSphere = XAC.rayCast(e.clientX, e.clientY, [this._sphere], this._camera);
+		if (intSphere[0] != undefined) {
+			this._pt = intSphere[0].point;
 			this._scene.remove(this._line);
-		},
-
-		setRadius(radius) {
-			this._radius = radius;
-			this._update();
-		},
-
-		get selection() {
-			return this._pt;
-		},
-
-		get pointer() {
-			return this._line;
+			this._line = XAC.addAnArrow(this._scene, this._pos, this._pt.clone().sub(
+				this._pos), this._radius * 1.5, 2.5);
 		}
+	},
+
+	clear: function() {
+		this._scene.remove(this._sphere);
+		this._scene.remove(this._dot);
+		this._scene.remove(this._line);
+	},
+
+	setRadius: function(radius) {
+		this._radius = radius;
+		this._update();
+	},
+
+	selection: function() {
+		return this._pt;
+	},
+
+	pointer: function() {
+		return this._line;
+	}
+}
+
+//
+//
+//
+XAC.MarqueeSelector = function() {
+	$("#selection").on('mouseup', function(e){
+		this._selection = false;
+		$("#selection").hide();
+	})
+}
+
+XAC.MarqueeSelector.prototype = {
+	mousedown: function(e) {
+		this._selection = true;
+		this._x1 = e.pageX;
+		this._y1 = e.pageY;
+	},
+
+	mousemove: function(e) {
+		if (this._selection) {
+			var x2 = e.pageX;
+			var y2 = e.pageY;
+
+			this._top = Math.min(this._y1, y2);
+			this._left = Math.min(this._x1, x2);
+			this._height = Math.max(this._y1, y2) - this._top;
+			this._width = Math.max(this._x1, x2) - this._left;
+
+			$("#selection").css({
+				position: 'absolute',
+				zIndex: 5000,
+				left: this._left,
+				top: this._top,
+				width: this._width,
+				height: this._height
+			});
+
+			$("#selection").show();
+		}
+	},
+
+	// mouseup: function(e) {
+	// 	this._selection = false;
+	// 	$("#selection").hide();
+	// },
+
+	getRect: function() {
+		return {
+			top: this._top,
+			left: this._left,
+			width: this._width,
+			height: this._height
+		};
+	}
 }
