@@ -2,26 +2,8 @@ function unitTest() {
 	log('---------------- unit test begins ----------------');
 
 	// DEBUG: distance fields
-	var dfs = [];
 	var intval = 0.05;
 	var step = 0.05;
-
-	// HACK
-	// var keepPinging = function(interval) {
-	// 	var strData = FORTE.design.getData();
-	// 	log('request sent for t = ' + FORTE.t)
-	// 	XAC.pingServer(FORTE.xmlhttp, 'localhost', '9999', ['forte', 'query',
-	// 		'resolution', 'material', 'originality', 'verbose'
-	// 	], [strData, 0, 64, 0.25, 1.0, 1]);
-	// 	FORTE.t -= step;
-	// 	if (FORTE.t >= 0 && interval != undefined) {
-	// 		FORTE.design._medialAxis.updateFromRawData(FORTE.designOriginal.clone().concat(FORTE.interpolation
-	// 			.interpolate(FORTE.t)));
-	// 		setTimeout(function() {
-	// 			keepPinging(interval);
-	// 		}, interval);
-	// 	}
-	// }
 
 	document.addEventListener('keydown', function(e) {
 		switch (e.keyCode) {
@@ -46,9 +28,8 @@ function unitTest() {
 				break;
 			case 79: //O
 				var strData = FORTE.design.getData();
-				XAC.pingServer(FORTE.xmlhttp, 'localhost', '9999', ['forte', 'query',
-					'resolution', 'material', 'originality', 'verbose'
-				], [strData, 1, 64, 0.3, 1.0, 1]);
+				XAC.pingServer(FORTE.xmlhttp, 'localhost', '9898', ['forte', 'query',
+					'resolution', 'material', 'gradient'], [strData, 1, 64, 1, 0.1]);
 				log(strData)
 				break;
 			case 68: //D
@@ -111,26 +92,38 @@ function unitTest() {
 	FORTE.t = 1;
 
 	// HACK testing disp vector and stress computing
-	FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene, new THREE.Vector3());
-	var resultVoxelGrid = 'forte_1473363748_128_0.102_analyzed.vxg'
-	var resultDisp = 'forte_1473363748_128_0.102_analyzed.disp'
-	var dimVoxel = 1;
-	XAC.readTextFile(resultVoxelGrid, function(dataVoxelGrid) {
-		if (dataVoxelGrid == undefined) return;
+	// FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene, new THREE.Vector3());
+	// var resultVoxelGrid =
+	// 	'example_data/mustache_bag_handle.forte_forte_1473775567_0.12349501204_0.12349501204/forte_1473775567_0.12349501204_0.12349501204_optimized.vxg'
+	// var resultDisp =
+	// 	'example_data/mustache_bag_handle.forte_forte_1473775567_0.12349501204_0.12349501204/forte_1473775567_0.12349501204_0.12349501204_optimized.disp'
+	// var dimVoxel = 1;
+	// XAC.readTextFile(resultVoxelGrid, function(dataVoxelGrid) {
+	// 	if (dataVoxelGrid == undefined) return;
+	//
+	// 	FORTE.voxelGrid.load(dataVoxelGrid, dimVoxel);
+	// 	FORTE.visualizer = FORTE.visualizer == undefined ? new FORTE.Visualizer(
+	// 		FORTE.canvasScene) : FORTE.visualizer;
+	// 	FORTE.visualizer.clear();
+	// 	XAC.readTextFile(resultDisp, function(dataDisp) {
+	// 		if (dataDisp != undefined) {
+	// 			// FORTE.visualizer.visualizeStress(dataDisp, FORTE.voxelGrid);
+	// 			FORTE.visualizer.visualizeStressInVivo(dataDisp, FORTE.voxelGrid,
+	// 				FORTE.design.getDesignElements());
+	// 		}
+	// 	});
+	//
+	// });
 
-		FORTE.voxelGrid.load(dataVoxelGrid, dimVoxel);
-		FORTE.visualizer = FORTE.visualizer == undefined ? new FORTE.Visualizer(
-			FORTE.canvasScene) : FORTE.visualizer;
-		FORTE.visualizer.clear();
-		XAC.readTextFile(resultDisp, function(dataDisp) {
-			if (dataDisp != undefined) {
-				// FORTE.visualizer.visualizeStress(dataDisp, FORTE.voxelGrid);
-				FORTE.visualizer.visualizeStressInVivo(dataDisp, FORTE.voxelGrid,
-					FORTE.design.getDesignElements());
-			}
-		});
-
-	});
+	// debugging loading DAE
+	// var daeLoader = new THREE.ColladaLoader();
+	// daeLoader.load('post_processing/vxg.dae', function colladaReady(collada) {
+	// 	var object = collada.scene.children[0];
+	// 	log(object)
+	// 	// log(player)
+	// 	// skin = collada.skins[0];
+	// 	FORTE.canvasScene.add(object);
+	// });
 
 
 	log('----------------  unit test ends  ----------------');

@@ -177,7 +177,7 @@ FORTE.Visualizer.prototype._computeStress = function(listDisp, vxg) {
 					}
 
 					var xe = vxg.gridRaw[k][j][i];
-					var stress = this._computeTetraStress(positions, displacements); // * Math.pow(xe, FORTE.Optimization.p);
+					var stress = this._computeTetraStress(positions, displacements) * Math.pow(xe, FORTE.Optimization.p);
 
 					tetras.push({
 						idxNodes: idxNodes,

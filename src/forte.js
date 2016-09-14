@@ -60,42 +60,51 @@ $(document).ready(function() {
 	FORTE.xmlhttp.onreadystatechange = function() {
 		if (FORTE.xmlhttp.readyState == 4 && FORTE.xmlhttp.status == 200) {
 			log(FORTE.xmlhttp.responseText);
-			var name = XAC.getParameterByName('name', FORTE.xmlhttp.responseText);
-			FORTE.thisQuery = XAC.getParameterByName('query', FORTE.xmlhttp.responseText);
-			var dimVoxel = XAC.getParameterByName('dim_voxel', FORTE.xmlhttp.responseText);
-			var xmin = XAC.getParameterByName('xmin', FORTE.xmlhttp.responseText);
-			var ymin = XAC.getParameterByName('ymin', FORTE.xmlhttp.responseText);
-			var dir = XAC.getParameterByName('dir', FORTE.xmlhttp.responseText);
-
-			var postfix = FORTE.thisQuery == FORTE.QUERYANALYZE ? 'analyzed' : 'optimized';
-			var resultVoxelGrid = dir + '/' + name + '_' + postfix + '.vxg';
-			var resultDisp = dir + '/' + name + '_' + postfix + '.disp';
-
-			if (FORTE.voxelGrid != undefined) {
-				FORTE.voxelGrid.clear();
-			}
-			FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene, new THREE.Vector3(
-				parseFloat(xmin), parseFloat(ymin), 5));
-
-			XAC.readTextFile(resultVoxelGrid, function(dataVoxelGrid) {
-				if (dataVoxelGrid == undefined) return;
-
-				FORTE.voxelGrid.load(dataVoxelGrid, dimVoxel);
-				if (FORTE.thisQuery == FORTE.QUERYANALYZE) {
-					FORTE.visualizer = FORTE.visualizer == undefined ? new FORTE.Visualizer(
-						FORTE.canvasScene) : FORTE.visualizer;
-					FORTE.visualizer.clear();
-					XAC.readTextFile(resultDisp, function(dataDisp) {
-						if (dataDisp != undefined) {
-							// FORTE.visualizer.visualizeStress(dataDisp, FORTE.voxelGrid);
-							FORTE.visualizer.visualizeStressInVivo(dataDisp, FORTE.voxelGrid,
-								FORTE.design.getDesignElements());
-						}
-					});
-				} else if (FORTE.thisQuery == FORTE.QUERYOPTIMIZE) {
-					FORTE.voxelGrid.render(false);
-				}
+			// var name = XAC.getParameterByName('name', FORTE.xmlhttp.responseText);
+			// FORTE.thisQuery = XAC.getParameterByName('query', FORTE.xmlhttp.responseText);
+			// var dimVoxel = XAC.getParameterByName('dim_voxel', FORTE.xmlhttp.responseText);
+			// var xmin = XAC.getParameterByName('xmin', FORTE.xmlhttp.responseText);
+			// var ymin = XAC.getParameterByName('ymin', FORTE.xmlhttp.responseText);
+			// var dir = XAC.getParameterByName('dir', FORTE.xmlhttp.responseText);
+			var outpath = XAC.getParameterByName('outpath', FORTE.xmlhttp.responseText);
+			var daeLoader = new THREE.ColladaLoader();
+			daeLoader.load(outpath, function colladaReady(collada) {
+				var object = collada.scene.children[0];
+				log(object)
+				// log(player)
+				// skin = collada.skins[0];
+				FORTE.canvasScene.add(object);
 			});
+
+			// var postfix = FORTE.thisQuery == FORTE.QUERYANALYZE ? 'analyzed' : 'optimized';
+			// var resultVoxelGrid = dir + '/' + name + '_' + postfix + '.vxg';
+			// var resultDisp = dir + '/' + name + '_' + postfix + '.disp';
+			//
+			// if (FORTE.voxelGrid != undefined) {
+			// 	FORTE.voxelGrid.clear();
+			// }
+			// FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene, new THREE.Vector3(
+			// 	parseFloat(xmin), parseFloat(ymin), 5));
+			//
+			// XAC.readTextFile(resultVoxelGrid, function(dataVoxelGrid) {
+			// 	if (dataVoxelGrid == undefined) return;
+			//
+			// 	FORTE.voxelGrid.load(dataVoxelGrid, dimVoxel);
+			// 	if (FORTE.thisQuery == FORTE.QUERYANALYZE) {
+			// 		FORTE.visualizer = FORTE.visualizer == undefined ? new FORTE.Visualizer(
+			// 			FORTE.canvasScene) : FORTE.visualizer;
+			// 		FORTE.visualizer.clear();
+			// 		XAC.readTextFile(resultDisp, function(dataDisp) {
+			// 			if (dataDisp != undefined) {
+			// 				// FORTE.visualizer.visualizeStress(dataDisp, FORTE.voxelGrid);
+			// 				FORTE.visualizer.visualizeStressInVivo(dataDisp, FORTE.voxelGrid,
+			// 					FORTE.design.getDesignElements());
+			// 			}
+			// 		});
+			// 	} else if (FORTE.thisQuery == FORTE.QUERYOPTIMIZE) {
+			// 		FORTE.voxelGrid.render(false);
+			// 	}
+			// });
 		}
 	}
 
