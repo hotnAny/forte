@@ -345,7 +345,7 @@ FORTE.MedialAxis.prototype._mouseup = function(e) {
 		log(this._edges.indexOf(this._edgeSelected));
 
 		// allowing externally defining what to do when an edge is selected
-		if(this.onEdgeSelected != undefined) this.onEdgeSelected();
+		if (this.onEdgeSelected != undefined) this.onEdgeSelected();
 	}
 
 	this._infSelected = undefined;
@@ -778,7 +778,7 @@ FORTE.MedialAxis.prototype.updateFromRawData = function(edges, toRefresh) {
 			}
 			node.radius = r == 0 ? this._radiusNode : r * 1.1 / node.edges.length;
 			node.radius = Math.min(3, node.radius)
-			// log(node.radius)
+				// log(node.radius)
 		}
 
 		var rmean = 0;
@@ -809,4 +809,35 @@ FORTE.MedialAxis.prototype.updateFromRawData = function(edges, toRefresh) {
 	}
 
 	this._render();
+}
+
+//
+//	select parts of the axis given a rect in screen coordinates
+//
+FORTE.MedialAxis.prototype.select = function(box) {
+	var bbox = new THREE.BoundingBoxHelper( box, 0xff0000 );
+	bbox.update();
+	// this._scene.add(bbox)
+	// addABall(this._scene, bbox.box.min, 0xff0000, 5, 1);
+	// addABall(this._scene, bbox.box.max, 0xff0000, 5, 1);
+
+	var isInBox = function(p, box) {
+		if(box.min.x <= p.x && p.x <= box.max.x &&
+		box.min.y <= p.y && p.y <= box.max.y &&
+		box.min.z <= p.z && p.z <= box.max.z) {
+			return true;
+		}
+		return false;
+	}
+
+	for (var i = 0; i < this._edges.length; i++) {
+		var visuals = this._edges[i].visuals;
+		for (var j = 0; j < visuals.length; j++) {
+			// TODO: imporve the detection
+			if(isInBox(visuals[j].m.position, bbox.box)) {
+				visuals[j].m.material.opacity /= 2;
+				visuals[j].m.material.needsUpdate = true;
+			}
+		}
+	}
 }

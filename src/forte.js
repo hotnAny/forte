@@ -47,7 +47,7 @@ $(document).ready(function() {
 	FORTE.SUGGESTIONLAYER = 1.3
 	FORTE.FABRICATIONLAYER = 2;
 
-	FORTE.USERIGHTKEYFOR3D = false;
+	FORTE.USERIGHTKEYFOR3D = true;
 	FORTE.camCtrl.noRotate = !FORTE.USERIGHTKEYFOR3D
 
 	//
@@ -75,36 +75,6 @@ $(document).ready(function() {
 				// skin = collada.skins[0];
 				FORTE.canvasScene.add(object);
 			});
-
-			// var postfix = FORTE.thisQuery == FORTE.QUERYANALYZE ? 'analyzed' : 'optimized';
-			// var resultVoxelGrid = dir + '/' + name + '_' + postfix + '.vxg';
-			// var resultDisp = dir + '/' + name + '_' + postfix + '.disp';
-			//
-			// if (FORTE.voxelGrid != undefined) {
-			// 	FORTE.voxelGrid.clear();
-			// }
-			// FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene, new THREE.Vector3(
-			// 	parseFloat(xmin), parseFloat(ymin), 5));
-			//
-			// XAC.readTextFile(resultVoxelGrid, function(dataVoxelGrid) {
-			// 	if (dataVoxelGrid == undefined) return;
-			//
-			// 	FORTE.voxelGrid.load(dataVoxelGrid, dimVoxel);
-			// 	if (FORTE.thisQuery == FORTE.QUERYANALYZE) {
-			// 		FORTE.visualizer = FORTE.visualizer == undefined ? new FORTE.Visualizer(
-			// 			FORTE.canvasScene) : FORTE.visualizer;
-			// 		FORTE.visualizer.clear();
-			// 		XAC.readTextFile(resultDisp, function(dataDisp) {
-			// 			if (dataDisp != undefined) {
-			// 				// FORTE.visualizer.visualizeStress(dataDisp, FORTE.voxelGrid);
-			// 				FORTE.visualizer.visualizeStressInVivo(dataDisp, FORTE.voxelGrid,
-			// 					FORTE.design.getDesignElements());
-			// 			}
-			// 		});
-			// 	} else if (FORTE.thisQuery == FORTE.QUERYOPTIMIZE) {
-			// 		FORTE.voxelGrid.render(false);
-			// 	}
-			// });
 		}
 	}
 

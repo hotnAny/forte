@@ -30,9 +30,10 @@ FORTE.renderUI = function() {
     FORTE.canvasRenderer = canvasRenderSet.renderer;
     FORTE.canvasScene = canvasRenderSet.scene;
     FORTE.canvasCamera = canvasRenderSet.camera;
+    FORTE.ground = canvasRenderSet.ground;
     FORTE.camCtrl = new THREE.TrackballControls(FORTE.canvasCamera, undefined,
         undefined);
-    FORTE.camCtrl.noZoom = true;
+    // FORTE.camCtrl.noZoom = true;
 
     FORTE.tdCanvas.on('dragover', function(e) {
         e.stopPropagation();
@@ -262,6 +263,7 @@ FORTE.createRenderableScene = function(w, h) {
     camera.position.copy(new THREE.Vector3(0, 0, 200));
     var scene = new THREE.Scene();
 
+    // lights
     var lights = [];
     lights[0] = new THREE.PointLight(0xffffff, 1, 0);
     lights[0].position.set(0, 100, -100);
@@ -269,6 +271,16 @@ FORTE.createRenderableScene = function(w, h) {
     lights[0].position.copy(camera.position);
     scene.add(lights[0]);
 
+    // // ground
+    // var ground = new THREE.Mesh(
+    //     new THREE.CubeGeometry(1000, 1, 1000),
+    //     XAC.MATERIALFOCUS
+    // );
+    // scene.add(ground);
+    //
+    // ground.position.y -= 0.5;
+
+    // grid
     var lineMaterial = new THREE.LineBasicMaterial({
         color: XAC.GRIDCOLOR
     });
@@ -301,6 +313,7 @@ FORTE.createRenderableScene = function(w, h) {
         camera: camera,
         scene: scene,
         lights: lights,
+        // ground: ground,
         grid: grid
     };
 }

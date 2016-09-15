@@ -78,7 +78,7 @@ FORTE.Design = function(canvas, scene, camera) {
 	this._inkMat.opacity = 1;
 
 	// marquee selection
-	this._msel = new XAC.MarqueeSelector(canvas.parent);
+	this._msel = new XAC.MarqueeSelector(this._canvas, this._camera);
 }
 
 // editing modes
@@ -167,7 +167,9 @@ FORTE.Design.prototype._mousedown = function(e) {
 
 				// if no elements directly selected, init marquee selection
 				if (this._medialAxis._edgeSelected == undefined) {
-					this._msel.mousedown(e);
+					this._msel.mousedown(e, function(box){
+						this._medialAxis.select(box);
+					}.bind(this));
 				}
 			}
 
@@ -186,6 +188,8 @@ FORTE.Design.prototype._mousedown = function(e) {
 			break;
 
 		case FORTE.Design.LOADPOINT:
+			this._maniPlane = new XAC.Maniplane(new THREE.Vector3(), this._scene, this._camera, this._canvas,
+			true, true);
 			if (hitInfo != undefined) {
 				// use the selected point to initialize the load object
 				this._maniPlane.setPosition(hitInfo.object.position);
@@ -443,7 +447,7 @@ FORTE.Design.prototype._mouseup = function(e) {
 			break;
 
 		case FORTE.Design.EDIT:
-			this._msel.mouseup(e);
+			// this._msel.mouseup(e);
 
 			// highlight selection or wrap up design manipulation
 			if (this._selectedTemp.length > 0) {

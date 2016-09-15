@@ -15,7 +15,7 @@ XAC.rayCast = function(x, y, objs, camera, w, h) {
 	var rayCaster = new THREE.Raycaster();
 	var vector = new THREE.Vector3();
 	vector.set((x / w) * 2 - 1, -(y / h) * 2 + 1, 0.5);
-	var projector = new THREE.Projector();
+	// var projector = new THREE.Projector();
 	vector.unproject(camera);
 	rayCaster.ray.set(camera.position, vector.sub(camera.position).normalize());
 	return rayCaster.intersectObjects(objs);

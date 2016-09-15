@@ -30,11 +30,11 @@ XAC.Maniplane = function(pos, scene, camera, canvas, orthogonal, showPlane) {
 	this._plane.material.opacity = 0.5;
 	this._plane.position.copy(pos);
 
-	// var vecView = new THREE.Vector3().subVectors(this._camera.position, this._plane
-	// .position);
+	var vecView = new THREE.Vector3().subVectors(this._camera.position, this._plane
+		.position);
 
-	//HACK
-	var vecView = new THREE.Vector3(0, 0, 1);
+	// //HACK
+	// var vecView = new THREE.Vector3(0, 0, 1);
 
 	if (orthogonal == true) {
 		var angleView = new THREE.Vector3(0, 1, 0).angleTo(vecView);
@@ -119,18 +119,27 @@ XAC.SphereSelector.prototype = {
 //
 //
 //
-XAC.MarqueeSelector = function() {
-	$("#selection").on('mouseup', function(e){
-		this._selection = false;
-		$("#selection").hide();
-	})
+XAC.MarqueeSelector = function(canvas, camera) {
+	this._canvas = canvas;
+	this._camera = camera;
 }
 
 XAC.MarqueeSelector.prototype = {
-	mousedown: function(e) {
+	mousedown: function(e, onSelected) {
 		this._selection = true;
 		this._x1 = e.pageX;
 		this._y1 = e.pageY;
+		// this._onSelected = onSelected;
+
+		var rect = this.getRect();
+		$("#selection").on('mouseup', function(e) {
+			this._selection = false;
+			$("#selection").hide();
+			// if (this._onSelected != undefined) {
+			// 	this._onSelected(this.getRect());
+			// }
+			onSelected(this.getIntersectingBox());
+		}.bind(this));
 	},
 
 	mousemove: function(e) {
@@ -161,6 +170,7 @@ XAC.MarqueeSelector.prototype = {
 	// 	$("#selection").hide();
 	// },
 
+	// get the rect for 2D selection
 	getRect: function() {
 		return {
 			top: this._top,
@@ -168,5 +178,54 @@ XAC.MarqueeSelector.prototype = {
 			width: this._width,
 			height: this._height
 		};
+	},
+
+	// get the intersecting box for 3D selection
+	getIntersectingBox: function() {
+		// retrieve the 2d rect
+		var rect = this.getRect();
+		log(rect)
+
+		// find the looking-from point
+		var rectCanvas = this._canvas.getBoundingClientRect();
+		var scrn2world = function(x, y, rectCanvas, camera) {
+			var pTransformed = new THREE.Vector3(
+				x / (rectCanvas.right - rectCanvas.left) * 2 - 1, -y / (rectCanvas.bottom -
+					rectCanvas.top) * 2 + 1, 0.5);
+			pTransformed.unproject(camera)
+			return pTransformed;
+		}
+		var x = rect.left + rect.width / 2;
+		var y = rect.top + rect.height / 2;
+		var center = scrn2world(x, y, rectCanvas, this._camera);
+
+		// ground
+	    var ground = new THREE.Mesh(
+	        new THREE.CubeGeometry(1000, 1000, 1),
+	        XAC.MATERIALINVISIBLE
+	    );
+		// FIXME
+	    FORTE.canvasScene.add(ground);
+
+	    ground.position.z -= 0.5;
+
+		// create a virtual box for intersection
+		var topLeft = XAC.hitPoint({clientX: rect.left, clientY: rect.top}, [ground], this._camera, this._canvas);
+
+		var topRight = XAC.hitPoint({clientX: rect.left + rect.width, clientY: rect.top}, [ground], this._camera, this._canvas);
+
+		var bottomLeft = XAC.hitPoint({clientX: rect.left, clientY: rect.top + rect.height}, [ground], this._camera, this._canvas);
+
+		var w = topLeft.distanceTo(topRight);
+		var l = topLeft.distanceTo(bottomLeft);
+		var t = 1000;
+		var box = new XAC.Box(w, t, l, XAC.MATERIALINVISIBLE).m;
+		XAC.rotateObjTo(box, center.clone().sub(this._camera.position));
+		box.position.copy(center);
+
+		// FIXME
+		FORTE.canvasScene.remove(ground);
+
+		return box;
 	}
 }
