@@ -716,8 +716,6 @@ FORTE.MedialAxis.prototype._renderEdge = function(edge) {
 				r2: r0
 			});
 
-			// log(r)
-
 			edge.visuals[i].m.material = this._matvisual;
 
 			if (this.SHOWJOINTS)
