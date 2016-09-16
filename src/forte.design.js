@@ -300,6 +300,7 @@ FORTE.Design.prototype._mousemove = function(e) {
 			}
 
 			this._msel.mousemove(e);
+			log('msel mouse move')
 			break;
 
 		case FORTE.Design.LOADPOINT:

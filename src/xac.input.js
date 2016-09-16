@@ -135,10 +135,11 @@ XAC.MarqueeSelector.prototype = {
 		$("#selection").on('mouseup', function(e) {
 			this._selection = false;
 			$("#selection").hide();
-			// if (this._onSelected != undefined) {
-			// 	this._onSelected(this.getRect());
-			// }
 			onSelected(this.getIntersectingBox());
+		}.bind(this));
+
+		$('#selection').on('mousemove', function(e){
+			this.mousemove(e);
 		}.bind(this));
 	},
 
