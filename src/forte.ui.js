@@ -33,7 +33,7 @@ FORTE.renderUI = function() {
     FORTE.ground = canvasRenderSet.ground;
     FORTE.camCtrl = new THREE.TrackballControls(FORTE.canvasCamera, undefined,
         undefined);
-    // FORTE.camCtrl.noZoom = true;
+    FORTE.camCtrl.noZoom = true;
 
     FORTE.tdCanvas.on('dragover', function(e) {
         e.stopPropagation();
@@ -81,6 +81,8 @@ FORTE.renderUI = function() {
     });
 
     FORTE.tdCanvas.append(FORTE.canvasRenderer.domElement);
+    // add a selection frame
+    FORTE.tdCanvas.append($('<div id="selection" class="selectiondiv"></div>'));
     trLayout.append(FORTE.tdCanvas);
 
 

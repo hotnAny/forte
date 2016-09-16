@@ -815,9 +815,9 @@ FORTE.MedialAxis.prototype.updateFromRawData = function(edges, toRefresh) {
 //	select parts of the axis given a rect in screen coordinates
 //
 FORTE.MedialAxis.prototype.select = function(box) {
-	var bbox = new THREE.BoundingBoxHelper( box, 0xff0000 );
+	var bbox = new THREE.BoundingBoxHelper(box, 0xff0000);
 	bbox.update();
-	// this._scene.add(bbox)
+	// this._scene.add(box)
 	// addABall(this._scene, bbox.box.min, 0xff0000, 5, 1);
 	// addABall(this._scene, bbox.box.max, 0xff0000, 5, 1);
 
