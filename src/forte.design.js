@@ -45,7 +45,7 @@ FORTE.Design = function(canvas, scene, camera) {
 	// using a medial axis to represent design
 	this._medialAxis = new FORTE.MedialAxis(this._canvas, this._scene, this._camera);
 	this._medialAxis._matNode = this._matDesign;
-	this._medialAxis._matvisual = this._matDesign;
+	this._medialAxis._matVisual = this._matDesign;
 	this._medialAxis._matHighlight.opacity = 1;
 	this._medialAxis.RESTORINGEDGE = false;
 
@@ -79,6 +79,7 @@ FORTE.Design = function(canvas, scene, camera) {
 
 	// marquee selection
 	this._msel = new XAC.MarqueeSelector(this._canvas, this._camera);
+	this._insituSlider = new XAC.InSituSlider(this._canvas);
 }
 
 // editing modes
@@ -104,6 +105,12 @@ FORTE.Design.prototype._mousedown = function(e) {
 	if (e.which != XAC.LEFTMOUSE && (FORTE.USERIGHTKEYFOR3D == false ? (e.which != XAC.RIGHTMOUSE) :
 			true)) {
 		return;
+	}
+
+	if (this._selElms != undefined && this._selElms.length > 0) {
+		this._medialAxis.unselect(this._selElms);
+		this._selElms = [];
+		this._insituSlider.hide();
 	}
 
 	var isEditing = FORTE.USERIGHTKEYFOR3D ? e.ctrlKey : (e.which == XAC.RIGHTMOUSE);
@@ -163,12 +170,45 @@ FORTE.Design.prototype._mousedown = function(e) {
 
 			// select design only if no func. elms. selected
 			if (this._funcElm == undefined) {
-				this._medialAxis._mousedown(e);
+				var selInfo = this._medialAxis._mousedown(e);
 
 				// if no elements directly selected, init marquee selection
-				if (this._medialAxis._edgeSelected == undefined) {
-					this._msel.mousedown(e, function(box){
-						this._medialAxis.select(box);
+				if (selInfo == undefined) {
+					this._msel.mousedown(e, function() {
+						var rect = this._msel.getRect();
+						var box = this._msel.getIntersectingBox();
+						this._selElms = this._medialAxis.select(rect, box);
+
+						if (this._selElms.length == 0) {
+							return;
+						}
+
+						var meanFavVal = 0;
+						for (var i = 0; i < this._selElms.length; i++) {
+							meanFavVal += this._selElms[i].edge.favVals[this._selElms[i].idx];
+						}
+						meanFavVal /= this._selElms.length;
+
+						this._insituSlider.show(
+							rect.left + rect.width / 2, rect.top + rect.height / 2, 0, 100, meanFavVal * 100,
+							function(event, ui) {
+								this._forcedDisabled = true;
+								for (var i = 0; i < this._selElms.length; i++) {
+									var favVal = ui.value / 100.0;
+									var edge = this._selElms[i].edge;
+									var idx = this._selElms[i].idx;
+									var visual = this._selElms[i].edge.visuals[this._selElms[i].idx];
+									var weight = this._selElms[i].weight;
+									edge.favVals[idx] = favVal;
+									visual._opacity = edge.favVals[idx];
+									visual.m.material.opacity = visual._opacity;
+									visual.m.material.needsUpdate = true;
+								}
+							}.bind(this),
+							function(event, ui) {
+								this._forcedDisabled = false;
+							}.bind(this)
+						);
 					}.bind(this));
 				}
 			}
@@ -189,7 +229,7 @@ FORTE.Design.prototype._mousedown = function(e) {
 
 		case FORTE.Design.LOADPOINT:
 			this._maniPlane = new XAC.Maniplane(new THREE.Vector3(), this._scene, this._camera, this._canvas,
-			true, true);
+				true, true);
 			if (hitInfo != undefined) {
 				// use the selected point to initialize the load object
 				this._maniPlane.setPosition(hitInfo.object.position);
@@ -260,6 +300,10 @@ FORTE.Design.prototype._mousemove = function(e) {
 	}
 
 	if (e.which != XAC.LEFTMOUSE && e.which != XAC.RIGHTMOUSE && this._glueState != true) {
+		return;
+	}
+
+	if (this._forcedDisabled) {
 		return;
 	}
 
@@ -433,7 +477,6 @@ FORTE.Design.prototype._mouseup = function(e) {
 				if (anglePrev != undefined) {
 					if (Math.abs(angle - anglePrev) > Math.PI / 4) {
 						this._medialAxis.addEdge(mergedPoints.slice(0, i + 1), autoSplit, autoJoin);
-
 						mergedPoints = mergedPoints.slice(i);
 						i = 0;
 						anglePrev = undefined;
@@ -855,7 +898,7 @@ FORTE.Design.prototype._postProcessInk = function() {
 
 	// merge points that are too close to each other
 	var mergedPoints = [];
-	var minSpacing = Math.min(lenTotal / 50, 5);
+	var minSpacing = Math.min(lenTotal / 50, 1);
 
 	mergedPoints.push(this._inkPoints[0]);
 	for (var i = 1; i < this._inkPoints.length - 2; i++) {
@@ -1007,7 +1050,7 @@ FORTE.MedialAxis.prototype.pack = function(elm, addNodes) {
 		}
 		if (addNodes) edge.points.push(edge.node2);
 
-		edge.thickness = XAC.copyArray(elm.thickness);
+		edge.thickness = elm.thickness.clone();
 		if (addNodes) {
 			edge.thickness.push(elm.node2.radius);
 			edge.thickness = [elm.node1.radius].concat(edge.thickness);
@@ -1018,6 +1061,12 @@ FORTE.MedialAxis.prototype.pack = function(elm, addNodes) {
 		var minThickness = 2;
 		for (var i = 0; i < edge.thickness.length; i++) {
 			edge.thickness[i] = Math.max(edge.thickness[i], minThickness);
+		}
+
+		edge.favVals = elm.favVals.clone();
+		if (addNodes) {
+			edge.favVals.push(edge.favVals.slice(-1)[0]);
+			edge.favVals = [edge.favVals[0]].concat(edge.favVals);
 		}
 
 		return edge;
@@ -1032,8 +1081,4 @@ Array.prototype.trim = function(numDigits) {
 		this[i] = Number(this[i].toFixed(numDigits));
 	}
 	return this;
-}
-
-FORTE.Design.prototype.setGradient = function(t) {
-
 }

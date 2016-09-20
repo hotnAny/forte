@@ -38,7 +38,7 @@ $(document).ready(function() {
 	FORTE.render();
 
 	//
-	// set up ui
+	// set up ui & interaction
 	//
 	FORTE.FORMLAYER = 0;
 	FORTE.FUNCTIONLAYER = 1;
@@ -47,7 +47,7 @@ $(document).ready(function() {
 	FORTE.SUGGESTIONLAYER = 1.3
 	FORTE.FABRICATIONLAYER = 2;
 
-	FORTE.USERIGHTKEYFOR3D = true;
+	FORTE.USERIGHTKEYFOR3D = false;
 	FORTE.camCtrl.noRotate = !FORTE.USERIGHTKEYFOR3D
 
 	//

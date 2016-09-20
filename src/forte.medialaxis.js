@@ -42,7 +42,7 @@ FORTE.MedialAxis = function(canvas, scene, camera) {
 		opacity: this._opacityNormal
 	});
 	this._matHighlight = XAC.MATERIALHIGHLIGHT;
-	this._matvisual = new THREE.MeshBasicMaterial({
+	this._matVisual = new THREE.MeshBasicMaterial({
 		color: 0xaaaaaa,
 		transparent: true,
 		// wireframe: true,
@@ -190,8 +190,8 @@ FORTE.MedialAxis.prototype._mousedown = function(e) {
 	var edgeSelected = this._edgeSelected;
 	if (this._edgeSelected != undefined) {
 		for (var j = this._edgeSelected.visuals.length - 1; j >= 0; j--) {
-			this._edgeSelected.visuals[j].m.material = this._matvisual;
-			if (this.SHOWJOINTS) this._edgeSelected.joints[j - 1 < 0 ? 0 : j - 1].m.material = this._matvisual;
+			this._edgeSelected.visuals[j].m.material = this._matVisual;
+			if (this.SHOWJOINTS) this._edgeSelected.joints[j - 1 < 0 ? 0 : j - 1].m.material = this._matVisual;
 		}
 		this._edgeSelected = undefined;
 	}
@@ -200,7 +200,7 @@ FORTE.MedialAxis.prototype._mousedown = function(e) {
 	//	interacting with a node
 	//
 	if (this._nodeSelected != undefined) {
-		this._nodeSelected.visual.m.material = this._matvisual;
+		this._nodeSelected.visual.m.material = this._matVisual;
 	}
 
 	var hitOnNode;
@@ -333,7 +333,7 @@ FORTE.MedialAxis.prototype._mouseup = function(e) {
 	}
 
 	if (this._nodeSelected != undefined) {
-		this._nodeSelected.visual.m.material = this._matvisual;
+		this._nodeSelected.visual.m.material = this._matVisual;
 		this._nodeSelected = undefined;
 	}
 
@@ -575,11 +575,13 @@ FORTE.MedialAxis.prototype._addEdge = function(node1, node2, points, thickness) 
 			thickness: [],
 			thicknessData: [],
 			visuals: [],
-			joints: []
+			joints: [],
+			favVals: []
 		};
 
 		for (var i = edge.points.length - 1; i >= 0; i--) {
 			edge.thickness.push(thickness == undefined ? this._radiusEdge : thickness);
+			edge.favVals.push(1.0);
 		}
 
 		this._edges.push(edge);
@@ -635,7 +637,7 @@ FORTE.MedialAxis.prototype._renderNode = function(node, nodeOnly) {
 
 	if (r > 0) {
 		if (node.visual == undefined) {
-			node.visual = new XAC.Sphere(r, this._matvisual, false);
+			node.visual = new XAC.Sphere(r, this._matVisual, false);
 			this._visuals.push(node.visual.m);
 			this._visualsNode.push(node.visual.m);
 			this._visualsInfo.push({
@@ -644,7 +646,7 @@ FORTE.MedialAxis.prototype._renderNode = function(node, nodeOnly) {
 			this._scene.add(node.visual.m);
 		} else {
 			node.visual.update(r);
-			node.visual.m.material = this._matvisual;
+			node.visual.m.material = this._matVisual;
 		}
 		node.visual.m.position.copy(ctr);
 	}
@@ -692,18 +694,20 @@ FORTE.MedialAxis.prototype._renderEdge = function(edge) {
 			var visual = new XAC.ThickLine(ctr0, ctr, {
 				r1: r,
 				r2: r0
-			}, this._matvisual);
+			}, this._matVisual.clone());
 
 			this._visuals.push(visual.m);
+			visual._opacity = this._matVisual.opacity;
 			this._visualsInfo.push({
 				edge: edge,
 				idx: i
 			});
 			edge.visuals.push(visual);
+			edge.favVals.push(1.0);
 
 			if (this.SHOWJOINTS)
 				if (i < thickness.length - 1) {
-					var joint = new XAC.Sphere(r, this._matvisual, false);
+					var joint = new XAC.Sphere(r, this._matVisual, false);
 					joint.m.position.copy(ctr);
 					edge.joints.push(joint);
 					this._scene.add(joint.m);
@@ -716,7 +720,9 @@ FORTE.MedialAxis.prototype._renderEdge = function(edge) {
 				r2: r0
 			});
 
-			edge.visuals[i].m.material = this._matvisual;
+			edge.visuals[i].m.material = this._matVisual.clone();
+			edge.visuals[i].m.material.opacity = edge.visuals[i]._opacity;
+			edge.visuals[i].m.material.needsUpdate = true;
 
 			if (this.SHOWJOINTS)
 				if (i < edge.thickness.length - 1) {
@@ -729,6 +735,9 @@ FORTE.MedialAxis.prototype._renderEdge = function(edge) {
 	}
 }
 
+//
+//	TODO: comment
+//
 FORTE.MedialAxis.fromRawData = function(edges, canvas, scene, camera) {
 	var medialAxis = new FORTE.MedialAxis(canvas, scene, camera);
 	medialAxis.RESTORINGEDGE = false;
@@ -736,6 +745,9 @@ FORTE.MedialAxis.fromRawData = function(edges, canvas, scene, camera) {
 	return medialAxis;
 }
 
+//
+//	TODO: comment
+//
 FORTE.MedialAxis.prototype.updateFromRawData = function(edges, toRefresh) {
 	// log('---')
 	if (this._edges.length == 0 || toRefresh) {
@@ -814,7 +826,7 @@ FORTE.MedialAxis.prototype.updateFromRawData = function(edges, toRefresh) {
 //
 //	select parts of the axis given a rect in screen coordinates
 //
-FORTE.MedialAxis.prototype.select = function(box) {
+FORTE.MedialAxis.prototype.select = function(rect, box) {
 	var bbox = new THREE.BoundingBoxHelper(box, 0xff0000);
 	bbox.update();
 	// this._scene.add(box)
@@ -822,22 +834,51 @@ FORTE.MedialAxis.prototype.select = function(box) {
 	// addABall(this._scene, bbox.box.max, 0xff0000, 5, 1);
 
 	var isInBox = function(p, box) {
-		if(box.min.x <= p.x && p.x <= box.max.x &&
-		box.min.y <= p.y && p.y <= box.max.y &&
-		box.min.z <= p.z && p.z <= box.max.z) {
+		if (box.min.x <= p.x && p.x <= box.max.x &&
+			box.min.y <= p.y && p.y <= box.max.y &&
+			box.min.z <= p.z && p.z <= box.max.z) {
 			return true;
 		}
 		return false;
 	}
 
+	// var rbbox = bbox.box.max.distanceTo(bbox.box.min) / 2;
+	var ctrBbox = bbox.box.max.clone().add(bbox.box.min).divideScalar(2);
+	var rbbox = 0;
+	// var favVal = 0;
+	// var cntSel = 0;
+	selElms = [];
 	for (var i = 0; i < this._edges.length; i++) {
 		var visuals = this._edges[i].visuals;
 		for (var j = 0; j < visuals.length; j++) {
-			// TODO: imporve the detection
-			if(isInBox(visuals[j].m.position, bbox.box)) {
-				visuals[j].m.material.opacity /= 2;
-				visuals[j].m.material.needsUpdate = true;
+			// TODO: imporve the detection, for later
+			if (isInBox(visuals[j].m.position, bbox.box)) {
+				rbbox = Math.max(visuals[j].m.position.distanceTo(ctrBbox), rbbox);
+				// var weight = 1 - visuals[j].m.position.distanceTo(ctrBbox) / rbbox
+				visuals[j].m.material = this._matHighlight.clone();
+				visuals[j].m.material.opacity = visuals[j]._opacity;
+				selElms.push({
+					edge: this._edges[i],
+					idx: j
+				});
 			}
 		}
 	}
+
+	for (var i = 0; i < selElms.length; i++) {
+		var d = selElms[i].edge.visuals[selElms[i].idx].m.position.distanceTo(ctrBbox);
+		selElms[i].weight = d / rbbox;
+		log(selElms[i].weight);
+	}
+
+	return selElms;
+}
+
+FORTE.MedialAxis.prototype.unselect = function(selElms) {
+	for (var i = 0; i < selElms.length; i++) {
+		var visual = selElms[i].edge.visuals[selElms[i].idx];
+		visual.m.material = this._matVisual.clone();
+		visual.m.material.opacity = visual._opacity;
+	}
+	this._render();
 }
