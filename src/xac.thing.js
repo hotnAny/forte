@@ -3,7 +3,7 @@ var XAC = XAC || {};
 XAC.Thing = function(m) {
 	this._g = undefined; // the original geometry, always!
 	this._m = m;
-
+	this._opacity = 1;
 	this._weight = undefined;
 };
 

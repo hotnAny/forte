@@ -117,11 +117,22 @@ XAC.SphereSelector.prototype = {
 }
 
 //
-//
+//	marquee select for 2d and 3d
 //
 XAC.MarqueeSelector = function(canvas, camera) {
 	this._canvas = canvas;
 	this._camera = camera;
+
+	$("#selection").on('mouseup', function(e) {
+		this._selection = false;
+		$("#selection").hide();
+		this._onSelected();
+	}.bind(this));
+
+	// enable dragging into the selection frame
+	$('#selection').on('mousemove', function(e) {
+		this.mousemove(e);
+	}.bind(this));
 }
 
 XAC.MarqueeSelector.prototype = {
@@ -129,18 +140,7 @@ XAC.MarqueeSelector.prototype = {
 		this._selection = true;
 		this._x1 = e.pageX;
 		this._y1 = e.pageY;
-		// this._onSelected = onSelected;
-
-		var rect = this.getRect();
-		$("#selection").on('mouseup', function(e) {
-			this._selection = false;
-			$("#selection").hide();
-			onSelected(this.getIntersectingBox());
-		}.bind(this));
-
-		$('#selection').on('mousemove', function(e){
-			this.mousemove(e);
-		}.bind(this));
+		this._onSelected = onSelected;
 	},
 
 	mousemove: function(e) {
@@ -185,7 +185,6 @@ XAC.MarqueeSelector.prototype = {
 	getIntersectingBox: function() {
 		// retrieve the 2d rect
 		var rect = this.getRect();
-		log(rect)
 
 		// find the looking-from point
 		var rectCanvas = this._canvas.getBoundingClientRect();
@@ -201,32 +200,102 @@ XAC.MarqueeSelector.prototype = {
 		var center = scrn2world(x, y, rectCanvas, this._camera);
 
 		// ground
-	    var ground = new THREE.Mesh(
-	        new THREE.CubeGeometry(1000, 1000, 1),
-	        XAC.MATERIALINVISIBLE
-	    );
-		// FIXME
-	    FORTE.canvasScene.add(ground);
+		var ground = new THREE.Mesh(
+			new THREE.CubeGeometry(1000, 1000, 1),
+			XAC.MATERIALINVISIBLE
+		);
+		// HACK
+		FORTE.canvasScene.add(ground);
 
-	    ground.position.z -= 0.5;
+		ground.position.z -= 0.5;
 
 		// create a virtual box for intersection
-		var topLeft = XAC.hitPoint({clientX: rect.left, clientY: rect.top}, [ground], this._camera, this._canvas);
-
-		var topRight = XAC.hitPoint({clientX: rect.left + rect.width, clientY: rect.top}, [ground], this._camera, this._canvas);
-
-		var bottomLeft = XAC.hitPoint({clientX: rect.left, clientY: rect.top + rect.height}, [ground], this._camera, this._canvas);
+		var topLeft = XAC.hitPoint({
+			clientX: rect.left,
+			clientY: rect.top
+		}, [ground], this._camera, this._canvas);
+		// addABall(FORTE.canvasScene, topLeft, 0xff0000, 5, 1);
+		var topRight = XAC.hitPoint({
+			clientX: rect.left + rect.width,
+			clientY: rect.top
+		}, [ground], this._camera, this._canvas);
+		// addABall(FORTE.canvasScene, topRight, 0xff0000, 5, 1);
+		var bottomLeft = XAC.hitPoint({
+			clientX: rect.left,
+			clientY: rect.top + rect.height
+		}, [ground], this._camera, this._canvas);
+		// addABall(FORTE.canvasScene, bottomLeft, 0xff0000, 5, 1);
 
 		var w = topLeft.distanceTo(topRight);
 		var l = topLeft.distanceTo(bottomLeft);
-		var t = 1000;
-		var box = new XAC.Box(w, t, l, XAC.MATERIALINVISIBLE).m;
-		XAC.rotateObjTo(box, center.clone().sub(this._camera.position));
-		box.position.copy(center);
+		var t = 20;		// HACK: deal with almost 2d cases only
+		var box = new XAC.Box(w, t, l, XAC.MATERIALNORMAL).m;
+		// XAC.rotateObjTo(box, center.clone().sub(this._camera.position));
+		XAC.rotateObjTo(box, this._camera.position.clone().sub(ground.position));
+		box.position.copy(topRight.clone().add(bottomLeft).multiplyScalar(0.5));
 
-		// FIXME
+		// HACK
 		FORTE.canvasScene.remove(ground);
 
 		return box;
+	}
+}
+
+//
+//	a slider shown and used in situ with an object
+//
+XAC.InSituSlider = function(canvas) {
+	this._canvas = canvas;
+	this._slider = $('<div></div>');
+	$(this._canvas).parent().append(this._slider);
+}
+
+XAC.InSituSlider.prototype = {
+	show: function(left, top, minVal, maxVal, initVal, onSlide, onChange) {
+		this._minVal = minVal;
+		this._maxVal = maxVal;
+
+		this._slider.slider({
+			orientation: "vertical",
+			range: "min",
+			min: this._minVal,
+			max: this._maxVal,
+			value: initVal,
+			slide: function(event, ui) {
+				// var t = (ui.value - FORTE.Delta.SLIDERMIN) / (FORTE.Delta.SLIDERMAX - FORTE.Delta
+				//     .SLIDERMIN);
+				// t = FORTE.Delta._transfer(t);
+				// var delta = FORTE.deltas[this.id];
+				// delta._designNew = delta._interpolation.interpolate(t);
+				// FORTE.updateDeltas();
+				// event.stopPropagation();
+				if (onSlide != undefined) {
+					onSlide(event, ui);
+				}
+			},
+			change: function(event, ui) {
+				if (onChange != undefined) {
+					onChange(event, ui);
+				}
+			}
+		});
+
+		offset = 50;
+		left = Math.max(0, left - offset);
+		top = Math.max(0, top - offset);
+		this._slider.css('position', 'absolute');
+	    this._slider.css('left', left + 'px');
+	    this._slider.css('top', top + 'px');
+	    this._slider.css('height', '150px');
+
+		this._slider.show();
+	},
+
+	hide: function() {
+		this._slider.hide();
+	},
+
+	destruct: function() {
+		this._canvas.remove(this._slider);
 	}
 }
