@@ -28,7 +28,7 @@ OPTIMIZATION = 1
 TOPYPATH = './scripts/optimise.py'
 SHOW_DEBUG = True
 
-tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "1.0", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"100", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
+tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "1.5", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"100", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
 
 #
 #   bound a list of values respectively to bounds
@@ -160,11 +160,13 @@ def gen_tpd(designObj, resolution, material):
     # compute the design elements ------------------------------------------------------------------------
     actv_elms = []
     actv_elms_out = []
-    margin = 3
+    fav_elms = []
+    fav_vals = []
+    margin = 3  # voxel margin between pasv_elms and actv_elms
     for edge in design:
         voxels = edge['voxels']
         thickness = edge['thickness']
-
+        edge_fav_vals = safe_retrieve_all(edge, 'favVals', None) # account for legacy design that has no favVals
         for k in xrange(0, len(voxels) - 1):
             p0 = voxels[k]
             p1 = voxels[k+1]
@@ -179,12 +181,19 @@ def gen_tpd(designObj, resolution, material):
                     if i < edge['voxelmin'][0] or i > edge['voxelmax'][0]:
                         continue
                     try:
+                        # NOTE: added a check on favor value, which must be 1 to be actv_elms
                         if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0, t1):
-                            actv_elms.append([i, j, 1])
+                            if edge_fav_vals == None or edge_fav_vals[k] == 1:
+                                actv_elms.append([i, j, 1])
+                            else:
+                                fav_elms.append([i, j, 1])
+                                fav_vals.append(str(edge_fav_vals[k]))
                         if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0 + margin, t1 + margin):
                             actv_elms_out.append([i, j, 1])
                     except:
+                        # traceback.print_exc()
                         continue
+
 
     # compute load points ----------------------------------------------------------------------------------
     load_points = []
@@ -383,8 +392,9 @@ def gen_tpd(designObj, resolution, material):
 
     # HACK: need to find way to decide is it actv or fav
     tpd['ACTV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
-    # tpd['FAVORED'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
     tpd['PASV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in pasv_elms])
+    tpd['FAV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in fav_elms])
+    tpd['FAV_VALU'] = ';'.join(fav_vals)
 
     return tpd, debug_voxelgrid
 

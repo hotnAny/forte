@@ -309,21 +309,22 @@ NUM_ELEM_Z) = %d x %d x %d' % (self.nelx, self.nely, self.nelz)
         #
         #
         # (7) favored/disfavored elements
-        self.favored = self.topydict['FAVORED']
+        self.favored = self.topydict['FAV_ELEM']
+        self.fav_vals = self.topydict['FAV_VALU']
         self.df_favored = []
         if self.favored.any():
-            print '[xac] favored elements (FAVORED) specified'
-            self.df_favored = self.get_distance_field(self.favored, self.nelx, self.nely)
+            print '[xac] favored elements (FAV_ELEM) specified'
+            self.df_favored = self.get_distance_field(self.favored, self.fav_vals, self.nelx, self.nely)
         else:
-            print '[xac] no favored elements (FAVORED) specified'
+            print '[xac] no favored elements (FAV_ELEM) specified'
 
-        self.disfavored = self.topydict['DISFAVORED']
-        self.df_disfavored = []
-        if self.disfavored.any():
-            print '[xac] disfavored elements (DISFAVORED) specified'
-            self.df_disfavored = self.get_distance_field(self.disfavored, self.nelx, self.nely)
-        else:
-            print '[xac] no disfavored elements (DISFAVORED) specified'
+        # self.disfavored = self.topydict['DISFAVORED']
+        # self.df_disfavored = []
+        # if self.disfavored.any():
+        #     print '[xac] disfavored elements (DISFAVORED) specified'
+        #     self.df_disfavored = self.get_distance_field(self.disfavored, self.nelx, self.nely)
+        # else:
+        #     print '[xac] no disfavored elements (DISFAVORED) specified'
         #
         #
         #################### CONSTRUCTION AREA BEGINS ####################
@@ -662,6 +663,7 @@ synthesis!')
                 #
                 slope = 32
                 # cutoff = self.cutoff
+                min_cutoff = 0.05;
                 try:
                     self.cutoffprinted
                 except:
@@ -669,19 +671,19 @@ synthesis!')
                     print '[xac] and, slope is ', slope
                     self.cutoffprinted = True
 
-                if len(self.df_disfavored) > 0:
-                    desvars = flatx.reshape(dims)
-                    for k in xrange(0, self.nelz):
-                        for j in xrange(0, self.nely):
-                            for i in xrange(0, self.nelx):
-                                df_val = self.df_disfavored[i][j]
-                                cutoff = self.cutoff
-                                tr_df = self.sigmoid(df_val, slope, cutoff)
-                                tr_min = self.sigmoid(0, slope, cutoff)
-                                tr_max = self.sigmoid(1, slope, cutoff)
-                                tr_df = (tr_df - tr_min) / (tr_max - tr_min)
-                                desvars[k, j, i] = max(VOID, desvars[k, j, i] * tr_df)
-                    flatx = desvars.flatten()
+                # if len(self.df_disfavored) > 0:
+                #     desvars = flatx.reshape(dims)
+                #     for k in xrange(0, self.nelz):
+                #         for j in xrange(0, self.nely):
+                #             for i in xrange(0, self.nelx):
+                #                 df_val = self.df_disfavored[i][j]
+                #                 cutoff = self.cutoff
+                #                 tr_df = self.sigmoid(df_val, slope, cutoff)
+                #                 tr_min = self.sigmoid(0, slope, cutoff)
+                #                 tr_max = self.sigmoid(1, slope, cutoff)
+                #                 tr_df = (tr_df - tr_min) / (tr_max - tr_min)
+                #                 desvars[k, j, i] = max(VOID, desvars[k, j, i] * tr_df)
+                #     flatx = desvars.flatten()
 
                 if len(self.df_favored) > 0:
                     desvars = flatx.reshape(dims)
@@ -692,24 +694,20 @@ synthesis!')
                                 try:
                                     stress = self.stress[i][j][k]
                                     cutoff = self.cutoff # * math.exp(stress)
+
                                     # print cutoff, self.cutoff
                                     tr_df = self.sigmoid(df_val, slope, cutoff)
                                     tr_min = self.sigmoid(0, slope, cutoff)
                                     tr_max = self.sigmoid(1, slope, cutoff)
 
                                     # HACK: ignore non-favored elements for now
-                                    tr_df = 1.5 * (tr_max - tr_df) / (tr_max - tr_min)
+                                    tr_df = (tr_max - tr_df) / (tr_max - tr_min)
                                     desvars[k, j, i] = min(SOLID, desvars[k, j, i] * tr_df)
                                     desvars[k, j, i] = max(VOID, desvars[k, j, i])
                                 except:
-                                    zero = 0
+                                    # print '[xac] updating favored elements exception'
+                                    continue
                     flatx = desvars.flatten()
-
-                # try:
-                #     if len(self.stress) > 0:
-                #         quit()
-                # except:
-                #     one = 0
 
                 #
                 #
@@ -790,10 +788,12 @@ synthesis!')
     #
     #   [xac] compute distance field (2d)
     #
-    def get_distance_field(self, elms, nelx, nely):
+    def get_distance_field(self, elms, elm_vals, nelx, nely):
         infinity = 1e6
         epsilon = 1e-6
         df = []
+        inc = []
+        min_inc = 0.01
 
         # initialize distance field
         for i in xrange(0, nelx):
@@ -802,7 +802,13 @@ synthesis!')
                 row.append(infinity)
             df.append(row)
 
-        cnt = 0
+        # initialize distance field incrementals
+        for i in xrange(0, nelx):
+            row = []
+            for j in xrange(0, nely):
+                row.append(1)
+            inc.append(row)
+
         buf_prev = []
         num = nelx * nely
         max_val = 0
@@ -813,29 +819,42 @@ synthesis!')
             [0, 1],
         ]
 
+        buf_all = []
+
+        idx = 0
         for elm_num in elms:
             mpz = int(math.floor(elm_num / (nelx * nely)))
             mpx = int(math.floor((elm_num - mpz * (nelx * nely)) / nely))
             mpy = int(math.floor(elm_num - mpz * (nelx * nely) - mpx * nely))
             df[mpx][mpy] = 0
+            inc[mpx][mpy] = min_inc + elm_vals[idx] * (1 - min_inc)
             buf_prev.append([mpx, mpy])
-            cnt += 1
+            buf_all.append([mpx, mpy])
+            idx += 1
+
+        cnt = 0
+        for i in xrange(0, nelx):
+            for j in xrange(0, nely):
+                cnt += 1 if df[i][j] != infinity else 0
 
         while cnt < num:
             buf = []
             for idx in buf_prev:
                 val_df = df[idx[0]][idx[1]]
+                val_inc = inc[idx[0]][idx[1]]
                 for didx in neighbors:
                     ii = idx[0] + didx[0]
                     jj = idx[1] + didx[1]
                     if 0<=ii and ii<nelx and 0<=jj and jj<nely:
-                        # print df[ii][jj]
                         if df[ii][jj] == infinity:
-                            df[ii][jj] = val_df + 1
+                            df[ii][jj] = val_df + val_inc
+                            inc[ii][jj] = min(1, val_inc * 1.1)
                             max_val = max(df[ii][jj], max_val)
                             buf.append([ii, jj])
                             cnt += 1
+
             buf_prev = list(buf)
+
 
         ### normalize
         max_val *= 1.0
@@ -844,14 +863,10 @@ synthesis!')
                 df[i][j] /= max_val
                 df[i][j] = max(epsilon, df[i][j])
 
+        # print df
+        # print max_val
+        # print num, cnt, len(df), len(df[0]), elms.size
         return df
-
-    def transfer(self, t):
-        # return (math.exp(-t) - math.exp(-1)) / (1 - math.exp(-1))
-        return (1 - math.exp(-t)) / (1 - math.exp(-1))
-        # return 1 / (1 + math.exp(slope * (cutoff-df)))
-        # return VOID if df < cutoff else SOLID
-        # 1-1/(1+e^(40/3*(0.6-x)))
 
     # 1 - (1/(1+e^(64*(0.1-x)))-0.039)/(1-0.039)
     def sigmoid(self, t, slope, cutoff):
