@@ -78,7 +78,7 @@ def is_in_segment(p, p0, p1, t0, t1):
     lp = math.sqrt((proj[0]-p0[0])**2 + (proj[1]-p0[1])**2)
     tp = lp/l * t0 + (1-lp/l) * t1
 
-    return dist < tp * tp
+    return dist < tp * tp / 4 # radius = thickness / 2
 
 def on_left_side(p, p0, p1):
     v = [p[0]-p0[0], p[1]-p0[1]]
@@ -390,7 +390,6 @@ def gen_tpd(designObj, resolution, material):
     tpd['LOAD_NODE_Y']= str_load_points
     tpd['LOAD_VALU_Y'] = ';'.join(load_values_y_str)
 
-    # HACK: need to find way to decide is it actv or fav
     tpd['ACTV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
     tpd['PASV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in pasv_elms])
     tpd['FAV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in fav_elms])
