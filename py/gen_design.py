@@ -38,7 +38,7 @@ def gen_design(original, favored, disfavored, resolution, material):
             idx = j * (nelx + 1) + nelx - 1 - i
             debug_voxelgrid[2 * idx + 1] = 'v'
 
-        tpd['FAVORED'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in fav_elms])
+        tpd['FAV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in fav_elms])
 
     # specify disfavored elements
     dfav_elms = []
