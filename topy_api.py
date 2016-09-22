@@ -7,7 +7,7 @@
 ##########################################################################
 from sys import argv
 import sys
-sys.path.append('./scripts')
+sys.path.append('topy/scripts')
 import subprocess
 import json
 import math
@@ -18,7 +18,7 @@ from PIL import Image
 from nodenums import node_nums_3d
 from nodenums import elm_num_3d
 from optimise import main
-from skeletonize import skeletonize
+# from skeletonize import skeletonize
 import traceback
 
 INFINITY = 1e9
@@ -28,7 +28,7 @@ OPTIMIZATION = 1
 TOPYPATH = './scripts/optimise.py'
 SHOW_DEBUG = True
 
-tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "1.5", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"100", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
+tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "1.5", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"50", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
 
 #
 #   bound a list of values respectively to bounds
@@ -78,7 +78,7 @@ def is_in_segment(p, p0, p1, t0, t1):
     lp = math.sqrt((proj[0]-p0[0])**2 + (proj[1]-p0[1])**2)
     tp = lp/l * t0 + (1-lp/l) * t1
 
-    return dist < tp * tp / 4 # radius = thickness / 2
+    return dist < tp * tp # radius = thickness / 2
 
 def on_left_side(p, p0, p1):
     v = [p[0]-p0[0], p[1]-p0[1]]
@@ -170,8 +170,12 @@ def gen_tpd(designObj, resolution, material):
         for k in xrange(0, len(voxels) - 1):
             p0 = voxels[k]
             p1 = voxels[k+1]
+
             t0 = thickness[k] / dim_voxel
             t1 = thickness[k+1] / dim_voxel
+
+            # if t0 < 0.01 and t1 < 0.01:
+            #     continue
 
             for j in xrange(0, nely):
                 if j < edge['voxelmin'][1] or j > edge['voxelmax'][1]:
@@ -182,18 +186,17 @@ def gen_tpd(designObj, resolution, material):
                         continue
                     try:
                         # NOTE: added a check on favor value, which must be 1 to be actv_elms
-                        if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0, t1):
+                        if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0/2, t1/2):
                             if edge_fav_vals == None or edge_fav_vals[k] == 1:
                                 actv_elms.append([i, j, 1])
                             else:
                                 fav_elms.append([i, j, 1])
                                 fav_vals.append(str(edge_fav_vals[k]))
-                        if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0 + margin, t1 + margin):
+                        if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0/2 + margin, t1/2 + margin):
                             actv_elms_out.append([i, j, 1])
                     except:
                         # traceback.print_exc()
                         continue
-
 
     # compute load points ----------------------------------------------------------------------------------
     load_points = []
@@ -321,6 +324,12 @@ def gen_tpd(designObj, resolution, material):
             i = elm[0]
             j = elm[1]
             idx = j * (nelx + 1) + nelx - 1 - i
+            debug_voxelgrid[2 * idx + 1] = '$'
+
+        for elm in fav_elms:
+            i = elm[0]
+            j = elm[1]
+            idx = j * (nelx + 1) + nelx - 1 - i
             debug_voxelgrid[2 * idx + 1] = '.'
 
         for cp in pasv_elms:
@@ -371,9 +380,13 @@ def gen_tpd(designObj, resolution, material):
         if i < len(boundary_nodes) - 1:
             str_boundary += ';'
 
-    material = material * len(actv_elms) / (nelx * nely)
+
+    # print len(actv_elms)
+    # print len(fav_elms)
+    material = material * 1.0 * (len(actv_elms) + len(fav_elms)) / (nelx * nely)
+    print '--------------------------------------------------------------------------------------------------[xac] relative amount of material ' + str(material)
     material = bound([material], [0.05], [0.35])[0]
-    print '[xac] actual amount of material ' + str(material)
+    print '--------------------------------------------------------------------------------------------------[xac] bounded amount of material ' + str(material)
 
     # write to tpd file -----------------------------------------------------------------------------------
     tpd = json.loads(tpd_template)
@@ -390,10 +403,13 @@ def gen_tpd(designObj, resolution, material):
     tpd['LOAD_NODE_Y']= str_load_points
     tpd['LOAD_VALU_Y'] = ';'.join(load_values_y_str)
 
-    tpd['ACTV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
-    tpd['PASV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in pasv_elms])
-    tpd['FAV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in fav_elms])
-    tpd['FAV_VALU'] = ';'.join(fav_vals)
+    if 'ignore' in designObj:
+        print '-------------------------------------------------------------------------------------------------- [xac] ignoring user design'
+    else:
+        tpd['ACTV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in actv_elms])
+        tpd['PASV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in pasv_elms])
+        tpd['FAV_ELEM'] = ';'.join([str(elm_num_3d(nelx, nely, 1, x[0]+1, x[1]+1, 1)) for x in fav_elms])
+        tpd['FAV_VALU'] = ';'.join(fav_vals)
 
     return tpd, debug_voxelgrid
 
@@ -411,7 +427,7 @@ def call_topy(tpd, query, grad, imagerize):
     probname = main([TOPYPATH, tpd_path, str(query), grad])
     subprocess.call('rm ' + tpd_path, shell=True)
     if imagerize == True:
-        fname = str(tpd['VOL_FRAC']) + '_' + probname + '.bmp'
+        fname = probname + '.bmp'
         save_vxg_to_image(probname + '_optimized.vxg', fname)
     return probname
 
@@ -464,6 +480,6 @@ if __name__ == "__main__":
     tpd, debug_voxelgrid = gen_tpd(design, resolution, material)
     print ''.join(debug_voxelgrid)[::-1]
     probname = optimize(tpd, gradient)
-    sub_outpath = argv[1] + '_' + str(resolution) + '_' + str(material) + '_' + str(gradient) + '_' + str(long(time.time())%1e8)
+    sub_outpath = argv[1] + '_' + str(long(time.time())) + '_' + str(resolution) + '_' + str(material) + '_' + str(gradient)
     subprocess.call('mkdir ' + sub_outpath, shell=True)
     subprocess.call('mv ' + probname + '* ' + sub_outpath, shell=True)
