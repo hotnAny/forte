@@ -581,7 +581,8 @@ FORTE.MedialAxis.prototype._addEdge = function(node1, node2, points, thickness) 
 
 		for (var i = edge.points.length - 1; i >= 0; i--) {
 			edge.thickness.push(thickness == undefined ? this._radiusEdge : thickness);
-			edge.favVals.push(1.0);
+			// NOTE: initial value of favor
+			edge.favVals.push(0.8);
 		}
 
 		this._edges.push(edge);
@@ -703,7 +704,6 @@ FORTE.MedialAxis.prototype._renderEdge = function(edge) {
 				idx: i
 			});
 			edge.visuals.push(visual);
-			edge.favVals.push(1.0);
 
 			if (this.SHOWJOINTS)
 				if (i < thickness.length - 1) {

@@ -103,7 +103,7 @@ FORTE.Design.prototype = {
 //
 FORTE.Design.prototype._mousedown = function(e) {
 	if (e.which != XAC.LEFTMOUSE && (FORTE.USERIGHTKEYFOR3D == false ? (e.which != XAC.RIGHTMOUSE) :
-			true)) {
+			false)) {
 		return;
 	}
 
@@ -228,8 +228,8 @@ FORTE.Design.prototype._mousedown = function(e) {
 			break;
 
 		case FORTE.Design.LOADPOINT:
-			this._maniPlane = new XAC.Maniplane(new THREE.Vector3(), this._scene, this._camera, this._canvas,
-				true, true);
+			this._maniPlane = new XAC.Maniplane(new THREE.Vector3(), this._scene,
+				this._camera, this._canvas, true, false);
 			if (hitInfo != undefined) {
 				// use the selected point to initialize the load object
 				this._maniPlane.setPosition(hitInfo.object.position);
@@ -950,7 +950,7 @@ FORTE.Design.prototype.getData = function() {
 		for (var i = 0; i < this._medialAxis.edges.length; i++) {
 			var edge = this._medialAxis.edges[i];
 			if (boundaryEdges.indexOf(edge) >= 0 || edge.deleted == true) continue;
-			// TODO: do not pack nodes
+			// NOTE: do not pack nodes
 			forte.design.push(this._medialAxis.pack(edge, true));
 		}
 	} else {
@@ -996,7 +996,8 @@ FORTE.Design.prototype.getData = function() {
 		forte.clearances = this._clearancesRaw;
 	}
 
-	return JSON.stringify(forte);
+	return forte;
+	// return JSON.stringify(forte);
 }
 
 //
@@ -1058,7 +1059,7 @@ FORTE.MedialAxis.prototype.pack = function(elm, addNodes) {
 		}
 
 		// TODO: impose a min thickness
-		var minThickness = 2;
+		var minThickness = 4;
 		for (var i = 0; i < edge.thickness.length; i++) {
 			edge.thickness[i] = Math.max(edge.thickness[i], minThickness);
 		}

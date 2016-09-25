@@ -8,7 +8,7 @@ XAC.INFINITY = 1e9;
 // some common visual properties
 XAC.COLORNORMAL = 0xDB5B8A; // the normal color
 XAC.COLORCONTRAST = 0xD1D6E7; // is the contrast of the COLORNORMAL
-XAC.COLORHIGHLIGHT = 0xfffa90;
+XAC.COLORHIGHLIGHT = 0x1B94E0;
 XAC.COLORFOCUS = 0xE82C0C; // color to really draw users' focus
 XAC.COLORALT = 0x222222;
 
@@ -28,7 +28,7 @@ XAC.MATERIALCONTRAST = new THREE.MeshBasicMaterial({
     opacity: 0.75
 });
 
-XAC.MATERIALHIGHLIGHT = new THREE.MeshPhongMaterial({
+XAC.MATERIALHIGHLIGHT = new THREE.MeshBasicMaterial({
     color: XAC.COLORHIGHLIGHT,
     transparent: true,
     opacity: 0.95

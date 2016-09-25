@@ -18,14 +18,26 @@ function unitTest() {
 			case 50:
 				FORTE.switchLayer(FORTE.FUNCSPECLAYER);
 				break;
-			case 83: //S
-				var strData = FORTE.design.getData();
+			case 56: // 8
+				var forte = FORTE.design.getData();
+				forte = FORTE.expandSketch(forte, 1);
+				var strData = JSON.stringify(forte);
+				log(strData)
+				break;
+			case 57: // 9
+				var forte = FORTE.design.getData();
+				forte = FORTE.ignoreSketch(forte, 1);
+				var strData = JSON.stringify(forte);
+				log(strData)
+				break;
+			case 83: // S
+				var strData = JSON.stringify(FORTE.design.getData());
 				log(strData)
 					// XAC.pingServer(FORTE.xmlhttp, 'localhost', '9999', ['forte', 'query',
 					// 	'resolution', 'material', 'originality', 'verbose'
 					// ], [strData, 0, 64, 0.25, 1.0, 1]);
 					// keepPinging(6000);
-				FORTE.switchLayer(FORTE.FEEDBACKLAYER);
+					// FORTE.switchLayer(FORTE.FEEDBACKLAYER);
 				break;
 			case 79: //O
 				var strData = FORTE.design.getData();
@@ -162,8 +174,6 @@ FORTE.Design.fromRawData = function(designObj, canvas, scene, camera) {
 	}
 }
 
-
-
 FORTE.MedialAxis.prototype.refreshFromRawData = function(edges, nodes) {
 	// for (var i = 0; i < this._visuals.length; i++) {
 	// 	this._scene.remove(this._visuals[i]);
@@ -187,20 +197,32 @@ FORTE.MedialAxis.prototype.refreshFromRawData = function(edges, nodes) {
 	this._render();
 }
 
-// FORTE.arrays2threes = function()
-
-FORTE.updateDeltas = function(toRefresh) {
-	// log('--')
-	var design = FORTE.designSpace.design.clone();
-	for (var i = 0; i < FORTE.deltas.length; i++) {
-		design = design.concat(FORTE.deltas[i]._designNew);
+//
+//	for experiment, post-processing to expand a user's sketch until it meets the amount of material
+//
+FORTE.expandSketch = function(designObj, amnt) {
+	for (var i = 0; i < designObj.design.length; i++) {
+		var edge = designObj.design[i];
+		for (var j = 0; j < edge.thickness.length; j++) {
+			edge.thickness[j] *= amnt;
+			edge.favVals[j] = 0.99;
+		}
 	}
+	// designObj
+	return designObj;
+}
 
-	// if (toRefresh) {
-	// 	FORTE.design._medialAxis.refreshFromRawData(design);
-	// } else {
-	FORTE.design._medialAxis.updateFromRawData(design, toRefresh);
-	// }
-
-	// log('--')
+//
+//	for experiment, ignoring a user's sketch completely
+//
+FORTE.ignoreSketch = function(designObj) {
+	for (var i = 0; i < designObj.design.length; i++) {
+		var edge = designObj.design[i];
+		for (var j = 0; j < edge.thickness.length; j++) {
+			edge.thickness[j] = XAC.EPSILON;
+			edge.favVals[j] = XAC.EPSILON;
+		}
+	}
+	// designObj
+	return designObj;
 }

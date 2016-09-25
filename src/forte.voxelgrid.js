@@ -15,6 +15,13 @@ FORTE.VoxelGrid = function(scene, origin) {
 	this._table = [];
 
 	this._dump = [];
+
+	this._material = new THREE.MeshLambertMaterial({
+		color: 0x000000,
+		transparent: true,
+		wireframe: true,
+		opacity: 0.75
+	});
 }
 
 FORTE.VoxelGrid.prototype = {
@@ -75,7 +82,9 @@ FORTE.VoxelGrid.prototype.load = function(vxgRaw, dim) {
 				// binarize it
 			for (var k = 0; k < row.length; k++) {
 				rowRaw.push(row[k]);
-				row[k] = row[k] >= 1 ? 1 : 0;
+				// row[k] = row[k] >= 1 ? 1 : 0;
+				// NOTE: lower the threshold
+				row[k] = row[k] >= 0.1 ? 1 : 0;
 			}
 
 			// for reasons i can't explain ...
@@ -106,12 +115,7 @@ FORTE.VoxelGrid.prototype.render = function(hideInside) {
 				// row[k] = undefined;
 				if (this._grid[i][j][k] == 1 && this._table[i][j][k] == undefined) {
 					if (hideInside != true || this._onSurface(i, j, k)) {
-						var voxel = this._makeVoxel(this._dim, k, j, i, new THREE.MeshLambertMaterial({
-							color: 0x000000,
-							transparent: true,
-							wireframe: true,
-							opacity: 0.75
-						}), true);
+						var voxel = this._makeVoxel(this._dim, k, j, i, this._material, true);
 						voxel.index = [k, j, i];
 						// log(voxel.position.toArray())
 						// log(voxel.position.toArray())
@@ -133,6 +137,51 @@ FORTE.VoxelGrid.prototype.render = function(hideInside) {
 	} // z
 
 	log(this._voxels.length + " voxels added.");
+
+	var mergedGeometry = new THREE.Geometry();
+
+	for (var i = 0; i < this._voxels.length; i++) {
+		var tg = XAC.getTransformedGeometry(this._voxels[i]);
+		var n = mergedGeometry.vertices.length;
+		mergedGeometry.vertices = mergedGeometry.vertices.concat(tg.vertices);
+		var faces = tg.faces.clone();
+		for (var j = 0; j < faces.length; j++) {
+			faces[j].a += n;
+			faces[j].b += n;
+			faces[j].c += n;
+		}
+		mergedGeometry.faces = mergedGeometry.faces.concat(faces);
+		this._scene.remove(this._voxels[i]);
+	}
+
+	var mergedVoxelGrid = new THREE.Mesh(mergedGeometry, this._material);
+
+	this._merged = mergedVoxelGrid;
+	this._scene.add(mergedVoxelGrid);
+}
+
+FORTE.VoxelGrid.prototype.renderContour = function() {
+	this._pointsContour = [];
+	for (var i = 0; i < this._nz; i++) {
+		this._table[i] = this._table[i] == undefined ? [] : this._table[i];
+		for (var j = 0; j < this._ny; j++) {
+			this._table[i][j] = this._table[i][j] == undefined ? [] : this._table[i][j];
+			for (var k = 0; k < this._nx; k++) {
+				if (this._grid[i][j][k] == 1 && this._table[i][j][k] == undefined && this._isContour(i, j, k)) {
+					var voxel = this._makeVoxel(this._dim, k, j, i, this._material, true);
+					voxel.index = [k, j, i];
+					this._scene.add(voxel);
+					this._voxels.push(voxel);
+					this._table[i][j][k] = voxel;
+				} else { // if (this._grid[i][j][k] != 1 && this._table[i][j][k] != undefined) {
+					var voxel = this._table[i][j][k];
+					this._scene.remove(voxel);
+					XAC.removeFromArray(this._voxels, voxel);
+					this._table[i][j][k] = undefined;
+				}
+			} // x
+		} // y
+	} // z
 }
 
 FORTE.VoxelGrid.prototype.updateToMedialAxis = function(axis, node) {
@@ -427,3 +476,42 @@ FORTE.MedialAxis.prototype._snapVoxel = function(voxel, dim) {
 			idxNodeMin].radius, dist2NodeMin));
 	}
 };
+
+FORTE.VoxelGrid.prototype.saveAs = function(fname) {
+	if (this._merged == undefined) {
+		this.render();
+	}
+
+	var stlStr = stlFromGeometry(this._merged.geometry);
+	var blob = new Blob([stlStr], {
+		type: 'text/plain'
+	});
+
+	saveAs(blob, fname);
+}
+
+FORTE.VoxelGrid.prototype._isContour = function(z, y, x) {
+	var neighbors = [
+		[-1, 0, 0],
+		[1, 0, 0],
+		[0, -1, 0],
+		[0, 1, 0],
+		[0, 0, -1],
+		[0, 0, 1]
+	];
+
+	for (var i = 0; i < neighbors.length; i++) {
+		var dx = neighbors[i][0];
+		var dy = neighbors[i][1];
+		var dz = neighbors[i][2];
+		xx = XAC.clamp(x + dx, 0, this._nx - 1);
+		yy = XAC.clamp(y + dy, 0, this._ny - 1);
+		zz = XAC.clamp(z + dz, 0, this._nz - 1);
+
+		if(this._grid[zz][yy][xx] != 1) {
+			return true;
+		}
+	}
+
+	return false;
+}

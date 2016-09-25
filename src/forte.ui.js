@@ -12,13 +12,12 @@ var FORTE = FORTE || {};
 FORTE.renderUI = function() {
     var aspectRatio = 0.9; // h to w
     var widthWindow = window.innerWidth * 0.985;
-    var heightWindow = window.innerHeight * 0.97;
+    var heightWindow = window.innerHeight * 0.99;
 
     var tblLayout = $('<table></table>');
     tblLayout.css('max-height', heightWindow);
     var trLayout = $('<tr></tr>');
     tblLayout.append(trLayout);
-
 
     //
     //  set up main canvas
@@ -33,8 +32,9 @@ FORTE.renderUI = function() {
     FORTE.ground = canvasRenderSet.ground;
     FORTE.camCtrl = new THREE.TrackballControls(FORTE.canvasCamera, undefined,
         undefined);
-    FORTE.camCtrl.noZoom = true;
+    // FORTE.camCtrl.noZoom = true;
 
+    // for loading existing design onto main canvas
     FORTE.tdCanvas.on('dragover', function(e) {
         e.stopPropagation();
         e.preventDefault();
@@ -57,23 +57,13 @@ FORTE.renderUI = function() {
                     FORTE.design._medialAxis.updateFromRawData(FORTE.designObj.design);
                     FORTE.centerCamera(FORTE.camCtrl, FORTE.designObj.design);
                 });
-            } else if (files[i].name.endsWith('delta')) {
-                log('loading optimized deltas')
+            } else if (files[i].name.endsWith('vxg')) {
                 reader.onload = (function(e) {
-                    if (FORTE.designObj == undefined) {
-                        err('load the original design object first')
-                    }
-                    FORTE.deltaObj = JSON.parse(e.target.result);
-                    var centroid = FORTE.getBoundingBox(FORTE.designObj.design).centroidish;
-                    FORTE.transformOptimization(FORTE.deltaObj.design,
-                        centroid, FORTE.designObj.dimVoxel, FORTE.designObj.width,
-                        FORTE.designObj.height);
-
-                    log(FORTE.deltaObj.design)
-
-                    var design = FORTE.deltaObj.design.concat(FORTE.designObj.design);
-                    FORTE.design._medialAxis.updateFromRawData(design, true);
-
+                    FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene);
+                    FORTE.voxelGrid.load(e.target.result, 2);
+                    // FORTE.voxelGrid.render();
+                    FORTE.voxelGrid.renderContour();
+                    // FORTE.voxelGrid.saveAs('forte.stl');
                 });
             }
             reader.readAsBinaryString(files[i]);
@@ -84,172 +74,6 @@ FORTE.renderUI = function() {
     // add a selection frame
     FORTE.tdCanvas.append($('<div id="selection" class="selectiondiv"></div>'));
     trLayout.append(FORTE.tdCanvas);
-
-
-    var tdOptimization = $('<td></td>');
-
-    //
-    //  set up optimization view
-    //
-    var tblOptimization = $('<table></table>');
-    tdOptimization.append(tblOptimization);
-    var trOptView = $('<tr></tr>');
-    var tdOptView = $('<td></td>')
-    trOptView.append(tdOptView);
-    tblOptimization.append(trOptView);
-
-    var widthOptView = widthWindow - widthCanvas;
-    var heightOptView = aspectRatio * widthOptView;
-    optviewRenderSet = FORTE.createRenderableScene(widthOptView, heightOptView);
-    FORTE.optRenderer = optviewRenderSet.renderer;
-    FORTE.optScene = optviewRenderSet.scene;
-    FORTE.optCamera = optviewRenderSet.camera;
-    FORTE.optRenderer.render(FORTE.optScene, FORTE.optCamera);
-    tdOptView.append(FORTE.optRenderer.domElement);
-
-    tdOptView.on('dragover', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer = e.originalEvent.dataTransfer;
-        e.dataTransfer.dropEffect = 'copy';
-    });
-
-    tdOptView.on('drop', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer = e.originalEvent.dataTransfer;
-        var files = e.dataTransfer.files;
-
-        for (var i = 0; i < files.length; i++) {
-            var reader = new FileReader();
-            log('loading user-guided deltas')
-            reader.onload = (function(e) {
-                if (FORTE.designObj == undefined) {
-                    err('load the original design object first')
-                }
-                FORTE.genDeltas = FORTE.genDeltas || [];
-
-                var deltaObj = JSON.parse(e.target.result);
-                var centroid = FORTE.getBoundingBox(FORTE.designObj.design).centroidish;
-                FORTE.transformOptimization(deltaObj.design,
-                    centroid, FORTE.designObj.dimVoxel, FORTE.designObj.width,
-                    FORTE.designObj.height);
-
-                FORTE.genDeltas.push(deltaObj.design);
-
-            });
-            reader.readAsBinaryString(files[i]);
-        }
-
-        // HACK
-        FORTE.design._medialAxis.onEdgeSelected = function() {
-            var idx = this._edges.indexOf(this._edgeSelected);
-            if (idx >= FORTE.genDeltas.length) return;
-
-            var deltas = FORTE.genDeltas[idx];
-            var design = deltas.concat(FORTE.designObj.design);
-
-            var scene = FORTE.optScene.clone();
-            var camera = FORTE.optCamera.clone();
-            var camCtrl = new THREE.TrackballControls(camera, undefined,
-                undefined);
-            FORTE.MedialAxis.fromRawData(design, FORTE.tbnRenderer.domElement,
-                scene, camera);
-            FORTE.centerCamera(camCtrl, FORTE.designObj.design);
-            FORTE.optRenderer.render(scene, camera);
-
-            var deltasImgSrc = FORTE.genDeltasImgSrcs[idx];
-            // FORTE.divOptThumbnails.empty();
-            FORTE.imgThumbnail.src = deltasImgSrc;
-        }
-    });
-
-    // tdOptView.click(function(e) {
-    //     // NOTE: refresh for now
-    //     if (FORTE.deltas != undefined)
-    //         for (var i = 0; i < FORTE.deltas.length; i++) {
-    //             FORTE.deltas[i]._slider.hide();
-    //         }
-    //     FORTE.deltas = [];
-    //
-    //     var delta = new FORTE.Delta(FORTE.designSpace.design, FORTE.viewedOptimization, FORTE.canvasRenderer
-    //         .domElement, FORTE.canvasScene, FORTE.canvasCamera);
-    //     FORTE.deltas.push(delta);
-    //     FORTE.updateDeltas(true);
-    // });
-
-    //
-    // set up thumbnails
-    //
-    var trThumbnails = $('<tr></tr>');
-    FORTE.tdThumbnails = $('<td></td>')
-    FORTE.divOptThumbnails = $('<div></div>');
-    FORTE.divOptThumbnails.css('height', (heightWindow - heightOptView) + 'px');
-    FORTE.divOptThumbnails.css('overflow', 'scroll');
-    FORTE.thumbnailMargin = 8;
-    FORTE.widthThumbnail = widthOptView / 3 - FORTE.thumbnailMargin * 2;
-    FORTE.heightThumbnail = aspectRatio * FORTE.widthThumbnail;
-    FORTE.imgThumbnail = new Image(148, 178);
-    FORTE.tdThumbnails.append(FORTE.imgThumbnail);
-    trThumbnails.append(FORTE.tdThumbnails);
-    tblOptimization.append(trThumbnails);
-
-    FORTE.tdThumbnails.on('dragover', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer = e.originalEvent.dataTransfer;
-        e.dataTransfer.dropEffect = 'copy';
-    });
-
-    FORTE.tdThumbnails.on('drop', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer = e.originalEvent.dataTransfer;
-
-        var files = e.dataTransfer.files;
-        var arrFiles = [];
-        for (var i = 0; i < files.length; i++) {
-            arrFiles.push(files[i]);
-        }
-
-        arrFiles.reverse();
-        FORTE.genDeltasImgSrcs = FORTE.genDeltasImgSrcs || [];
-        var reader = new FileReader();
-        reader.onload = (function(e) {
-            log(reader.result)
-            FORTE.genDeltasImgSrcs.push(reader.result);
-            if (arrFiles.length > 0) reader.readAsDataURL(arrFiles.pop());
-        });
-        // for (var i = 0; i < files.length; i++) {
-        // log('loading user-guided deltas (bmps)')
-        reader.readAsDataURL(arrFiles.pop());
-        // }
-    });
-
-    var thumbnailRenderSet = FORTE.createRenderableScene(FORTE.widthThumbnail, FORTE.heightThumbnail);
-    FORTE.tbnRenderer = thumbnailRenderSet.renderer;
-    FORTE.tbnScene = thumbnailRenderSet.scene;
-    FORTE.tbnCamera = thumbnailRenderSet.camera;
-
-    FORTE.thnClick = function(e) {
-        var optDesign = FORTE.htOptimizations[this.id];
-        var design = optDesign.concat(FORTE.designSpace.design);
-        var scene = FORTE.optScene.clone();
-        var camera = FORTE.optCamera.clone();
-        var camCtrl = new THREE.TrackballControls(camera, undefined, undefined);
-        FORTE.MedialAxis.fromRawData(design, FORTE.optRenderer.domElement, scene, camera);
-        FORTE.centerCamera(camCtrl, FORTE.designSpace.design);
-        FORTE.optRenderer.render(scene, camera);
-        FORTE.viewedOptimization = optDesign;
-
-        // FORTE.design._medialAxis.updateFromRawData(FORTE.designSpace.design.clone()
-        // .concat(optDesign), true);
-        // FORTE.design._medialAxis.updateFromRawData(FORTE.designSpace.design.clone()
-        // .concat(optDesign));
-        // var delta = new FORTE.Delta(FORTE.designSpace.design, optDesign, FORTE.canvasRenderer.domElement, FORTE.canvasScene, FORTE.canvasCamera);
-    };
-
-    trLayout.append(tdOptimization);
 
     return tblLayout;
 }
