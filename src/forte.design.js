@@ -185,7 +185,8 @@ FORTE.Design.prototype._mousedown = function(e) {
 
 						var meanFavVal = 0;
 						for (var i = 0; i < this._selElms.length; i++) {
-							meanFavVal += this._selElms[i].edge.favVals[this._selElms[i].idx];
+							var favVal = this._selElms[i].edge.favVals[this._selElms[i].idx];
+							meanFavVal += favVal == undefined ? 1 : favVal;
 						}
 						meanFavVal /= this._selElms.length;
 

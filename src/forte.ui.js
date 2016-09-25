@@ -61,9 +61,9 @@ FORTE.renderUI = function() {
                 reader.onload = (function(e) {
                     FORTE.voxelGrid = new FORTE.VoxelGrid(FORTE.canvasScene);
                     FORTE.voxelGrid.load(e.target.result, 2);
-                    // FORTE.voxelGrid.render();
-                    FORTE.voxelGrid.renderContour();
-                    // FORTE.voxelGrid.saveAs('forte.stl');
+                    FORTE.voxelGrid.render();
+                    // FORTE.voxelGrid.renderContour();
+                    FORTE.voxelGrid.saveAs('forte.stl');
                 });
             }
             reader.readAsBinaryString(files[i]);
