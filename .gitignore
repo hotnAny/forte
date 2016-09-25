@@ -9,5 +9,6 @@ build/*
 *.forte
 *.pyc
 *.bmp
+*.png
 *.dae
 .DS_Store
