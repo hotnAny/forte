@@ -10,6 +10,9 @@ from sys import argv
 from numpy import ndarray, matrix, identity, linalg, array, hstack
 from copy import copy
 
+#
+#   TODO: add reference
+#
 def comp_green_strain(v1, v2, v3, V1, V2, V3):
     U = matrix([v1, v2, v3])
     W = matrix([V1, V2, V3])
@@ -17,6 +20,9 @@ def comp_green_strain(v1, v2, v3, V1, V2, V3):
     E = 0.5 * (F.getH() * F - identity(3))
     return E
 
+#
+#   compute stress based on tetrahedral tesselation of each voxel
+#
 def comp_tetra_stress(positions, displacements):
     node = copy(positions[0])
     node1 = copy(positions[1])
@@ -48,7 +54,7 @@ def node_nums_3d(nelx, nely, nelz, mpx, mpy, mpz):
     return nn
 
 # def comp_stress(disp_str, nelx, nely, nelz, vxg):
-def comp_stress(disp_path, vxg_path, exclusive=False):
+def comp_stress(disp_path, vxg_path, excluding=False):
     str_vxg = open(vxg_path).read()
     rows_vxg = str_vxg.split('\n')
     nely = len(rows_vxg)
@@ -69,24 +75,36 @@ def comp_stress(disp_path, vxg_path, exclusive=False):
     p = 3
 
     stress_elms = []
+
+    # the compositions of tetrahedrons of a cube
+    tetraIndices = [
+        [7, 0, 5, 6],
+        [0, 1, 6, 4],
+        [0, 6, 4, 5],
+        [2, 0, 3, 5],
+        [0, 1, 4, 3],
+        [0, 3, 4, 5]
+    ]
+
     # max_stress = 0
+    cnt_material = 0
+    cnt_actual_material = 0
     for i in xrange(0, nelx):
         stress_elms_yz = []
         for j in xrange(0, nely):
             stress_elms_z = []
+
+            # HACK filtering out elements with very small density
+            xe = vxg[j][i] # density at this voxel
+            cnt_material += xe
+            if excluding == True:
+                if xe <= 0.5:
+                    stress_elms_yz.append([0])
+                    continue
+
             for k in xrange(0, nelz):
                 ns = node_nums_3d(nelx, nely, nelz, i+1, j+1, k+1)
                 tetras = []
-
-                # the compositions of tetrahedrons of a cube
-                tetraIndices = [
-					[7, 0, 5, 6],
-					[0, 1, 6, 4],
-					[0, 6, 4, 5],
-					[2, 0, 3, 5],
-					[0, 1, 4, 3],
-					[0, 3, 4, 5]
-				]
 
                 # init the tetrahedral data structure
                 elm_max_stress = 0
@@ -109,31 +127,35 @@ def comp_stress(disp_path, vxg_path, exclusive=False):
 
                         positions.append([x, y, z])
 
-                    xe = vxg[j][i] # density at this voxel
-                    if exclusive == True:
-                        if xe <= 0.001:
-                            continue
-
-                    stress = comp_tetra_stress(positions, displacements) # * pow(xe, p)
+                    stress = comp_tetra_stress(positions, displacements) * pow(xe, p)
                     elm_max_stress = max(elm_max_stress, stress)
                     # max_stress = max(max_stress, stress)
                     stressData.append(stress)
 
                 stress_elms_z.append(elm_max_stress)
+                cnt_actual_material += 1
             stress_elms_yz.append(stress_elms_z)
         stress_elms.append(stress_elms_yz)
 
+    # stats
     mean_stress = mean(stressData)
     std_stress = pstdev(stressData)
     max_stress = max(stressData)
     stressData.sort()
     perc = 0.75
     high_stress = stressData[int(len(stressData) * perc)]
+
+    # perc_mat = len(stressData) * 1.0 / len(tetraIndices) / (nelx * nely * nelz)
+    perc_mat = cnt_material / (nelx * nely * nelz)
+    perc_mat_actu = cnt_actual_material * 1.0 / (nelx * nely * nelz)
+
     print 'avg stress', mean_stress
     print 'std stress', std_stress
     # max_stress = mean_stress + 3 * std_stress
     print 'max stress', max_stress
     print 'high stress', high_stress
+    print '% material', perc_mat
+    print '% actual material', perc_mat_actu
 
     for i in xrange(0, nelx):
         for j in xrange(0, nely):
@@ -142,7 +164,7 @@ def comp_stress(disp_path, vxg_path, exclusive=False):
 
     print 'stress computed'
 
-    return stress_elms, mean_stress, high_stress, max_stress
+    return stress_elms, mean_stress, high_stress, max_stress, perc_mat, perc_mat_actu
 
 def mean(data):
     """Return the sample arithmetic mean of data."""
@@ -173,6 +195,6 @@ if __name__ == "__main__":
 
     disp_path = argv[1]
     vxg_path = argv[2]
-    exclusive = argv[3] if len(argv) >= num_req_params + 2 else False
+    excluding = argv[3] if len(argv) >= num_req_params + 2 else False
 
-    comp_stress(disp_path, vxg_path, exclusive)
+    comp_stress(disp_path, vxg_path, excluding)
