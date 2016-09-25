@@ -5,6 +5,7 @@
 #   useful apis for using topy
 #
 ##########################################################################
+import argparse
 from sys import argv
 import sys
 sys.path.append('topy/scripts')
@@ -28,7 +29,7 @@ OPTIMIZATION = 1
 TOPYPATH = './scripts/optimise.py'
 SHOW_DEBUG = True
 
-tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "1.5", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"50", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
+tpd_template = '{"PROB_TYPE":"comp", "PROB_NAME":"NONAME", "ETA": "0.4", "DOF_PN": "3", "VOL_FRAC": "0.3", "FILT_RAD": "1.5", "ELEM_K": "H8", "NUM_ELEM_X":"10", "NUM_ELEM_Y":"10", "NUM_ELEM_Z":"10", "NUM_ITER":"100", "FXTR_NODE_X":"", "FXTR_NODE_Y":"", "FXTR_NODE_Z":"", "LOAD_NODE_X":"", "LOAD_VALU_X":"", "LOAD_NODE_Y":"", "LOAD_VALU_Y":"", "LOAD_NODE_Z":"", "LOAD_VALU_Z":"", "P_FAC":"1", "P_HOLD":"15", "P_INCR":"0.2", "P_CON":"1", "P_MAX":"3", "Q_FAC":"1", "Q_HOLD":"15", "Q_INCR":"0.05", "Q_CON":"1", "Q_MAX":"5"}';
 
 #
 #   bound a list of values respectively to bounds
@@ -157,12 +158,27 @@ def gen_tpd(designObj, resolution, material):
         edge['voxelmax'][0] += maxThick
         edge['voxelmax'][1] += maxThick
 
+    # HACK                      ------------------------------------------------------------------------
+    pasv_elms = []
+    if 'expand' in designObj:
+        for j in xrange(0, nely):
+            for i in xrange(0, nelx):
+                pasv_elms.append([i, j, 1])
+
     # compute the design elements ------------------------------------------------------------------------
     actv_elms = []
     actv_elms_out = []
     fav_elms = []
     fav_vals = []
     margin = 3  # voxel margin between pasv_elms and actv_elms
+
+    print '-----------------------------------------------------------------------------------------', design[0]['thickness'][0] / dim_voxel
+
+    elms_record = []
+    for j in xrange(0, nely):
+        for i in xrange(0, nelx):
+            elms_record.append(0)
+
     for edge in design:
         voxels = edge['voxels']
         thickness = edge['thickness']
@@ -185,6 +201,9 @@ def gen_tpd(designObj, resolution, material):
                     if i < edge['voxelmin'][0] or i > edge['voxelmax'][0]:
                         continue
                     try:
+                        if elms_record[j * nelx + i] == 1:
+                            continue
+
                         # NOTE: added a check on favor value, which must be 1 to be actv_elms
                         if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0/2, t1/2):
                             if edge_fav_vals == None or edge_fav_vals[k] == 1:
@@ -192,6 +211,7 @@ def gen_tpd(designObj, resolution, material):
                             else:
                                 fav_elms.append([i, j, 1])
                                 fav_vals.append(str(edge_fav_vals[k]))
+                            elms_record[j * nelx + i] = 1
                         if is_in_segment([i * 1.0, j * 1.0], p0, p1, t0/2 + margin, t1/2 + margin):
                             actv_elms_out.append([i, j, 1])
                     except:
@@ -213,7 +233,6 @@ def gen_tpd(designObj, resolution, material):
             load_values_y.append(vectors[i][1])
 
     # compute clearances -----------------------------------------------------------------------------------
-    pasv_elms = []
     for clearance in clearances:
         voxels_clearance = []
         for point in clearance:
@@ -320,6 +339,13 @@ def gen_tpd(designObj, resolution, material):
 
         debug_voxelgrid = list(str_voxelgrid)
 
+        for cp in pasv_elms:
+            i = cp[0]
+            j = cp[1]
+            idx = 2 * (j * (nelx + 1) + nelx - 1 - i) + 1
+            if idx < len(debug_voxelgrid):
+                debug_voxelgrid[idx] = 'x'
+
         for elm in actv_elms:
             i = elm[0]
             j = elm[1]
@@ -332,19 +358,13 @@ def gen_tpd(designObj, resolution, material):
             idx = j * (nelx + 1) + nelx - 1 - i
             debug_voxelgrid[2 * idx + 1] = '.'
 
-        for cp in pasv_elms:
-            i = cp[0]
-            j = cp[1]
-            idx = 2 * (j * (nelx + 1) + nelx - 1 - i) + 1
-            if idx < len(debug_voxelgrid):
-                debug_voxelgrid[idx] = 'x'
-
         for lp in load_points:
             i = lp[0]
             j = lp[1]
             idx = 2 * (j * (nelx + 1) + nelx - 1 - i) + 1
             if idx < len(debug_voxelgrid):
                 debug_voxelgrid[idx] = 'O'
+
 
         for bp in boundary_elms:
             i = bp[0]
@@ -383,10 +403,27 @@ def gen_tpd(designObj, resolution, material):
 
     # print len(actv_elms)
     # print len(fav_elms)
-    material = material * 1.0 * (len(actv_elms) + len(fav_elms)) / (nelx * nely)
+
+    #
+    #
+    # HACK for experiment
+    if 'expand' in designObj:
+        material = 1.0 * len(actv_elms) / (nelx * nely)
+    elif 'base_mat' in designObj:
+        material = designObj['base_mat']
+    #
+    #
+    #
+    else:
+        material *= 1.0 * (len(actv_elms) + len(fav_elms)) / (nelx * nely)
+
+    ## normal cases
+    # material = material * 1.0 * (len(actv_elms) + len(fav_elms)) / (nelx * nely)
     print '--------------------------------------------------------------------------------------------------[xac] relative amount of material ' + str(material)
-    material = bound([material], [0.05], [0.35])[0]
-    print '--------------------------------------------------------------------------------------------------[xac] bounded amount of material ' + str(material)
+
+    # NOTE: remove for experiment
+    # material = bound([material], [0.05], [0.35])[0]
+    # print '--------------------------------------------------------------------------------------------------[xac] bounded amount of material ' + str(material)
 
     # write to tpd file -----------------------------------------------------------------------------------
     tpd = json.loads(tpd_template)
@@ -457,7 +494,7 @@ def save_vxg_to_image(vxg_path, fname):
     pixels = []
     for i in xrange(0, h):
         for j in xrange(0, w):
-            pixels.append(255 if float(vxg[h - 1 - i][j]) < 0.75 else 0)
+            pixels.append(255 if float(vxg[h - 1 - i][j]) < 0.5 else 0)
 
     img = Image.new('L', (w, h))
     img.putdata(pixels)
@@ -467,15 +504,23 @@ def save_vxg_to_image(vxg_path, fname):
 #   main function entry point
 #
 if __name__ == "__main__":
-    num_req_params = 4
-    if len(argv) < num_req_params + 1:
-        print 'usage: ./gen_designs.py <path_to_design_file> <reslution> <amount_of_material> <gradient>'
-        quit()
+    parser = argparse.ArgumentParser(description='an interface for calling topy.')
+    parser.add_argument('path', metavar='path', type=str, help='path to a design file')
+    parser.add_argument('-r', dest='resolution', help='resolution of the voxel grid.')
+    parser.add_argument('-m', dest='material', help='amount of material to be used for optimization.')
+    parser.add_argument('-d', dest='dissimilarity', help='the dissimilarity allowed between user and system designs.')
 
-    design = json.loads(open(argv[1], 'r').read())
-    resolution = int(argv[2])
-    material = float(argv[3])
-    gradient = float(argv[4])
+    args = parser.parse_args()
+
+    # num_req_params = 4
+    # if len(argv) < num_req_params + 1:
+    #     print 'usage: ./gen_designs.py <path_to_design_file> <reslution> <amount_of_material> <gradient>'
+    #     quit()
+
+    design = json.loads(open(args.path, 'r').read())
+    resolution = int(args.resolution)
+    material = float(args.material)
+    gradient = float(args.dissimilarity)
 
     tpd, debug_voxelgrid = gen_tpd(design, resolution, material)
     print ''.join(debug_voxelgrid)[::-1]
