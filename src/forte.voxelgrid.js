@@ -7,6 +7,9 @@
 
 var FORTE = FORTE || {};
 
+//
+//	scene to render voxel grid on, using origin
+//
 FORTE.VoxelGrid = function(scene, origin) {
 	this._scene = scene;
 	this._origin = origin;
@@ -27,44 +30,55 @@ FORTE.VoxelGrid = function(scene, origin) {
 FORTE.VoxelGrid.prototype = {
 	constructor: FORTE.VoxelGrid,
 
+	// a 3d array where '1' indicates a voxel
 	get grid() {
 		return this._grid;
 	},
 
-	// dimension of a voxel
+	// size of a voxel
 	get dim() {
 		return this._dim;
 	},
 
+	// a 1d array of all voxels meshes
 	get voxels() {
 		return this._voxels;
 	},
 
+	// a look up table for retrieving voxels
 	get table() {
 		return this._table;
 	},
 
+	// x dimension
 	get nx() {
 		return this._nx;
 	},
 
+	// y dimension
 	get ny() {
 		return this._ny;
 	},
 
+	// z dimension
 	get nz() {
 		return this._nz;
 	},
 
+	// unfiltered raw data of the grid
 	get gridRaw() {
 		return this._gridRaw;
 	},
 
+	// origin (where to start rendering the grid)
 	get origin() {
 		return this._origin;
 	}
 };
 
+//
+//	load a .vxg file to create a voxel grid with voxel size of dim
+//
 FORTE.VoxelGrid.prototype.load = function(vxgRaw, dim) {
 	this._grid = [];
 	this._gridRaw = [];
@@ -79,15 +93,14 @@ FORTE.VoxelGrid.prototype.load = function(vxgRaw, dim) {
 		for (var j = 0; j < vxgRawRows.length; j++) {
 			var row = vxgRawRows[j].split(',');
 			var rowRaw = []
-				// binarize it
+			// binarize it
 			for (var k = 0; k < row.length; k++) {
 				rowRaw.push(row[k]);
-				// row[k] = row[k] >= 1 ? 1 : 0;
 				// NOTE: lower the threshold
 				row[k] = row[k] >= 0.1 ? 1 : 0;
 			}
 
-			// for reasons i can't explain ...
+			// [obselete] for reasons i can't explain ...
 			// row.reverse();
 			// rowRaw.reverse();
 
@@ -105,24 +118,33 @@ FORTE.VoxelGrid.prototype.load = function(vxgRaw, dim) {
 	return this._grid;
 }
 
+//
+//	render voxels
+//	(only render voxels on the surface if set hideInside to be true)
+//
 FORTE.VoxelGrid.prototype.render = function(hideInside) {
+	// fix `lonely diagonals`, i.e.,
+	//  O_	=>	OO
+	//  _O		OO
+	for (var i = 0; i < this._nz; i++) {
+		for (var j = 0; j < this._ny; j++) {
+			for (var k = 0; k < this._nx; k++) {
+				this._fixLonelyDiag(i, j, k);
+			}
+		}
+	}
+
 	for (var i = 0; i < this._nz; i++) {
 		this._table[i] = this._table[i] == undefined ? [] : this._table[i];
 		for (var j = 0; j < this._ny; j++) {
 			this._table[i][j] = this._table[i][j] == undefined ? [] : this._table[i][j];
-			// var row = [];
 			for (var k = 0; k < this._nx; k++) {
-				// row[k] = undefined;
+				this._grid[i][j][k] = this._grid[i][j][k] > 0.5 ? 1 : 0;
 				if (this._grid[i][j][k] == 1 && this._table[i][j][k] == undefined) {
 					if (hideInside != true || this._onSurface(i, j, k)) {
 						var voxel = this._makeVoxel(this._dim, k, j, i, this._material, true);
 						voxel.index = [k, j, i];
-						// log(voxel.position.toArray())
-						// log(voxel.position.toArray())
-						// log('---')
 						this._scene.add(voxel);
-						// row[k] = voxel;
-						// this._grid[i][j][k].idxMesh = gVoxels.length; // store the voxel's index in gVoxels
 						this._voxels.push(voxel);
 						this._table[i][j][k] = voxel;
 					}
@@ -160,6 +182,10 @@ FORTE.VoxelGrid.prototype.render = function(hideInside) {
 	this._scene.add(mergedVoxelGrid);
 }
 
+//
+//	render the contour of the voxel grid
+//	NOTE: this is a redundant method as _onSurface
+//
 FORTE.VoxelGrid.prototype.renderContour = function() {
 	this._pointsContour = [];
 	for (var i = 0; i < this._nz; i++) {
@@ -184,6 +210,10 @@ FORTE.VoxelGrid.prototype.renderContour = function() {
 	} // z
 }
 
+//
+//	once a voxel grid is snapped to a medial axis, this method update
+// the grid as the medial axis is updated
+//
 FORTE.VoxelGrid.prototype.updateToMedialAxis = function(axis, node) {
 	//
 	// update the entire voxel grid based on the axis
@@ -248,19 +278,27 @@ FORTE.VoxelGrid.prototype.updateToMedialAxis = function(axis, node) {
 	}
 }
 
+//
+//	hide the voxel grid
+//
 FORTE.VoxelGrid.prototype.hide = function() {
 	for (var i = this._voxels.length - 1; i >= 0; i--) {
 		this._scene.remove(this._voxels[i]);
 	}
 }
 
+//
+//	show the voxel grid
+//
 FORTE.VoxelGrid.prototype.show = function() {
 	for (var i = this._voxels.length - 1; i >= 0; i--) {
 		this._scene.add(this._voxels[i]);
 	}
 }
 
-
+//
+//	detecting if a given voxel (i, j, k) is on the surface
+//
 FORTE.VoxelGrid.prototype._onSurface = function(i, j, k) {
 	return i * j * k == 0 || (nz - 1 - i) * (ny - 1 - j) * (nx - 1 - k) == 0 ||
 		this._grid[i - 1][j][k] != 1 || this._grid[i + 1][j][k] != 1 ||
@@ -268,6 +306,10 @@ FORTE.VoxelGrid.prototype._onSurface = function(i, j, k) {
 		this._grid[i][j][k - 1] != 1 || this._grid[i][j][k + 1] != 1;
 }
 
+//
+//	make a voxel
+//	(if noMargin is set, keep them right next to each other)
+//
 FORTE.VoxelGrid.prototype._makeVoxel = function(dim, i, j, k, mat, noMargin) {
 	var geometry = new THREE.BoxGeometry(dim, dim, dim);
 	var voxel = new THREE.Mesh(geometry, mat.clone());
@@ -288,6 +330,9 @@ FORTE.VoxelGrid.prototype._makeVoxel = function(dim, i, j, k, mat, noMargin) {
 	return voxel;
 }
 
+//
+//	use spherical rather than square voxels
+//
 FORTE.VoxelGrid.prototype._addSphericalVoxels = function(v, radius) {
 	var vxg = this._grid;
 
@@ -311,18 +356,15 @@ FORTE.VoxelGrid.prototype._addSphericalVoxels = function(v, radius) {
 	}
 };
 
+//
+//	clear all the voxels
+//
 FORTE.VoxelGrid.prototype.clear = function() {
 	for (var i = 0; i < this._dump.length; i++) {
 		this._scene.remove(this._dump[i]);
 	}
 	this._dump = [];
 }
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *	working with a medial axis
- *
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 //
 //	special method for working with a voxel grid:
@@ -477,6 +519,9 @@ FORTE.MedialAxis.prototype._snapVoxel = function(voxel, dim) {
 	}
 };
 
+//
+//	save the voxel grid as an stl
+//
 FORTE.VoxelGrid.prototype.saveAs = function(fname) {
 	if (this._merged == undefined) {
 		this.render();
@@ -514,4 +559,37 @@ FORTE.VoxelGrid.prototype._isContour = function(z, y, x) {
 	}
 
 	return false;
+}
+
+//
+//	fix lonely diagonal elements (see where this method is called)
+//
+FORTE.VoxelGrid.prototype._fixLonelyDiag = function(z, y, x) {
+	var diagNeighbors = [
+		[-1, 1, 0],
+		[1, 1, 0]
+	];
+
+	for (var i = 0; i < diagNeighbors.length; i++) {
+		var dx = diagNeighbors[i][0];
+		var dy = diagNeighbors[i][1];
+		var dz = diagNeighbors[i][2];
+		xx = XAC.clamp(x + dx, 0, this._nx - 1);
+		yy = XAC.clamp(y + dy, 0, this._ny - 1);
+		zz = XAC.clamp(z + dz, 0, this._nz - 1);
+
+		if(this._grid[zz][yy][xx] == 1) {
+			var neighbors = [
+				[dx, 0, 0],
+				[0, dy, 0]
+			]
+
+			for(var j=0; j<neighbors.length; j++) {
+				xx = XAC.clamp(x + neighbors[j][0], 0, this._nx - 1);
+				yy = XAC.clamp(y + neighbors[j][1], 0, this._ny - 1);
+				zz = XAC.clamp(z + neighbors[j][2], 0, this._nz - 1);
+				this._grid[zz][yy][xx] = 0.99;
+			}
+		}
+	}
 }
