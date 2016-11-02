@@ -12,9 +12,9 @@ var FORTE = FORTE || {};
 //
 FORTE.renderUI = function() {
     // HACK: ui dimensions
-    var aspectRatio = 0.9; // h to w
-    var widthWindow = window.innerWidth * 0.985;
-    var heightWindow = window.innerHeight * 0.99;
+    // var aspectRatio = 0.9; // h to w
+    var widthWindow = window.innerWidth;// * 0.99;
+    var heightWindow = window.innerHeight;// * 0.99;
 
     var tblLayout = $('<table></table>');
     tblLayout.css('max-height', heightWindow);
@@ -24,8 +24,8 @@ FORTE.renderUI = function() {
     //
     //  set up main canvas
     //
-    FORTE.tdCanvas = $('<td></td>');
-    var widthCanvas = widthWindow * 0.7; // - widthOptView;
+    // FORTE.tdCanvas = $('<td></td>');
+    var widthCanvas = widthWindow; // * 0.7; // - widthOptView;
     var heightCanvas = heightWindow;
     canvasRenderSet = FORTE.createRenderableScene(widthCanvas, heightCanvas);
     FORTE.canvasRenderer = canvasRenderSet.renderer;
@@ -37,14 +37,14 @@ FORTE.renderUI = function() {
     // FORTE.camCtrl.noZoom = true;
 
     // for loading existing design onto main canvas
-    FORTE.tdCanvas.on('dragover', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer = e.originalEvent.dataTransfer;
-        e.dataTransfer.dropEffect = 'copy';
-    });
+    // FORTE.tdCanvas.on('dragover', function(e) {
+    //     e.stopPropagation();
+    //     e.preventDefault();
+    //     e.dataTransfer = e.originalEvent.dataTransfer;
+    //     e.dataTransfer.dropEffect = 'copy';
+    // });
 
-    FORTE.tdCanvas.on('drop', function(e) {
+    $(document.body).on('drop', function(e) {
         e.stopPropagation();
         e.preventDefault();
         e.dataTransfer = e.originalEvent.dataTransfer;
@@ -72,14 +72,14 @@ FORTE.renderUI = function() {
         }
     });
 
-    FORTE.tdCanvas.append(FORTE.canvasRenderer.domElement);
+    // FORTE.tdCanvas.append(FORTE.canvasRenderer.domElement);
+    //
+    // // add a selection frame
+    // FORTE.tdCanvas.append($('<div id="selection" class="selectiondiv"></div>'));
+    //
+    // trLayout.append(FORTE.tdCanvas);
 
-    // add a selection frame
-    FORTE.tdCanvas.append($('<div id="selection" class="selectiondiv"></div>'));
-
-    trLayout.append(FORTE.tdCanvas);
-
-    return tblLayout;
+    return FORTE.canvasRenderer.domElement;
 }
 
 //
@@ -170,73 +170,6 @@ FORTE.cloneCanvas = function(oldCanvas) {
     //return the new canvas
     return newCanvas;
 }
-
-// TODO: figure out if this block of code is necessary
-// FORTE.dragnDrop = function() {
-//     FORTE.htOptimizations = [];
-//
-//     // drag & drop forte files
-//     $(document).on('dragover', function(e) {
-//         e.stopPropagation();
-//         e.preventDefault();
-//         e.dataTransfer = e.originalEvent.dataTransfer;
-//         e.dataTransfer.dropEffect = 'copy';
-//     });
-//
-//     $(document).on('drop', function(e) {
-//         e.stopPropagation();
-//         e.preventDefault();
-//         e.dataTransfer = e.originalEvent.dataTransfer;
-//         var files = e.dataTransfer.files;
-//
-//         for (var i = files.length - 1; i >= 0; i--) {
-//             var reader = new FileReader();
-//             reader.onload = (function(e) {
-//                 FORTE.designSpace = JSON.parse(e.target.result);
-//                 // log(e.target.result)
-//                 log(FORTE.designSpace)
-//
-//                 //  load original design
-//                 FORTE.design._medialAxis.updateFromRawData(FORTE.designSpace.design);
-//                 FORTE.centerCamera(FORTE.camCtrl, FORTE.designSpace.design);
-//                 var centroid = FORTE.getBoundingBox(FORTE.designSpace.design).centroidish;
-//
-//                 //  load optimizations and show them as thumbnails
-//                 for (var i = 0; i < FORTE.designSpace.optimizations.length; i++) {
-//                     FORTE.transformOptimization(FORTE.designSpace.optimizations[i],
-//                         centroid, FORTE.designSpace.dimVoxel, FORTE.designSpace.width,
-//                         FORTE.designSpace.height);
-//                     var design = FORTE.designSpace.optimizations[i].concat(FORTE.designSpace
-//                         .design);
-//                     var scene = FORTE.tbnScene.clone();
-//                     var camera = FORTE.tbnCamera.clone();
-//                     var camCtrl = new THREE.TrackballControls(camera, undefined,
-//                         undefined);
-//                     // log('optimization #' + i)
-//                     FORTE.MedialAxis.fromRawData(design, FORTE.tbnRenderer.domElement,
-//                         scene, camera);
-//                     FORTE.centerCamera(camCtrl, FORTE.designSpace.design);
-//                     FORTE.tbnRenderer.render(scene, camera);
-//
-//                     //  format and add thumbnail
-//                     var id = 'opt' + i;
-//                     FORTE.htOptimizations[id] = FORTE.designSpace.optimizations[i];
-//                     var thumbnail = $('<div id=' + id + '></div>');
-//                     thumbnail.append($(FORTE.cloneCanvas(FORTE.tbnRenderer.domElement)));
-//                     thumbnail.css('width', FORTE.widthThumbnail + 'px');
-//                     thumbnail.css('height', FORTE.heightThumbnail + 'px');
-//                     thumbnail.css('margin-right', FORTE.thumbnailMargin + 'px');
-//                     thumbnail.css('margin-top', FORTE.thumbnailMargin + 'px');
-//                     thumbnail.css('float', 'left');
-//                     thumbnail.click(FORTE.thnClick);
-//                     FORTE.divOptThumbnails.append(thumbnail);
-//
-//                 }
-//             });
-//             reader.readAsBinaryString(files[i]);
-//         }
-//     });
-// }
 
 //
 //  center the camera (using TrackballControls object) to a design consisting of a bunch of edges
