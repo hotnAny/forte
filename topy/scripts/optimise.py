@@ -22,7 +22,7 @@ import topy
 
 import subprocess
 
-from comp_stress import comp_stress
+# from comp_stress import comp_stress
 
 # XAC
 import numpy
@@ -60,6 +60,9 @@ def optimise(t, query_type):
             # remove previous output
             subprocess.call('rm ' + t.probname + '*.vtk', shell=True)
             topy.create_3d_geom(t.desvars, prefix=t.probname, \
+            iternum=t.itercount, time='none')
+            subprocess.call('rm ' + t.probname + '*.png', shell=True)
+            topy.create_2d_imag(t.desvars[0], prefix=t.probname, \
             iternum=t.itercount, time='none')
         else:
             topy.create_2d_imag(t.desvars, prefix=t.probname, \

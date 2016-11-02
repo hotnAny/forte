@@ -250,56 +250,9 @@ NUM_ELEM_Z) = %d x %d x %d' % (self.nelx, self.nely, self.nelz)
         else:
             print 'No passive elements (PASV_ELEM) specified'
         # (6) Set active elements:
-        # self.WEIGHTEDPENALTY = False
         self.actv = self.topydict['ACTV_ELEM']
         if self.actv.any():
             print 'Active elements (ACTV_ELEM) specified'
-            #
-            #
-            #################### CONSTRUCTION AREA BEGINS ####################
-            #
-            #
-            # if self.WEIGHTEDPENALTY:
-            #     self.pw = []  # penalty weights
-            #     r = math.sqrt(self.nelx**2 + self.nely**2 + self.nelz**2) / 2
-            #     # p0 = self.p * 0.5
-            #     #
-            #     #   convert elm num to coord/index
-            #     #
-            #     self.actv_coords = []
-            #     for elm_num in self.actv:
-            #         # elm_num -= 1    # original number starts from 1 <- yes, but it's corrected in parser.py
-            #         mpz = math.floor(elm_num / (self.nelx * self.nely))
-            #         mpx = math.floor((elm_num - mpz * (self.nelx * self.nely)) / self.nely)
-            #         mpy = math.floor(elm_num - mpz * (self.nelx * self.nely) - mpx * self.nely)
-            #         #elm_num += 1    # restore original value <- no need
-            #         self.actv_coords.append([mpx, mpy, mpz]);
-            #     print '[xac] precomputed weighted penalties'
-            #
-            #     #
-            #     #   weigh penalty based on min dist to actv elms
-            #     #
-            #     for i in xrange(self.nelx):
-            #         slashes = []
-            #         for j in xrange(self.nely):
-            #             dices = []
-            #             for k in xrange(self.nelz):
-            #                 # print [i, j, k]
-            #                 dmin = r
-            #                 for elm in self.actv_coords:
-            #                     d = math.sqrt((i-elm[0])**2 + (j-elm[1])**2 + (k-elm[2])**2)
-            #                     dmin = min(dmin, d)
-            #                 # dices.append(round(dmin, 2)) # for testing
-            #                 # dices.append(1 - dmin/r) # linear
-            #                 dices.append(math.exp(1 - dmin/r)) # exp
-            #             slashes.append(dices)
-            #             # print(dices)
-            #         self.pw.append(slashes)
-            #
-            #
-            #################### CONSTRUCTION AREA BEGINS ####################
-            #
-            #
         else:
             print 'No active elements (ACTV_ELEM) specified'
 
@@ -473,9 +426,6 @@ synthesis!')
                         #
                         #
                         p = self.p
-                        # if self.WEIGHTEDPENALTY == True:
-                        #     p *= self.pw[elx][ely][elz]
-
                         if self.probtype == 'comp':
                             self.objfval += (self.desvars[elz, ely, elx] **\
                             p) * qeTKeqe
@@ -829,6 +779,7 @@ synthesis!')
             mpx = int(math.floor((elm_num - mpz * (nelx * nely)) / nely))
             mpy = int(math.floor(elm_num - mpz * (nelx * nely) - mpx * nely))
             df[mpx][mpy] = 0
+            # NOTE: another technical piece here
             inc[mpx][mpy] = min_inc + elm_vals[idx] * (1 - min_inc)
             buf_prev.append([mpx, mpy])
             buf_all.append([mpx, mpy])
