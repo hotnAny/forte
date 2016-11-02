@@ -440,6 +440,7 @@ def gen_tpd(designObj, resolution, material):
     tpd['LOAD_NODE_Y']= str_load_points
     tpd['LOAD_VALU_Y'] = ';'.join(load_values_y_str)
 
+    # TODO: check this
     if 'ignore' in designObj:
         print '-------------------------------------------------------------------------------------------------- [xac] ignoring user design'
     else:
@@ -525,6 +526,7 @@ if __name__ == "__main__":
     tpd, debug_voxelgrid = gen_tpd(design, resolution, material)
     print ''.join(debug_voxelgrid)[::-1]
     probname = optimize(tpd, gradient)
-    sub_outpath = argv[1] + '_' + str(long(time.time())) + '_' + str(resolution) + '_' + str(material) + '_' + str(gradient)
+    sub_outpath = args.path + '_' + str(long(time.time())) + '_' + str(resolution) + '_' + str(material) + '_' + str(gradient)
+    print sub_outpath
     subprocess.call('mkdir ' + sub_outpath, shell=True)
     subprocess.call('mv ' + probname + '* ' + sub_outpath, shell=True)

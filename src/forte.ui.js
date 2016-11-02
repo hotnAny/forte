@@ -7,9 +7,11 @@
 
 var FORTE = FORTE || {};
 
-// FORTE.WIDTHCONTAINER = 320;
-
+//
+//  render all ui elements
+//
 FORTE.renderUI = function() {
+    // HACK: ui dimensions
     var aspectRatio = 0.9; // h to w
     var widthWindow = window.innerWidth * 0.985;
     var heightWindow = window.innerHeight * 0.99;
@@ -71,13 +73,18 @@ FORTE.renderUI = function() {
     });
 
     FORTE.tdCanvas.append(FORTE.canvasRenderer.domElement);
+
     // add a selection frame
     FORTE.tdCanvas.append($('<div id="selection" class="selectiondiv"></div>'));
+
     trLayout.append(FORTE.tdCanvas);
 
     return tblLayout;
 }
 
+//
+//  routines for creating a scene
+//
 FORTE.createRenderableScene = function(w, h) {
     var renderer = new THREE.WebGLRenderer({
         antialias: true
@@ -97,6 +104,7 @@ FORTE.createRenderableScene = function(w, h) {
     lights[0].position.copy(camera.position);
     scene.add(lights[0]);
 
+    // NOTE remove ground for better visibility
     // // ground
     // var ground = new THREE.Mesh(
     //     new THREE.CubeGeometry(1000, 1, 1000),
@@ -144,6 +152,9 @@ FORTE.createRenderableScene = function(w, h) {
     };
 }
 
+//
+//  copy content from one canvas to a new one
+//
 FORTE.cloneCanvas = function(oldCanvas) {
     //create a new canvas
     var newCanvas = document.createElement('canvas');
@@ -160,71 +171,72 @@ FORTE.cloneCanvas = function(oldCanvas) {
     return newCanvas;
 }
 
-FORTE.dragnDrop = function() {
-    FORTE.htOptimizations = [];
-
-    // drag & drop forte files
-    $(document).on('dragover', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer = e.originalEvent.dataTransfer;
-        e.dataTransfer.dropEffect = 'copy';
-    });
-
-    $(document).on('drop', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer = e.originalEvent.dataTransfer;
-        var files = e.dataTransfer.files;
-
-        for (var i = files.length - 1; i >= 0; i--) {
-            var reader = new FileReader();
-            reader.onload = (function(e) {
-                FORTE.designSpace = JSON.parse(e.target.result);
-                // log(e.target.result)
-                log(FORTE.designSpace)
-
-                //  load original design
-                FORTE.design._medialAxis.updateFromRawData(FORTE.designSpace.design);
-                FORTE.centerCamera(FORTE.camCtrl, FORTE.designSpace.design);
-                var centroid = FORTE.getBoundingBox(FORTE.designSpace.design).centroidish;
-
-                //  load optimizations and show them as thumbnails
-                for (var i = 0; i < FORTE.designSpace.optimizations.length; i++) {
-                    FORTE.transformOptimization(FORTE.designSpace.optimizations[i],
-                        centroid, FORTE.designSpace.dimVoxel, FORTE.designSpace.width,
-                        FORTE.designSpace.height);
-                    var design = FORTE.designSpace.optimizations[i].concat(FORTE.designSpace
-                        .design);
-                    var scene = FORTE.tbnScene.clone();
-                    var camera = FORTE.tbnCamera.clone();
-                    var camCtrl = new THREE.TrackballControls(camera, undefined,
-                        undefined);
-                    // log('optimization #' + i)
-                    FORTE.MedialAxis.fromRawData(design, FORTE.tbnRenderer.domElement,
-                        scene, camera);
-                    FORTE.centerCamera(camCtrl, FORTE.designSpace.design);
-                    FORTE.tbnRenderer.render(scene, camera);
-
-                    //  format and add thumbnail
-                    var id = 'opt' + i;
-                    FORTE.htOptimizations[id] = FORTE.designSpace.optimizations[i];
-                    var thumbnail = $('<div id=' + id + '></div>');
-                    thumbnail.append($(FORTE.cloneCanvas(FORTE.tbnRenderer.domElement)));
-                    thumbnail.css('width', FORTE.widthThumbnail + 'px');
-                    thumbnail.css('height', FORTE.heightThumbnail + 'px');
-                    thumbnail.css('margin-right', FORTE.thumbnailMargin + 'px');
-                    thumbnail.css('margin-top', FORTE.thumbnailMargin + 'px');
-                    thumbnail.css('float', 'left');
-                    thumbnail.click(FORTE.thnClick);
-                    FORTE.divOptThumbnails.append(thumbnail);
-
-                }
-            });
-            reader.readAsBinaryString(files[i]);
-        }
-    });
-}
+// TODO: figure out if this block of code is necessary
+// FORTE.dragnDrop = function() {
+//     FORTE.htOptimizations = [];
+//
+//     // drag & drop forte files
+//     $(document).on('dragover', function(e) {
+//         e.stopPropagation();
+//         e.preventDefault();
+//         e.dataTransfer = e.originalEvent.dataTransfer;
+//         e.dataTransfer.dropEffect = 'copy';
+//     });
+//
+//     $(document).on('drop', function(e) {
+//         e.stopPropagation();
+//         e.preventDefault();
+//         e.dataTransfer = e.originalEvent.dataTransfer;
+//         var files = e.dataTransfer.files;
+//
+//         for (var i = files.length - 1; i >= 0; i--) {
+//             var reader = new FileReader();
+//             reader.onload = (function(e) {
+//                 FORTE.designSpace = JSON.parse(e.target.result);
+//                 // log(e.target.result)
+//                 log(FORTE.designSpace)
+//
+//                 //  load original design
+//                 FORTE.design._medialAxis.updateFromRawData(FORTE.designSpace.design);
+//                 FORTE.centerCamera(FORTE.camCtrl, FORTE.designSpace.design);
+//                 var centroid = FORTE.getBoundingBox(FORTE.designSpace.design).centroidish;
+//
+//                 //  load optimizations and show them as thumbnails
+//                 for (var i = 0; i < FORTE.designSpace.optimizations.length; i++) {
+//                     FORTE.transformOptimization(FORTE.designSpace.optimizations[i],
+//                         centroid, FORTE.designSpace.dimVoxel, FORTE.designSpace.width,
+//                         FORTE.designSpace.height);
+//                     var design = FORTE.designSpace.optimizations[i].concat(FORTE.designSpace
+//                         .design);
+//                     var scene = FORTE.tbnScene.clone();
+//                     var camera = FORTE.tbnCamera.clone();
+//                     var camCtrl = new THREE.TrackballControls(camera, undefined,
+//                         undefined);
+//                     // log('optimization #' + i)
+//                     FORTE.MedialAxis.fromRawData(design, FORTE.tbnRenderer.domElement,
+//                         scene, camera);
+//                     FORTE.centerCamera(camCtrl, FORTE.designSpace.design);
+//                     FORTE.tbnRenderer.render(scene, camera);
+//
+//                     //  format and add thumbnail
+//                     var id = 'opt' + i;
+//                     FORTE.htOptimizations[id] = FORTE.designSpace.optimizations[i];
+//                     var thumbnail = $('<div id=' + id + '></div>');
+//                     thumbnail.append($(FORTE.cloneCanvas(FORTE.tbnRenderer.domElement)));
+//                     thumbnail.css('width', FORTE.widthThumbnail + 'px');
+//                     thumbnail.css('height', FORTE.heightThumbnail + 'px');
+//                     thumbnail.css('margin-right', FORTE.thumbnailMargin + 'px');
+//                     thumbnail.css('margin-top', FORTE.thumbnailMargin + 'px');
+//                     thumbnail.css('float', 'left');
+//                     thumbnail.click(FORTE.thnClick);
+//                     FORTE.divOptThumbnails.append(thumbnail);
+//
+//                 }
+//             });
+//             reader.readAsBinaryString(files[i]);
+//         }
+//     });
+// }
 
 //
 //  center the camera (using TrackballControls object) to a design consisting of a bunch of edges
@@ -249,6 +261,10 @@ FORTE.centerCamera = function(camCtrl, edges, offset) {
 
 }
 
+//
+//  get the bounding box of a set of medial axis edges
+//      * TODO: incorporate this into Medial Axis Class
+//
 FORTE.getBoundingBox = function(edges) {
     var cnt = 0;
     var xmin = Number.MAX_VALUE,

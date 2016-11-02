@@ -93,7 +93,7 @@ FORTE.VoxelGrid.prototype.load = function(vxgRaw, dim) {
 		for (var j = 0; j < vxgRawRows.length; j++) {
 			var row = vxgRawRows[j].split(',');
 			var rowRaw = []
-			// binarize it
+				// binarize it
 			for (var k = 0; k < row.length; k++) {
 				rowRaw.push(row[k]);
 				// NOTE: lower the threshold
@@ -126,10 +126,22 @@ FORTE.VoxelGrid.prototype.render = function(hideInside) {
 	// fix `lonely diagonals`, i.e.,
 	//  O_	=>	OO
 	//  _O		OO
-	for (var i = 0; i < this._nz; i++) {
-		for (var j = 0; j < this._ny; j++) {
-			for (var k = 0; k < this._nx; k++) {
-				this._fixLonelyDiag(i, j, k);
+	var numPasses = 2;
+
+	while (numPasses-- > 0) {
+		for (var i = 0; i < this._nz; i++) {
+			for (var j = 0; j < this._ny; j++) {
+				for (var k = 0; k < this._nx; k++) {
+					this._fixLonelyDiag(i, j, k);
+				}
+			}
+		}
+
+		for (var i = 0; i < this._nz; i++) {
+			for (var j = 0; j < this._ny; j++) {
+				for (var k = 0; k < this._nx; k++) {
+					this._grid[i][j][k] = this._grid[i][j][k] > 0.5 ? 1 : 0;
+				}
 			}
 		}
 	}
@@ -139,7 +151,7 @@ FORTE.VoxelGrid.prototype.render = function(hideInside) {
 		for (var j = 0; j < this._ny; j++) {
 			this._table[i][j] = this._table[i][j] == undefined ? [] : this._table[i][j];
 			for (var k = 0; k < this._nx; k++) {
-				this._grid[i][j][k] = this._grid[i][j][k] > 0.5 ? 1 : 0;
+				// this._grid[i][j][k] = this._grid[i][j][k] > 0.5 ? 1 : 0;
 				if (this._grid[i][j][k] == 1 && this._table[i][j][k] == undefined) {
 					if (hideInside != true || this._onSurface(i, j, k)) {
 						var voxel = this._makeVoxel(this._dim, k, j, i, this._material, true);
@@ -553,7 +565,7 @@ FORTE.VoxelGrid.prototype._isContour = function(z, y, x) {
 		yy = XAC.clamp(y + dy, 0, this._ny - 1);
 		zz = XAC.clamp(z + dz, 0, this._nz - 1);
 
-		if(this._grid[zz][yy][xx] != 1) {
+		if (this._grid[zz][yy][xx] != 1) {
 			return true;
 		}
 	}
@@ -578,13 +590,13 @@ FORTE.VoxelGrid.prototype._fixLonelyDiag = function(z, y, x) {
 		yy = XAC.clamp(y + dy, 0, this._ny - 1);
 		zz = XAC.clamp(z + dz, 0, this._nz - 1);
 
-		if(this._grid[zz][yy][xx] == 1) {
+		if (this._grid[zz][yy][xx] == 1) {
 			var neighbors = [
 				[dx, 0, 0],
 				[0, dy, 0]
 			]
 
-			for(var j=0; j<neighbors.length; j++) {
+			for (var j = 0; j < neighbors.length; j++) {
 				xx = XAC.clamp(x + neighbors[j][0], 0, this._nx - 1);
 				yy = XAC.clamp(y + neighbors[j][1], 0, this._ny - 1);
 				zz = XAC.clamp(z + neighbors[j][2], 0, this._nz - 1);
