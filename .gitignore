@@ -12,3 +12,7 @@ build/*
 *.png
 *.dae
 .DS_Store
+demo_data/
+example_data/
+exp_data/
+fab_data/
