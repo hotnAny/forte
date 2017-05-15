@@ -409,7 +409,8 @@ def gen_tpd(designObj, resolution, material, field_intensity, weight):
     # prep for matlab input ------------------------------------------------------
     dof = 2
     material *= 1.0 * (len(actv_elms) + len(fav_elms)) / (nelx * nely)
-    matinput = {'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
+    trial = 'forte_' + str(long(time.time()))
+    matinput = {'TRIAL':trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
      'FIXEDDOFS':[], 'LOADNODES':[], 'LOADVALUES':[]}
 
     # 1. boundary (fixed dofs)
@@ -438,6 +439,11 @@ def gen_tpd(designObj, resolution, material, field_intensity, weight):
     matinput['LOADNODES'] = tb_loadnodes
     matinput['LOADVALUES'] = tb_loadvalues
 
+    # 3. active/passive/favored elements
+    matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in actv_elms]
+    matinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in pasv_elms]
+    matinput['FAVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in fav_elms]
+
     _log('prepared for matlab input')
 
     print '--------------------------------------------------------------------------------------------------[xac] relative amount of material ' + str(material)
@@ -450,7 +456,7 @@ def gen_tpd(designObj, resolution, material, field_intensity, weight):
 
     # write to tpd file ------------------------------------------------------
     tpd = json.loads(tpd_template)
-    tpd['PROB_NAME'] = 'forte_' + str(long(time.time()) % 1e8) + '_' + format(material, '1.2f')
+    tpd['PROB_NAME'] = 'forte_' + str(long(time.time())) # + '_' + format(material, '1.2f')
     tpd['VOL_FRAC'] = material
     tpd['NUM_ELEM_X'] = nelx
     tpd['NUM_ELEM_Y'] = nely
@@ -511,17 +517,26 @@ if __name__ == "__main__":
     field_intensity = float(args.field_intensity)
     weight = float(args.weight)
 
+    session = 'sessions//session'
+    subprocess.call('mkdir ' + session, shell=True)
+
     matinput, debug_voxelgrid = gen_tpd(design, resolution, material, field_intensity, weight)
     # print ''.join(debug_voxelgrid)[::-1]
 
     TOP88PATH = './top88/for_testing/top88.app/Contents/MacOS/top88'
-    matargs = [matinput['NELX'], matinput['NELY'], matinput['VOLFRAC'], 3, 1.5, 1, \
-        matinput['FIXEDDOFS'], matinput['LOADNODES'], matinput['LOADVALUES']]
+    matargs = [session + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
+        matinput['VOLFRAC'], 3, 1.5, 1, 50, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
+        matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS']]
 
-    # print matargs
-    
+    INPUTFILE = '~matinput'
+    input_file = open(INPUTFILE, 'w')
+    input_file.write(';'.join([str(x) for x in matargs]))
+    input_file.close()
+    # [debug] copy it to matlab dir to debug in matlab
+    subprocess.call('cp ' + INPUTFILE + ' /Users/hotnAny/Documents/MATLAB', shell=True)
+
     # test run
     _log(None)
-    subprocess.check_call([TOP88PATH] + [str(x) for x in matargs], \
+    subprocess.check_call([TOP88PATH, os.getcwd() + '/' + INPUTFILE],\
         env=dict(os.environ, SQSUB_VAR="visible in this subprocess"))
     _log('1st run')
