@@ -1,301 +1,256 @@
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *	Input techniques - contains a collection of input techniques
- *
- *	@author Xiang 'Anthonj' Chen http://xiangchen.me
- *
- *	NOTE:
- *	> it assumes a global variable camera exists - might want to fix that
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+// ........................................................................................................
+//
+// handling different object-oriented input techniques by dispatching input events to them
+//
+// by xiangchen@acm.org, v0.2, 2017/05
+//
+// ........................................................................................................
 
 var XAC = XAC || {};
 
-XAC.IDLE = 0;
-XAC.LEFTMOUSE = 1;
-XAC.RIGHTMOUSE = 3;
-XAC.WHEEL = 4;
+// mouse events
+XAC.MOUSEDOWN = -1;
+XAC.MOUSEMOVE = -2;
+XAC.MOUSEUP = -3;
+XAC.KEYUP = -4;
+
+// TODO global mouse event handlers
+
+// keyboard events
+XAC.LEFTARROW = 37;
+XAC.UPARROW = 38;
+XAC.RIGHTARROW = 39;
+XAC.DOWNARROW = 40;
+XAC.ENTER = 13;
+XAC.SHIFT = 16;
+XAC.DELETE = 46;
+
+XAC.keydowns = {};
+
+XAC._selecteds = [];
+XAC.mousedownEventHandlers = {};
 
 //
-//	a plane orthogonal to the camera for manipulation
-//	@param	pos - the position of a point in R3
-//	@param	orthogonal - whether to snap the plane to XZ or Y
-//	@param	showPlane - whether to show the plane visually
+//  [internal helper] compute mouse footprint since last mousedown
 //
-XAC.Maniplane = function(pos, scene, camera, canvas, orthogonal, showPlane) {
-	this._camera = camera;
-	this._scene = scene;
-	this._canvas = canvas;
+XAC._updateFootprint = function (x, y) {
+    if (x == undefined || y == undefined) {
+        XAC._prevCooord = undefined;
+        return;
+    }
 
-	this._plane = new XAC.Plane(1000, 1000, showPlane == true ? XAC.MATERIALPLAIN :
-		XAC.MATERIALINVISIBLE).m;
-	this._plane.material.opacity = 0.5;
-	this._plane.position.copy(pos);
+    if (XAC._prevCooord == undefined) {
+        XAC._footprint = 0;
+    } else {
+        XAC._footprint += Math.sqrt(
+            Math.pow(x - XAC._prevCooord[0], 2) +
+            Math.pow(y - XAC._prevCooord[1], 2));
+    }
 
-	var vecView = new THREE.Vector3().subVectors(this._camera.position, this._plane
-		.position);
+    XAC._prevCooord = [x, y];
+}
 
-	// //HACK
-	// var vecView = new THREE.Vector3(0, 0, 1);
-
-	if (orthogonal == true) {
-		var angleView = new THREE.Vector3(0, 1, 0).angleTo(vecView);
-		if (angleView > Math.PI / 3) {
-			XAC.rotateObjTo(this._plane, vecView);
-		}
-	} else {
-		XAC.rotateObjTo(this._plane, vecView);
-	}
-
-	this._scene.add(this._plane);
+XAC.mousedown = function (e) {
+    if (e.target.nodeName != 'CANVAS') return;
+    XAC._updateFootprint();
+    XAC._dispatchInputEvents(e, XAC.MOUSEDOWN);
 };
 
-XAC.Maniplane.prototype = {
-	update: function(e) {
-		return XAC.hitPoint(e, [this._plane], this._camera, this._canvas);
-	},
+XAC.mousemove = function (e) {
+    XAC._updateFootprint(e.clientX, e.clientY);
+    XAC._dispatchInputEvents(e, XAC.MOUSEMOVE);
+};
 
-	setPosition: function(pos) {
-		this._plane.position.copy(pos);
-	},
+XAC.mouseup = function (e) {
+    XAC._updateFootprint(e.clientX, e.clientY);
+    XAC._dispatchInputEvents(e, XAC.MOUSEUP);
+};
 
-	destruct: function() {
-		this._scene.remove(this._plane);
-		// this._plane.material.opacity = 0.25;
-		// this._plane.material.needsUpdate = true;
-	}
+XAC.keydown = function (e) {
+    XAC._dispatchInputEvents(e, XAC.KEYDOWN);
+    if (XAC.keydowns != undefined) {
+        (XAC.keydowns[e.keyCode] || console.error)();
+    }
+}
+
+XAC.keyup = function (e) {
+    if (XAC.keyups != undefined) {
+        for (handler of XAC.keyups) {
+            handler(e);
+        }
+    }
+}
+
+XAC.on = function (cue, handler) {
+    switch (cue) {
+        case XAC.MOUSEDOWN:
+            // TODO:
+            break;
+        case XAC.MOUSEMOVE:
+            // TODO
+            break;
+        case XAC.MOUSEUP:
+            // TODO
+            break;
+        case XAC.KEYUP:
+            XAC.keyups = XAC.keyups || [];
+            XAC.keyups.push(handler);
+            break;
+        default:
+            XAC.keydowns = XAC.keydowns || {};
+            if (typeof (cue) == 'string') {
+                var key = cue.charCodeAt(0);
+                XAC.keydowns[key] = handler;
+            } else {
+                XAC.keydowns[cue] = handler;
+            }
+            break;
+    }
+}
+
+XAC._dispatchInputEvents = function (e, type) {
+    if (type == XAC.MOUSEDOWN) {
+        XAC._activeHits = rayCast(e.clientX, e.clientY, XAC.objects);
+    }
+
+    // select or de-select objects
+    switch (type) {
+        case XAC.MOUSEUP:
+            var tempSelecteds = XAC._selecteds.clone();
+            for (object of tempSelecteds) {
+                if (e.which == LEFTMOUSE && XAC._footprint < 50) {
+                    if (object._selectable) {
+                        if (object._selected && !e.shiftKey) {
+                            if (object._onDeselected) object._onDeselected();
+                            XAC._selecteds.remove(object);
+                            object._selected = false;
+                        } else {
+                            if (object._onSelected) object._onSelected();
+                            object._selected = true;
+                        }
+                    }
+                }
+            }
+            break;
+    }
+
+    // objects currently being manipulated
+    for (hit of XAC._activeHits) {
+        // attached handlers
+        switch (type) {
+            case XAC.MOUSEDOWN:
+                if (hit.object.mousedowns != undefined) {
+                    for (mousedown of hit.object.mousedowns) {
+                        mousedown(hit);
+                    }
+                }
+
+                // only take the first hit - avoid selecting multiple objects in one click
+                var hitObject = hit.object.object3d || hit.object;
+                if (XAC._selecteds.indexOf(hitObject) < 0)
+                    XAC._selecteds.push(hitObject);
+
+                break;
+            case XAC.MOUSEMOVE:
+                // TODO for mousemoves
+                break;
+            case XAC.MOUSEUP:
+                // TODO
+                break;
+            case XAC.KEYDOWN:
+                if (hit.object.keydowns != undefined) {
+                    (hit.object.keydowns[e.keyCode] || console.error)();
+                }
+                break;
+        }
+
+        // input techniques
+        if (hit.object.inputTechniques != undefined) {
+            for (technique of hit.object.inputTechniques) {
+                switch (type) {
+                    case XAC.MOUSEDOWN:
+                        if (technique.mousedown(e, hit) == false) {
+                            XAC._activeHits.remove(hit);
+                        }
+                        break;
+                    case XAC.MOUSEMOVE:
+                        technique.mousemove(e, hit);
+                        break;
+                    case XAC.MOUSEUP:
+                        technique.mouseup(e, hit);
+                        XAC._activeHits.remove(hit);
+                        break;
+                }
+            }
+        }
+    }
 }
 
 //
-//	a sphere based selector for specifying a vector coming from the centroid
-//	@param	pos - position to place the selector
-//	@param	radius - how big should the sphere be
-//	TODO: fix the getty functions
 //
-XAC.SphereSelector = function(pos, radius, scene, camera) {
-	this._pos = pos;
-	this._radius = radius;
-	this._scene = scene;
-	this._camera = camera;
+//
+XAC.enableDragDrop = function (filesHandler) {
+    // drag & drop 3d model file
+    $(document).on('dragover', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer = e.originalEvent.dataTransfer;
+        e.dataTransfer.dropEffect = 'copy';
+    });
 
-	this._update = function() {
-		this._scene.remove(this._sphere);
-		this._sphere = new XAC.Sphere(this._radius, XAC.MATERIALINVISIBLE, true).m;
-		this._sphere.position.copy(this._pos);
-		this._scene.add(this._sphere);
-	}
-	this._update();
-}
+    $(document).on('drop', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer = e.originalEvent.dataTransfer;
+        var files = e.dataTransfer.files;
 
-XAC.SphereSelector.prototype = {
-	hitTest: function(e) {
-		var intSphere = XAC.rayCast(e.clientX, e.clientY, [this._sphere], this._camera);
-		if (intSphere[0] != undefined) {
-			this._pt = intSphere[0].point;
-			this._scene.remove(this._line);
-			this._line = XAC.addAnArrow(this._scene, this._pos, this._pt.clone().sub(
-				this._pos), this._radius * 1.5, 2.5);
-		}
-	},
-
-	clear: function() {
-		this._scene.remove(this._sphere);
-		this._scene.remove(this._dot);
-		this._scene.remove(this._line);
-	},
-
-	setRadius: function(radius) {
-		this._radius = radius;
-		this._update();
-	},
-
-	selection: function() {
-		return this._pt;
-	},
-
-	pointer: function() {
-		return this._line;
-	}
+        if (filesHandler != undefined) {
+            filesHandler(files);
+        }
+    });
 }
 
 //
-//	marquee select for 2d and 3d
 //
-XAC.MarqueeSelector = function(canvas, camera) {
-	this._canvas = canvas;
-	this._camera = camera;
+//
+XAC.makeSlider = function (id, label, min, max, value, parent) {
+    var sldrRow = $('<tr></tr>');
+    var sldrCell = $('<td><label class="ui-widget">' + label + '</label></td><td width="200px"></td>');
+    var sldr = $('<div id="' + id + '"></div>');
+    sldrCell.append(sldr);
+    sldrRow.append(sldrCell);
 
-	$("#selection").on('mouseup', function(e) {
-		this._selection = false;
-		$("#selection").hide();
-		this._onSelected();
-	}.bind(this));
+    sldr.slider({
+        max: max,
+        min: min,
+        range: 'max'
+    });
 
-	// enable dragging into the selection frame
-	$('#selection').on('mousemove', function(e) {
-		this.mousemove(e);
-	}.bind(this));
-}
+    sldr.slider('value', value);
 
-XAC.MarqueeSelector.prototype = {
-	mousedown: function(e, onSelected) {
-		this._selection = true;
-		this._x1 = e.pageX;
-		this._y1 = e.pageY;
-		this._onSelected = onSelected;
-	},
+    parent.append(sldrRow);
+    sldr.row = sldrRow;
+    return sldr;
 
-	mousemove: function(e) {
-		if (this._selection) {
-			var x2 = e.pageX;
-			var y2 = e.pageY;
-
-			this._top = Math.min(this._y1, y2);
-			this._left = Math.min(this._x1, x2);
-			this._height = Math.max(this._y1, y2) - this._top;
-			this._width = Math.max(this._x1, x2) - this._left;
-
-			$("#selection").css({
-				position: 'absolute',
-				zIndex: 5000,
-				left: this._left,
-				top: this._top,
-				width: this._width,
-				height: this._height
-			});
-
-			$("#selection").show();
-		}
-	},
-
-	// mouseup: function(e) {
-	// 	this._selection = false;
-	// 	$("#selection").hide();
-	// },
-
-	// get the rect for 2D selection
-	getRect: function() {
-		return {
-			top: this._top,
-			left: this._left,
-			width: this._width,
-			height: this._height
-		};
-	},
-
-	// get the intersecting box for 3D selection
-	getIntersectingBox: function() {
-		// retrieve the 2d rect
-		var rect = this.getRect();
-
-		// find the looking-from point
-		var rectCanvas = this._canvas.getBoundingClientRect();
-		var scrn2world = function(x, y, rectCanvas, camera) {
-			var pTransformed = new THREE.Vector3(
-				x / (rectCanvas.right - rectCanvas.left) * 2 - 1, -y / (rectCanvas.bottom -
-					rectCanvas.top) * 2 + 1, 0.5);
-			pTransformed.unproject(camera)
-			return pTransformed;
-		}
-		var x = rect.left + rect.width / 2;
-		var y = rect.top + rect.height / 2;
-		var center = scrn2world(x, y, rectCanvas, this._camera);
-
-		// ground
-		var ground = new THREE.Mesh(
-			new THREE.CubeGeometry(1000, 1000, 1),
-			XAC.MATERIALINVISIBLE
-		);
-		// HACK
-		FORTE.canvasScene.add(ground);
-
-		ground.position.z -= 0.5;
-
-		// create a virtual box for intersection
-		var topLeft = XAC.hitPoint({
-			clientX: rect.left,
-			clientY: rect.top
-		}, [ground], this._camera, this._canvas);
-		// addABall(FORTE.canvasScene, topLeft, 0xff0000, 5, 1);
-		var topRight = XAC.hitPoint({
-			clientX: rect.left + rect.width,
-			clientY: rect.top
-		}, [ground], this._camera, this._canvas);
-		// addABall(FORTE.canvasScene, topRight, 0xff0000, 5, 1);
-		var bottomLeft = XAC.hitPoint({
-			clientX: rect.left,
-			clientY: rect.top + rect.height
-		}, [ground], this._camera, this._canvas);
-		// addABall(FORTE.canvasScene, bottomLeft, 0xff0000, 5, 1);
-
-		var w = topLeft.distanceTo(topRight);
-		var l = topLeft.distanceTo(bottomLeft);
-		var t = 20;		// HACK: deal with almost 2d cases only
-		var box = new XAC.Box(w, t, l, XAC.MATERIALNORMAL).m;
-		// XAC.rotateObjTo(box, center.clone().sub(this._camera.position));
-		XAC.rotateObjTo(box, this._camera.position.clone().sub(ground.position));
-		box.position.copy(topRight.clone().add(bottomLeft).multiplyScalar(0.5));
-
-		// HACK
-		FORTE.canvasScene.remove(ground);
-
-		return box;
-	}
 }
 
 //
-//	a slider shown and used in situ with an object
 //
-XAC.InSituSlider = function(canvas) {
-	this._canvas = canvas;
-	this._slider = $('<div></div>');
-	$(this._canvas).parent().append(this._slider);
-}
-
-XAC.InSituSlider.prototype = {
-	show: function(left, top, minVal, maxVal, initVal, onSlide, onChange) {
-		this._minVal = minVal;
-		this._maxVal = maxVal;
-
-		this._slider.slider({
-			orientation: "vertical",
-			range: "min",
-			min: this._minVal,
-			max: this._maxVal,
-			value: initVal,
-			slide: function(event, ui) {
-				// var t = (ui.value - FORTE.Delta.SLIDERMIN) / (FORTE.Delta.SLIDERMAX - FORTE.Delta
-				//     .SLIDERMIN);
-				// t = FORTE.Delta._transfer(t);
-				// var delta = FORTE.deltas[this.id];
-				// delta._designNew = delta._interpolation.interpolate(t);
-				// FORTE.updateDeltas();
-				// event.stopPropagation();
-				if (onSlide != undefined) {
-					onSlide(event, ui);
-				}
-			},
-			change: function(event, ui) {
-				if (onChange != undefined) {
-					onChange(event, ui);
-				}
-			}
-		});
-
-		offset = 50;
-		left = Math.max(0, left - offset);
-		top = Math.max(0, top - offset);
-		this._slider.css('position', 'absolute');
-	    this._slider.css('left', left + 'px');
-	    this._slider.css('top', top + 'px');
-	    this._slider.css('height', '150px');
-
-		this._slider.show();
-	},
-
-	hide: function() {
-		this._slider.hide();
-	},
-
-	destruct: function() {
-		this._canvas.remove(this._slider);
-	}
+//
+XAC.makeRadioButtons = function (name, labels, parent, idxChecked) {
+    var id = (Math.random() * 1000 | 0).toString();
+    for (var i = 0; i < labels.length; i++) {
+        var label = $('<label for="input' + id + i + '">' + labels[i] + '</label>');
+        var input = $('<input type="radio" name="' + name + '" id="input' + id + i + '">');
+        if(i == idxChecked) {
+            input.attr('checked', true);
+        }
+        parent.append(label);
+        parent.append(input);
+    }
+    console.log($('[name="' + name + '"]'))
+    $('[name="' + name + '"]').checkboxradio({
+        icon: false
+    });
+    return name;
 }
