@@ -249,7 +249,6 @@ XAC.makeRadioButtons = function (name, labels, values, parent, idxChecked) {
         parent.append(label);
         parent.append(input);
     }
-    console.log($('[name="' + name + '"]'))
     $('[name="' + name + '"]').checkboxradio({
         icon: false
     });
