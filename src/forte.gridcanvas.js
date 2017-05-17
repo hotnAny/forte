@@ -63,6 +63,7 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     this._context = this._canvas[0].getContext('2d');
     this._context.fillStyle = this._strokeColor;
     this._context.beginPath();
+    this._strokePoints = [];
 };
 
 //
@@ -82,11 +83,15 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
             // [note] removed because of speed
             // if (Math.pow(x * this._cellSize + canvasOffset.left - e.clientX, 2) +
             //     Math.pow(y * this._cellSize + canvasOffset.top - e.clientY, 2) <= strokeRadiusSquare) {
-            if(this._bitmap[y][x] != 1) {
+            if (this._bitmap[y][x] != 1) {
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
                 this._context.fill();
                 this._bitmap[y][x] = 1;
+                this._strokePoints.push({
+                    x: x,
+                    y: y
+                });
             }
         }
     }
