@@ -237,12 +237,13 @@ XAC.makeSlider = function (id, label, min, max, value, parent) {
 //
 //
 //
-XAC.makeRadioButtons = function (name, labels, parent, idxChecked) {
+XAC.makeRadioButtons = function (name, labels, values, parent, idxChecked) {
     var id = (Math.random() * 1000 | 0).toString();
     for (var i = 0; i < labels.length; i++) {
         var label = $('<label for="input' + id + i + '">' + labels[i] + '</label>');
-        var input = $('<input type="radio" name="' + name + '" id="input' + id + i + '">');
-        if(i == idxChecked) {
+        var input = $('<input type="radio" name="' + name + '" value="' + values[i] +
+            '" id="input' + id + i + '">');
+        if (i == idxChecked) {
             input.attr('checked', true);
         }
         parent.append(label);
