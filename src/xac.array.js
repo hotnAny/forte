@@ -1,8 +1,8 @@
 //	........................................................................................................
 //
-//  extensions for javascript array class
+//  extensions for javascript array class, v0.1
 //
-//	by xiangchen@acm.org, v0.1, 05/2017
+//	by xiangchen@acm.org, 05/2017
 //
 //	........................................................................................................
 
@@ -252,4 +252,14 @@ XAC.initMDArray = function(dims, val) {
 		array.push(XAC.initMDArray(dims.slice(1), val));
 	}
 	return array;
+}
+
+//
+//	trim each number in the array to a given precision
+//
+Array.prototype.trim = function(numDigits) {
+	for (i = 0; i < this.length; i++) {
+		this[i] = Number(this[i].toFixed(numDigits));
+	}
+	return this;
 }
