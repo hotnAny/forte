@@ -6,7 +6,9 @@
 //
 // ......................................................................................................
 
-FORTE.Design = function() {
+FORTE.Design = function (width, height) {
+    this.width = width;
+    this.height = height;
     this.designPoints = [];
     this.emptyPoints = [];
     this.loadPoints = [];
@@ -16,4 +18,15 @@ FORTE.Design = function() {
 
 FORTE.Design.prototype = {
     constructor: FORTE.Design
+}
+
+FORTE.Design.prototype.getData = function () {
+    return {
+        resolution: [this.width, this.height],
+        design: this.designPoints,
+        emptiness: this.emptyPoints,
+        loadpoints: this.loadPoints,
+        loadvalues: this.loadValues,
+        boundaries: this.boundaryPoints
+    };
 }
