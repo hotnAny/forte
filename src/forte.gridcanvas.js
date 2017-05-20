@@ -26,6 +26,9 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor, bgColor) {
     this.setResolution(width, height);
     this._parent.append(this._canvas);
 
+    this._context = this._canvas[0].getContext('2d');
+    this._context.fillStyle = this._strokeColor;
+
     this._canvas.mousedown(this.drawDown.bind(this));
     this._canvas.mousemove(this.drawMove.bind(this));
     this._canvas.mouseup(this.drawUp.bind(this));
@@ -60,8 +63,6 @@ FORTE.GridCanvas.prototype.setResolution = function (w, h) {
 //
 FORTE.GridCanvas.prototype.drawDown = function (e) {
     this._isDown = true;
-    this._context = this._canvas[0].getContext('2d');
-    this._context.fillStyle = this._strokeColor;
     this._context.beginPath();
     this._strokePoints = [];
 };
@@ -113,4 +114,32 @@ FORTE.GridCanvas.prototype.clear = function () {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         this._bitmap = XAC.initMDArray([this._gridWidth, this._gridHeight], 0);
     }
+}
+
+FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
+    var h = bitmap.length;
+    var w = h > 0 ? bitmap[0].length : 0;
+    if (h <= 0 || w <= 0) return;
+
+    // this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+    this._context.beginPath();
+    for (var j = 0; j < h; j++) {
+        for (var i = 0; i < w; i++) {
+            bitmap[j][i] = bitmap[j][i] > thres ? 1 : 0;
+            var x = x0 + i;
+            var y = y0 + j;
+            if (bitmap[j][i] == 1 && this._bitmap[j][i] == 0) {
+                this._context.rect(x * this._cellSize, y * this._cellSize,
+                    this._cellSize, this._cellSize);
+                this._context.fill();
+            } else if (bitmap[j][i] == 0 && this._bitmap[j][i] == 1) {
+                this._context.clearRect(x * this._cellSize, y * this._cellSize,
+                    this._cellSize, this._cellSize);
+            }
+            this._bitmap[j][i] = bitmap[j][i];
+        }
+    }
+
+    // this._bitmap = bitmap.clone();
+    this._context.closePath();
 }
