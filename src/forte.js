@@ -37,6 +37,7 @@ $(document).ready(function () {
         maxSlider = 100;
     var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
     var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
+    $('#tdMaterial').width('192px');
     FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
         0, 100, valueSlider, $('#tdMaterial'));
     FORTE.sldrMaterial.slider({
@@ -78,10 +79,25 @@ $(document).ready(function () {
             FORTE.fetchData();
         }
 
-        // server_session_1495210537//forte_1495210751
-
     });
     $('#tdRun').append(FORTE.btnRun);
+
+    // save
+    FORTE.btnSave = $('<div>save</div>');
+    FORTE.btnSave.button();
+    FORTE.btnSave.click(function (e) {
+        FORTE.design.designPoints = FORTE.designLayer.package();
+        FORTE.design.emptyPoints = FORTE.emptyLayer.package();
+        FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
+        var data = JSON.stringify(FORTE.design.getData());
+        if (data != undefined) {
+            var blob = new Blob([data], {
+                type: 'text/plain'
+            });
+            saveAs(blob, 'design.forte');
+        }
+    });
+    $('#tdSave').append(FORTE.btnSave);
 
     // layers
     FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
@@ -327,7 +343,7 @@ FORTE.fetchData = function () {
         var baseDir = FORTE.outDir + '/' + FORTE.trial;
         XAC.readTextFile(baseDir + (FORTE.itrCounter + 1) + '.out', function (text) {
             var bitmap = FORTE.getBitmap(text);
-            
+
             if (FORTE.itrCounter < FORTE.MAXITERATIONS) {
                 FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.bbox.xmin, FORTE.bbox.ymin, 0.5);
                 time('[log] redrew for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
@@ -353,7 +369,7 @@ FORTE.fetchData = function () {
                     setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
                     // FORTE.fetchInterval *= 0.9;
                 }
-            }      
+            }
         });
     }
 }
