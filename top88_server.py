@@ -18,12 +18,14 @@ import subprocess
 import json
 import traceback
 from numpy import array, hstack, empty
+from math import sqrt
 
 MCRPATH = '/Applications/MATLAB/MATLAB_Runtime/v91'
 LIBPATH = '.:' + MCRPATH + '/runtime/maci64'
 LIBPATH = LIBPATH + ':' + MCRPATH + '/bin/maci64'
 LIBPATH = LIBPATH + ':' + MCRPATH + '/sys/os/maci64'
 TOP88PATH = './top88/for_testing/top88.app/Contents/MacOS/top88'
+INPUTFILE = '~matinput'
 
 T = int(round(time.time() * 1000))
 def _log(msg):
@@ -59,19 +61,22 @@ def safe_retrieve_all(buffer, key, alt):
 #   processing incoming data
 #
 def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
-    # if sdir != None:
-    #     subprocess.call('rm ' + sdir + '/forte_*', shell=True)
+    _log(None)
+    
+    str_result = '?'
 
-    if 'forte' not in post_data:
-        return 'no design information'
+    if 'trial' not in post_data:
+        str_result += 'outdir=' + sdir + '&'
+        return str_result
     #
     # read parameters of the design & function spec.
     #
+    _trial = safe_retrieve_one(post_data, 'trial', str(long(time.time())))
     _designobj = json.loads(post_data['forte'][0])
     _resolution = safe_retrieve_all(_designobj, 'resolution', None)
     _design = safe_retrieve_all(_designobj, 'design', None)
-    _loadpoints_set = safe_retrieve_all(_designobj, 'loadpoints', None)
-    _loadvalues_set = safe_retrieve_all(_designobj, 'loadvalues', None)
+    _loadpoints = safe_retrieve_all(_designobj, 'loadpoints', None)
+    _loadvalues = safe_retrieve_all(_designobj, 'loadvalues', None)
     _emptiness = safe_retrieve_all(_designobj, 'emptiness', None)
     _boundaries = safe_retrieve_all(_designobj, 'boundaries', None)
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
@@ -86,11 +91,12 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # resolution, material & trial
     nelx = _resolution[0]
     nely = _resolution[1]
-    # material = _material * 1.0 * len(_design) / (nelx * nely)
-    material = 0.3
-    print material
-    trial = 'forte_' + str(long(time.time()))
-    matinput = {'TRIAL':trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
+    material = _material * 1.0 * len(_design) / (nelx * nely)
+    print nelx, nely, material
+    # material = 0.3
+
+    # trial = 'forte_' + str(long(time.time()))
+    matinput = {'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
      'FIXEDDOFS':[], 'LOADNODES':[], 'LOADVALUES':[]}
     
     # boundary
@@ -108,19 +114,23 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
 
     # load
     tb_loadnodes = []
-    for loadpoints in _loadpoints_set:
-        for x in loadpoints:
-            nodes = node_nums_2d(nelx, nely, x[0] + 1, x[1] + 1)
-            for idx in list_nodes:
-                tb_loadnodes.append(dof*(idx-1)+1)
-                tb_loadnodes.append(dof*(idx-1)+2)
+    # for loadpoints in _loadpoints_set:
+    for x in _loadpoints:
+        node = node_nums_2d(nelx, nely, x[0] + 1, x[1] + 1)
+        list_nodes = node.tolist()
+        for idx in list_nodes:
+            tb_loadnodes.append(dof*(idx-1)+1)
+            tb_loadnodes.append(dof*(idx-1)+2)
+            # break
 
     tb_loadvalues = []
-    for loadvalues in _loadvalues_set:
-        for v in loadvalues:
-            for i in xrange(0, nnodes):
-                tb_loadvalues.append(v[0])
-                tb_loadvalues.append(v[1])
+    # for loadvalues in _loadvalues_set:
+    for v in _loadvalues:
+        vsum = sqrt(v[0]**2+v[1]**2)
+        for i in xrange(0, nnodes):
+            tb_loadvalues.append(v[0]/vsum)
+            tb_loadvalues.append(v[1]/vsum)
+            # break
     
     matinput['LOADNODES'] = tb_loadnodes
     # print len(matinput['LOADNODES'])
@@ -131,39 +141,24 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
     matinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
     matinput['FAVELMS'] = matinput['PASVELMS']
-    # print matinput['ACTVELMS']
-    # print matinput['PASVELMS']
-
-    # tpd, debug_voxelgrid = gen_tpd(designObj, resolution, material)
-    # print ''.join(debug_voxelgrid)[::-1]
-    # probname = optimize(tpd, gradient)
-
-    # # marching_cube(sdir + '/' + probname + '_optimized.vxg')
-    # subprocess.call(postproc_dir + '/' + 'marching_cube.py ' + probname + '_optimized.vxg', shell=True)
-
-    # if sdir != None:
-    #     subprocess.call('mv ' + probname + '* ' + sdir, shell=True)
 
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 50, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS']]
 
-    INPUTFILE = '~matinput'
     input_file = open(INPUTFILE, 'w')
     input_file.write(';'.join([str(x) for x in matargs]))
     input_file.close()
     # [debug] copy it to matlab dir to debug in matlab
     subprocess.call('cp ' + INPUTFILE + ' /Users/hotnAny/Documents/MATLAB', shell=True)
 
-    # test run
-    _log(None)
+    _log('prepared matlab input')
+    
     subprocess.check_call([TOP88PATH, os.getcwd() + '/' + INPUTFILE],\
         env=dict(os.environ, SQSUB_VAR="visible in this subprocess"))
     _log('top88')
 
-    str_result = '?'
-    # str_result += 'name=' + tpd['PROB_NAME'] + '&'
-    # str_result += 'outpath=vxg.dae'
+    str_result += 'state=finished' + '&'
 
     return str_result
 
@@ -196,11 +191,11 @@ class S(BaseHTTPRequestHandler):
         post_data = parse_qs(urlparse(self.path + post_str).query)
 
         global session_dir
-        try:
-            result_msg = proc_post_data(post_data, sdir=session_dir)
-        except:
-            traceback.print_exc()
-            result_msg = 'error'
+        # try:
+        result_msg = proc_post_data(post_data, sdir=session_dir)
+        # except:
+            # traceback.print_exc()
+            # result_msg = 'error'
 
         print result_msg
         self.wfile.write(result_msg)
