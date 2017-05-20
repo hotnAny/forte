@@ -25,7 +25,7 @@ function time(desc) {
 //
 //	load models from stl binary/ascii data
 //
-XAC.loadStl = function(data, onStlLoaded) {
+XAC.loadStl = function (data, onStlLoaded) {
 	var stlLoader = new THREE.STLLoader();
 	var geometry = stlLoader.parse(data);
 	var object = new THREE.Mesh(geometry, XAC.MATERIALNORMAL);
@@ -59,7 +59,7 @@ XAC.loadStl = function(data, onStlLoaded) {
 //
 //	sending web sockets to a server
 //
-XAC.pingServer = function(xmlhttp, host, port, keys, values) {
+XAC.pingServer = function (xmlhttp, host, port, keys, values) {
 	var prefix = "http://";
 	xmlhttp.open("POST", prefix + host + ":" + port, true);
 	xmlhttp.setRequestHeader("Content-type", "text/html");
@@ -76,4 +76,33 @@ XAC.pingServer = function(xmlhttp, host, port, keys, values) {
 		}
 		xmlhttp.send(strMsg);
 	}
+}
+
+//
+//
+//
+XAC.getParameterByName = function (name, url) {
+	var match = RegExp('[?&]' + name + '=([^&]*)').exec(url);
+	return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+//
+//	read text file from local path
+//
+XAC.readTextFile = function (file, onSuccess, onFailure) {
+	var rawFile = new XMLHttpRequest();
+	rawFile.open("GET", file, false);
+	rawFile.onreadystatechange = function () {
+		if (rawFile.readyState === 4) {
+			if (rawFile.status === 200 || rawFile.status == 0) {
+				if (onSuccess != undefined) onSuccess(rawFile.responseText);
+				return true;
+			}
+		}
+
+		if (onFailure != undefined) onFailure();
+		return false;
+	}
+	rawFile.send(null);
+	// return false;
 }
