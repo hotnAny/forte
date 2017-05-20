@@ -8,10 +8,13 @@
 
 var FORTE = FORTE || {};
 
-FORTE.width = 128;
-FORTE.height = 96;
+FORTE.width = 256;
+FORTE.height = 192;
 FORTE.FETCHINTERVAL = 100;
 FORTE.MAXITERATIONS = 50;
+FORTE.MINMATERIALRATIO = 1.0;
+FORTE.MAXMATERIALRATIO = 3.0;
+FORTE.GIVEUPTHRESHOLD = 10;
 
 $(document).ready(function () {
     // set font size
@@ -19,19 +22,31 @@ $(document).ready(function () {
         $(this).css('font-size', 'small');
     });
 
-    FORTE.design = new FORTE.Design(FORTE.width, FORTE.height);
-
     // resolution
     var tbWidth = $('<input id="tbWidth" type="text" value="' + FORTE.width + '" size="3">');
     var tbHeight = $('<input id="tbHeight" type="text" value="' + FORTE.height + '" size="3">');
     $('#tdResolution').append(tbWidth);
     $('#tdResolution').append('&nbsp;×&nbsp;');
     $('#tdResolution').append(tbHeight);
-    tbWidth.keydown(FORTE.changeResolution);
-    tbHeight.keydown(FORTE.changeResolution);
+    tbWidth.keydown(FORTE.keydown);
+    tbHeight.keydown(FORTE.keydown);
 
     // slider
-    FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material', 0, 100, 50, $('#tdMaterial'));
+    FORTE.materialRatio = 1.5;
+    var minSlider = 0,
+        maxSlider = 100;
+    var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
+    var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
+    FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
+        0, 100, valueSlider, $('#tdMaterial'));
+    FORTE.sldrMaterial.slider({
+        change: function (event, ui) {
+            var max = $(event.target).slider("option", "max");
+            var min = $(event.target).slider("option", "min");
+            var value = (ui.value - min) * 1.0 / (max - min);
+            FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
+        }
+    })
 
     // brushes for design, load and boundary
     FORTE.nameBrushButtons = 'brushButtons';
@@ -57,8 +72,9 @@ $(document).ready(function () {
         var data = JSON.stringify(FORTE.design.getData());
         if (data != undefined) {
             FORTE.trial = 'forte_' + Date.now();
-            XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['trial', 'forte', 'material'], [FORTE.trial, data, 1.0]);
+            XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['trial', 'forte', 'material'], [FORTE.trial, data, FORTE.materialRatio]);
             FORTE.state = 'start';
+            time();
             FORTE.fetchData();
         }
 
@@ -69,7 +85,6 @@ $(document).ready(function () {
 
     // layers
     FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
-    FORTE.designLayer._strokeRadius = 1;
     FORTE.emptyLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
     FORTE.emptyLayer._strokeRadius = 3;
     FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
@@ -81,6 +96,7 @@ $(document).ready(function () {
     FORTE.toggleLayerZindex(0);
 
     FORTE.customizeLoadLayer();
+    FORTE.changeResolution();
 
     FORTE.GridCanvas.prototype.package = function () {
         var points = [];
@@ -100,7 +116,7 @@ $(document).ready(function () {
         if (FORTE.xmlhttp.readyState == 4 && FORTE.xmlhttp.status == 200) {
             log(FORTE.xmlhttp.responseText);
             var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
-            FORTE.outDir = outDir == null ? FORTE.outDir : outDir;
+            if (outDir != null && outDir != undefined) FORTE.outDir = outDir;
             // FORTE.state = XAC.getParameterByName('state', FORTE.xmlhttp.responseText);
         }
     }
@@ -108,22 +124,31 @@ $(document).ready(function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
 });
 
+FORTE.keydown = function (e) {
+    if (e.keyCode == XAC.ENTER) {
+        FORTE.changeResolution();
+    }
+}
+
 //
 //  changing the resolution of the canavs
 //
-FORTE.changeResolution = function (e) {
-    if (e.keyCode == XAC.ENTER) {
-        var width = parseInt($(tbWidth).val());
-        var height = parseInt($(tbHeight).val());
-        if (!isNaN(width) && !isNaN(height)) {
-            for (layer of FORTE.layers) {
-                layer.setResolution(width, height);
-            }
+FORTE.changeResolution = function () {
+    var width = parseInt($(tbWidth).val());
+    var height = parseInt($(tbHeight).val());
+    if (!isNaN(width) && !isNaN(height)) {
+        for (layer of FORTE.layers) {
+            layer.setResolution(width, height);
         }
-        FORTE.design = new FORTE.Design(width, height);
-        FORTE.width = width;
-        FORTE.height = height;
     }
+    FORTE.design = new FORTE.Design(width, height);
+    FORTE.width = width;
+    FORTE.height = height;
+
+    for (layer of FORTE.layers) {
+        layer._strokeRadius = FORTE.width / 128;
+    }
+    FORTE.emptyLayer._strokeRadius *= 3;
 }
 
 //
@@ -276,7 +301,7 @@ FORTE.customizeLoadLayer = function () {
             this.__loadValueLayer = new FORTE.GridCanvas(this._parent, this._gridWidth, this._gridHeight);
             this.__loadValueLayer._context = this.__loadValueLayer._canvas[0].getContext('2d');
             this.__loadValueLayer._context.strokeStyle = this._context.fillStyle;
-            this.__loadValueLayer._context.lineWidth = this._strokeRadius * 8;
+            this.__loadValueLayer._context.lineWidth = 8;
             this.__loadValueLayer._context.lineJoin = 'round';
             this.__strokePoints = this._strokePoints.clone();
         }
@@ -286,35 +311,49 @@ FORTE.customizeLoadLayer = function () {
 FORTE.fetchData = function () {
     if (FORTE.state == 'start') {
         FORTE.itrCounter = 0;
-        log('data fetching started');
+        log('[log] data fetching started');
         FORTE.state = 'ongoing';
         setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
         FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.designLayer._strokeColor);
+        FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
+        FORTE.fetchInterval = FORTE.FETCHINTERVAL;
+        FORTE.failureCounter = 0;
     } else if (FORTE.state == 'finished') {
-        // if (FORTE.itrCounter >= FORTE.MAXITERATIONS) {
-        log('data fetching stopped');
+        log('[log] data fetching stopped');
         return;
-        // }
     } else {
+        if (FORTE.outDir == undefined || FORTE.outDir == null)
+            console.error('output directory unavailable');
         var baseDir = FORTE.outDir + '/' + FORTE.trial;
         XAC.readTextFile(baseDir + (FORTE.itrCounter + 1) + '.out', function (text) {
-            // log(FORTE.itrCounter + ':' + text.length);
             var bitmap = FORTE.getBitmap(text);
-
-            if (FORTE.itrCounter >= FORTE.MAXITERATIONS) {
-                FORTE.state = 'finished';
-                FORTE.designLayer.drawFromBitmap(bitmap, FORTE.bbox.xmin, FORTE.bbox.ymin, 0.5);
-                FORTE.optimizedLayer.clear();
-                FORTE.optimizedLayer.remove();
-            } else {
+            
+            if (FORTE.itrCounter < FORTE.MAXITERATIONS) {
                 FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.bbox.xmin, FORTE.bbox.ymin, 0.5);
+                time('[log] redrew for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
                 FORTE.itrCounter += 1;
                 setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
             }
+
+            FORTE.fetchInterval = FORTE.FETCHINTERVAL;
+            FORTE.failureCounter = 0;
         }, function () {
-            if (FORTE.itrCounter == 0) setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
+            if (FORTE.itrCounter == 0) {
+                setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+                FORTE.fetchInterval *= 1.1;
+            } else {
+                FORTE.failureCounter++;
+                if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
+                    FORTE.state = 'finished';
+                    FORTE.designLayer.drawFromBitmap(bitmap, FORTE.bbox.xmin, FORTE.bbox.ymin, 0.5);
+                    FORTE.optimizedLayer.clear();
+                    FORTE.optimizedLayer._canvas.remove();
+                } else {
+                    // log('[log] failure counter: ' + FORTE.failureCounter);
+                    setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
+                    // FORTE.fetchInterval *= 0.9;
+                }
+            }      
         });
     }
-
-    // setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
 }
