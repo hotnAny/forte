@@ -8,16 +8,16 @@
 
 var FORTE = FORTE || {};
 
-FORTE.GridCanvas = function (parent, width, height, strokeColor, bgColor) {
+FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._parent = parent;
 
     this._strokeRadius = 1;
     this._strokeColor = strokeColor == undefined ? '#000000' : strokeColor;
 
     this._canvas = $('<canvas id="canvas"></canvas>');
-    if (bgColor != undefined) {
-        this._canvas.css('background', bgColor);
-    }
+    // if (bgColor != undefined) {
+    //     this._canvas.css('background', bgColor);
+    // }
     var parentOffset = this._parent.offset();
     this._canvas.css('position', 'absolute');
     this._canvas.css('left', parentOffset.left);
@@ -54,8 +54,9 @@ FORTE.GridCanvas.prototype.setResolution = function (w, h) {
     this._bitmap = XAC.initMDArray([h, w], 0);
     this._gridWidth = w;
     this._gridHeight = h;
-
     this._parent.css('height', this._canvas[0].height + 'px');
+    this._context = this._canvas[0].getContext('2d');
+    this._context.fillStyle = this._strokeColor;
 };
 
 //
@@ -122,24 +123,22 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
     if (h <= 0 || w <= 0) return;
 
     // this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-    this._context.beginPath();
     for (var j = 0; j < h; j++) {
         for (var i = 0; i < w; i++) {
             bitmap[j][i] = bitmap[j][i] > thres ? 1 : 0;
             var x = x0 + i;
             var y = y0 + j;
-            if (bitmap[j][i] == 1 && this._bitmap[j][i] == 0) {
+            if (bitmap[j][i] == 1 && this._bitmap[j + y0][i + x0] == 0) {
+                this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
                 this._context.fill();
-            } else if (bitmap[j][i] == 0 && this._bitmap[j][i] == 1) {
+                this._context.closePath();
+            } else if (bitmap[j][i] == 0 && this._bitmap[j + y0][i + x0] == 1) {
                 this._context.clearRect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
             }
-            this._bitmap[j][i] = bitmap[j][i];
+            this._bitmap[j + y0][i + x0] = bitmap[j][i];
         }
     }
-
-    // this._bitmap = bitmap.clone();
-    this._context.closePath();
 }
