@@ -117,12 +117,14 @@ FORTE.GridCanvas.prototype.clear = function () {
     }
 }
 
+//
+//
+//
 FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
     var h = bitmap.length;
     var w = h > 0 ? bitmap[0].length : 0;
     if (h <= 0 || w <= 0) return;
 
-    // this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     for (var j = 0; j < h; j++) {
         for (var i = 0; i < w; i++) {
             bitmap[j][i] = bitmap[j][i] > thres ? 1 : 0;
@@ -141,4 +143,16 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
             this._bitmap[j + y0][i + x0] = bitmap[j][i];
         }
     }
+}
+
+FORTE.GridCanvas.prototype.package = function () {
+    var points = [];
+    for (var j = 0; j < this._gridHeight; j++) {
+        for (var i = 0; i < this._gridWidth; i++) {
+            if (this._bitmap[j][i] == 1) {
+                points.push([i, j]);
+            }
+        }
+    }
+    return points;
 }

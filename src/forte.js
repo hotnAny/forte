@@ -22,6 +22,29 @@ $(document).ready(function () {
         $(this).css('font-size', 'small');
     });
 
+    // enable drag and drop
+    XAC.enableDragDrop(function (files) {
+        for (var i = files.length - 1; i >= 0; i--) {
+            var reader = new FileReader();
+            reader.onload = (function (e) {
+                // XAC.loadStl(e.target.result, MEDLEY.onStlLoaded);
+                var dataObject = JSON.parse(e.target.result);
+                FORTE.btnClear.trigger('click');
+                FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
+                FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
+                FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, 0);
+                for (arrow of dataObject.loadArrows) {
+                    FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
+                }
+                FORTE.design.loadPoints = dataObject.loadPoints;
+                FORTE.design.loadValues = dataObject.loadValues;
+                FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
+                FORTE.toggleLayerZindex(FORTE.layers.indexOf(FORTE.loadLayer));
+            });
+            reader.readAsBinaryString(files[i]);
+        }
+    });
+
     // resolution
     var tbWidth = $('<input id="tbWidth" type="text" value="' + FORTE.width + '" size="3">');
     var tbHeight = $('<input id="tbHeight" type="text" value="' + FORTE.height + '" size="3">');
@@ -51,7 +74,7 @@ $(document).ready(function () {
 
     // brushes for design, load and boundary
     FORTE.nameBrushButtons = 'brushButtons';
-    XAC.makeRadioButtons('brushButtons', ['design', 'empty', 'load', 'boundary'], [0, 1, 2, 3], $('#tdBrushes'), 0);
+    XAC.makeRadioButtons('brushButtons', ['design', 'emptiness', 'load', 'boundary'], [0, 1, 2, 3], $('#tdBrushes'), 0);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("change", FORTE.switchLayer);
 
     // clear
@@ -68,7 +91,7 @@ $(document).ready(function () {
     FORTE.btnRun.button();
     FORTE.btnRun.click(function (e) {
         FORTE.design.designPoints = FORTE.designLayer.package();
-        FORTE.design.emptyPoints = FORTE.emptyLayer.package();
+        FORTE.design.emptinessPoints = FORTE.emptinessLayer.package();
         FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
         var data = JSON.stringify(FORTE.design.getData());
         if (data != undefined) {
@@ -86,10 +109,16 @@ $(document).ready(function () {
     FORTE.btnSave = $('<div>save</div>');
     FORTE.btnSave.button();
     FORTE.btnSave.click(function (e) {
-        FORTE.design.designPoints = FORTE.designLayer.package();
-        FORTE.design.emptyPoints = FORTE.emptyLayer.package();
-        FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-        var data = JSON.stringify(FORTE.design.getData());
+        var dataObject = {
+            designBitmap: FORTE.designLayer._bitmap,
+            emptinessBitmap: FORTE.emptinessLayer._bitmap,
+            loadBitmap: FORTE.loadLayer._bitmap,
+            loadArrows: FORTE.loadLayer._arrows,
+            loadPoints: FORTE.design.loadPoints,
+            loadValues: FORTE.design.loadValues,
+            boundaryBitmap: FORTE.boundaryLayer._bitmap
+        }
+        var data = JSON.stringify(dataObject);
         if (data != undefined) {
             var blob = new Blob([data], {
                 type: 'text/plain'
@@ -101,30 +130,21 @@ $(document).ready(function () {
 
     // layers
     FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
-    FORTE.emptyLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
-    FORTE.emptyLayer._strokeRadius = 3;
+    FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
+    FORTE.emptinessLayer._strokeRadius = 3;
     FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
     FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#007fff');
     $('#tdCanvas').css('background', '#eeeeee');
 
-    FORTE.layers = [FORTE.designLayer, FORTE.emptyLayer, FORTE.loadLayer, FORTE.boundaryLayer];
+    FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
     FORTE.layer = FORTE.designLayer;
     FORTE.toggleLayerZindex(0);
 
     FORTE.customizeLoadLayer();
     FORTE.changeResolution();
-
-    FORTE.GridCanvas.prototype.package = function () {
-        var points = [];
-        for (var j = 0; j < this._gridHeight; j++) {
-            for (var i = 0; i < this._gridWidth; i++) {
-                if (this._bitmap[j][i] == 1) {
-                    points.push([i, j]);
-                }
-            }
-        }
-        return points;
-    }
+    FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
+    FORTE.loadLayer._context.lineWidth = 8;
+    FORTE.loadLayer._context.lineJoin = 'round';
 
     FORTE.xmlhttp = new XMLHttpRequest();
     FORTE.xmlhttp.timeout = 1e9;
@@ -133,7 +153,6 @@ $(document).ready(function () {
             log(FORTE.xmlhttp.responseText);
             var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
             if (outDir != null && outDir != undefined) FORTE.outDir = outDir;
-            // FORTE.state = XAC.getParameterByName('state', FORTE.xmlhttp.responseText);
         }
     }
 
@@ -164,11 +183,11 @@ FORTE.changeResolution = function () {
     for (layer of FORTE.layers) {
         layer._strokeRadius = FORTE.width / 128;
     }
-    FORTE.emptyLayer._strokeRadius *= 3;
+    FORTE.emptinessLayer._strokeRadius *= 3;
 }
 
 //
-//  switch to different layers (design, empty, load, boundary, etc.)
+//  switch to different layers (design, emptiness, load, boundary, etc.)
 //
 FORTE.switchLayer = function (e) {
     var idx = parseInt($(e.target).val());
@@ -207,6 +226,7 @@ FORTE.drawArrow = function (context, fromx, fromy, tox, toy) {
 
     context.stroke();
     context.closePath();
+    return [fromx, fromy, tox, toy];
 };
 
 //
@@ -260,11 +280,12 @@ FORTE.customizeLoadLayer = function () {
             this._context.lineWidth = this.__loadValueLayer._context.lineWidth;
             this._context.lineJoin = this.__loadValueLayer._context.lineJoin;
             var canvasOffset = this.__loadValueLayer._canvas.offset();
-            FORTE.drawArrow(this._context,
+            var arrow = FORTE.drawArrow(this._context,
                 this.__centerLoadPoint.x * this._cellSize, this.__centerLoadPoint.y * this._cellSize,
                 e.clientX - canvasOffset.left, e.clientY - canvasOffset.top);
             this.__loadValueLayer.clear();
             this.__loadValueLayer._canvas.remove();
+            this._arrows.push(arrow);
 
             var vector = new THREE.Vector3(
                 e.clientX - canvasOffset.left - this.__centerLoadPoint.x * this._cellSize,
@@ -314,11 +335,12 @@ FORTE.customizeLoadLayer = function () {
                 }
             }
 
+            this._arrows = this._arrows || [];
             this.__loadValueLayer = new FORTE.GridCanvas(this._parent, this._gridWidth, this._gridHeight);
             this.__loadValueLayer._context = this.__loadValueLayer._canvas[0].getContext('2d');
             this.__loadValueLayer._context.strokeStyle = this._context.fillStyle;
-            this.__loadValueLayer._context.lineWidth = 8;
-            this.__loadValueLayer._context.lineJoin = 'round';
+            this.__loadValueLayer._context.lineWidth = this._context.lineWidth;
+            this.__loadValueLayer._context.lineJoin = this._context.lineJoin;
             this.__strokePoints = this._strokePoints.clone();
         }
     }.bind(FORTE.loadLayer));
