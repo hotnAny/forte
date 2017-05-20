@@ -101,7 +101,7 @@ def node_nums_2d(nelx, nely, mpx, mpy):
     nn = inn + en + mpx - 1 #  node numbers
     return nn
 
-def gen_tpd(designObj, resolution, material): #, field_intensity, weight):
+def gen_tpd(designObj, resolution, material, field_intensity, weight):
     # read parameters of the design & function spec.
     design = safe_retrieve_all(designObj, 'design', None)
     loads = safe_retrieve_all(designObj, 'loads', None)
@@ -469,8 +469,8 @@ def gen_tpd(designObj, resolution, material): #, field_intensity, weight):
     tpd['LOAD_NODE_Y'] = str_load_points
     tpd['LOAD_VALU_Y'] = ';'.join(load_values_y_str)
 
-    # tpd['M'] = field_intensity
-    # tpd['ALPHA'] = weight
+    tpd['M'] = field_intensity
+    tpd['ALPHA'] = weight
 
     # TODO: check this
     if 'ignore' in designObj:
@@ -514,13 +514,13 @@ if __name__ == "__main__":
     resolution = int(args.resolution)
     material = float(args.material)
     # gradient = float(args.dissimilarity)
-    # field_intensity = float(args.field_intensity)
-    # weight = float(args.weight)
+    field_intensity = float(args.field_intensity)
+    weight = float(args.weight)
 
     session = 'sessions//session'
     subprocess.call('mkdir ' + session, shell=True)
 
-    matinput, debug_voxelgrid = gen_tpd(design, resolution, material)#, field_intensity, weight)
+    matinput, debug_voxelgrid = gen_tpd(design, resolution, material, field_intensity, weight)
     # print ''.join(debug_voxelgrid)[::-1]
 
     TOP88PATH = './top88/for_testing/top88.app/Contents/MacOS/top88'
