@@ -103,6 +103,6 @@ XAC.readTextFile = function (file, onSuccess, onFailure) {
 		if (onFailure != undefined) onFailure();
 		return false;
 	}
+
 	rawFile.send(null);
-	// return false;
 }
