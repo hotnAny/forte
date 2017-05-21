@@ -162,6 +162,9 @@ $(document).ready(function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
 });
 
+//
+//  global keydown handler
+//
 FORTE.keydown = function (e) {
     if (e.keyCode == XAC.ENTER) {
         FORTE.changeResolution();
@@ -397,4 +400,29 @@ FORTE.fetchData = function () {
             }
         });
     }
+}
+
+//
+//  parse matlab output text as a bitmap
+//
+FORTE.getBitmap = function(text) {
+    var rowsep = '\n';
+    var colsep = ',';
+
+    var rows = text.split(rowsep);
+    
+    var nrows = rows.length;
+    var ncols = nrows>0?rows[0].split(colsep).length:0;
+
+    if(nrows <= 0 || ncols <= 0) return;
+
+    bitmap = [];
+    for(row of rows) {
+        var arrRowStr = row.split(colsep);
+        var arrRow = [];
+        for(str of arrRowStr) arrRow.push(parseFloat(str));
+        bitmap.push(arrRow);
+    }
+
+    return bitmap;
 }
