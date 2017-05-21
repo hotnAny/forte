@@ -27,7 +27,6 @@ $(document).ready(function () {
         for (var i = files.length - 1; i >= 0; i--) {
             var reader = new FileReader();
             reader.onload = (function (e) {
-                // XAC.loadStl(e.target.result, MEDLEY.onStlLoaded);
                 var dataObject = JSON.parse(e.target.result);
                 FORTE.btnClear.trigger('click');
                 FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
@@ -39,7 +38,7 @@ $(document).ready(function () {
                 FORTE.design.loadPoints = dataObject.loadPoints;
                 FORTE.design.loadValues = dataObject.loadValues;
                 FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
-                FORTE.toggleLayerZindex(FORTE.layers.indexOf(FORTE.loadLayer));
+                // FORTE.toggleLayerZindex(FORTE.layers.indexOf(FORTE.loadLayer));
             });
             reader.readAsBinaryString(files[i]);
         }
@@ -152,10 +151,14 @@ $(document).ready(function () {
         if (FORTE.xmlhttp.readyState == 4 && FORTE.xmlhttp.status == 200) {
             log(FORTE.xmlhttp.responseText);
             var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
-            if (outDir != null && outDir != undefined) FORTE.outDir = outDir;
+            if (outDir != null && outDir != undefined) {
+                FORTE.outDir = outDir;
+                log('[log] server output directory: ' + FORTE.outDir);
+            }
         }
     }
 
+    // first call of server
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
 });
 
