@@ -2,9 +2,9 @@
 
 ##########################################################################
 #
-#   server for running top88
+#   server for writting input to top88, v0.1
 #
-#   by xiangchen@acm.org
+#   by xiangchen@acm.org, 05/2017
 #
 ##########################################################################
 
@@ -20,13 +20,12 @@ import traceback
 from numpy import array, hstack, empty
 from math import sqrt
 
-# MCRPATH = '/Applications/MATLAB/MATLAB_Runtime/v91'
-# LIBPATH = '.:' + MCRPATH + '/runtime/maci64'
-# LIBPATH = LIBPATH + ':' + MCRPATH + '/bin/maci64'
-# LIBPATH = LIBPATH + ':' + MCRPATH + '/sys/os/maci64'
-# TOP88PATH = './top88/for_testing/top88.app/Contents/MacOS/top88'
+# default input file path/name
 INPUTFILE = '~matinput'
 
+#
+#   for execution time measurement
+#
 T = int(round(time.time() * 1000))
 def _log(msg):
     global T
@@ -37,11 +36,13 @@ def _log(msg):
     return t
 
 #
-#   xac: get element number
+#   get element number
 #
 def elm_num_2d(nelx, nely, mpx, mpy):
     return nely * (mpx - 1) + mpy
-
+#
+#   get 2d node number
+#
 def node_nums_2d(nelx, nely, mpx, mpy):
     inn = array([0, 1, nely + 1, nely + 2]) #  initial node numbers
     en = nely * (mpx - 1) + mpy #  element number
@@ -81,21 +82,18 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _boundaries = safe_retrieve_all(_designobj, 'boundaries', None)
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
 
-    # print loadvalues, emptiness, boundaries, material
-
     #
     #   convert to matlab input
     #
     dof = 2
     nnodes = pow(2, dof)
+
     # resolution, material & trial
     nelx = _resolution[0]
     nely = _resolution[1]
     material = _material * 1.0 * len(_design) / (nelx * nely)
     print nelx, nely, material
-    # material = 0.3
 
-    # trial = 'forte_' + str(long(time.time()))
     matinput = {'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
      'FIXEDDOFS':[], 'LOADNODES':[], 'LOADVALUES':[]}
     
@@ -114,23 +112,19 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
 
     # load
     tb_loadnodes = []
-    # for loadpoints in _loadpoints_set:
     for x in _loadpoints:
         node = node_nums_2d(nelx, nely, x[0] + 1, x[1] + 1)
         list_nodes = node.tolist()
         for idx in list_nodes:
             tb_loadnodes.append(dof*(idx-1)+1)
             tb_loadnodes.append(dof*(idx-1)+2)
-            # break
 
     tb_loadvalues = []
-    # for loadvalues in _loadvalues_set:
     for v in _loadvalues:
         vsum = sqrt(v[0]**2+v[1]**2)
         for i in xrange(0, nnodes):
             tb_loadvalues.append(v[0]/vsum)
             tb_loadvalues.append(v[1]/vsum)
-            # break
     
     matinput['LOADNODES'] = tb_loadnodes
     # print len(matinput['LOADNODES'])
@@ -153,12 +147,6 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     subprocess.call('cp ' + INPUTFILE + ' /Users/hotnAny/Documents/MATLAB', shell=True)
 
     _log('prepared matlab input')
-    
-    # subprocess.check_call([TOP88PATH, os.getcwd() + '/' + INPUTFILE],\
-    #     env=dict(os.environ, SQSUB_VAR="visible in this subprocess"))
-    # _log('top88')
-
-    # str_result += 'state=finished' + '&'
 
     return str_result
 
@@ -191,11 +179,7 @@ class S(BaseHTTPRequestHandler):
         post_data = parse_qs(urlparse(self.path + post_str).query)
 
         global session_dir
-        # try:
         result_msg = proc_post_data(post_data, sdir=session_dir)
-        # except:
-            # traceback.print_exc()
-            # result_msg = 'error'
 
         print result_msg
         self.wfile.write(result_msg)
@@ -206,7 +190,7 @@ class S(BaseHTTPRequestHandler):
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    print 'top88 server up...'
+    print 'top88 input server up...'
     httpd.serve_forever()
 
 #
@@ -214,18 +198,15 @@ def run(server_class=HTTPServer, handler_class=S, port=80):
 #
 if __name__ == "__main__":
 
-    if len(argv) != 2:
-    	print 'usage: ./topy_server.py <port_num>'
-    	quit()
+    if len(argv) != 3:
+        print 'usage: ./topy_server.py <port_num> <input_file_path>'
+        quit()
 
+    INPUTFILE = argv[2]
     subprocess.call('rm -rf server_session*', shell=True)
     global session_dir
     session_dir = 'server_session_' + str(long(time.time()))
     subprocess.call('mkdir ' + session_dir, shell=True)
-    
-    # subprocess.check_call([TOP88PATH, os.getcwd() + '/' + INPUTFILE],\
-    #     env=dict(os.environ, SQSUB_VAR="visible in this subprocess"))
-
-    # subprocess.call('./start_matlab.py ' + os.getcwd() + '/' + INPUTFILE, shell=True)
 
     run(port=int(argv[1]))
+    
