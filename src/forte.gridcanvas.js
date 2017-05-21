@@ -15,9 +15,6 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._strokeColor = strokeColor == undefined ? '#000000' : strokeColor;
 
     this._canvas = $('<canvas id="canvas"></canvas>');
-    // if (bgColor != undefined) {
-    //     this._canvas.css('background', bgColor);
-    // }
     var parentOffset = this._parent.offset();
     this._canvas.css('position', 'absolute');
     this._canvas.css('left', parentOffset.left);
@@ -118,7 +115,7 @@ FORTE.GridCanvas.prototype.clear = function () {
 }
 
 //
-//
+//  draw on the canvas from an input bitmap, using (x0, y0) as the origin
 //
 FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
     var h = bitmap.length;
@@ -145,6 +142,9 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
     }
 }
 
+//
+//  pacakge the drawn bitmap sparsely into an array
+//
 FORTE.GridCanvas.prototype.package = function () {
     var points = [];
     for (var j = 0; j < this._gridHeight; j++) {
