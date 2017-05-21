@@ -14,8 +14,6 @@ XAC.MOUSEMOVE = -2;
 XAC.MOUSEUP = -3;
 XAC.KEYUP = -4;
 
-// TODO global mouse event handlers
-
 // keyboard events
 XAC.LEFTARROW = 37;
 XAC.UPARROW = 38;
@@ -187,7 +185,7 @@ XAC._dispatchInputEvents = function (e, type) {
 }
 
 //
-//
+//  enable drag & drop on the entire app
 //
 XAC.enableDragDrop = function (filesHandler) {
     // drag & drop 3d model file
@@ -211,7 +209,7 @@ XAC.enableDragDrop = function (filesHandler) {
 }
 
 //
-//
+//  make sliders
 //
 XAC.makeSlider = function (id, label, min, max, value, parent) {
     var sldrRow = $('<tr></tr>');
@@ -235,7 +233,7 @@ XAC.makeSlider = function (id, label, min, max, value, parent) {
 }
 
 //
-//
+//  make radio buttons
 //
 XAC.makeRadioButtons = function (name, labels, values, parent, idxChecked) {
     var id = (Math.random() * 1000 | 0).toString();
