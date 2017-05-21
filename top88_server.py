@@ -20,11 +20,11 @@ import traceback
 from numpy import array, hstack, empty
 from math import sqrt
 
-MCRPATH = '/Applications/MATLAB/MATLAB_Runtime/v91'
-LIBPATH = '.:' + MCRPATH + '/runtime/maci64'
-LIBPATH = LIBPATH + ':' + MCRPATH + '/bin/maci64'
-LIBPATH = LIBPATH + ':' + MCRPATH + '/sys/os/maci64'
-TOP88PATH = './top88/for_testing/top88.app/Contents/MacOS/top88'
+# MCRPATH = '/Applications/MATLAB/MATLAB_Runtime/v91'
+# LIBPATH = '.:' + MCRPATH + '/runtime/maci64'
+# LIBPATH = LIBPATH + ':' + MCRPATH + '/bin/maci64'
+# LIBPATH = LIBPATH + ':' + MCRPATH + '/sys/os/maci64'
+# TOP88PATH = './top88/for_testing/top88.app/Contents/MacOS/top88'
 INPUTFILE = '~matinput'
 
 T = int(round(time.time() * 1000))
@@ -154,11 +154,11 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
 
     _log('prepared matlab input')
     
-    subprocess.check_call([TOP88PATH, os.getcwd() + '/' + INPUTFILE],\
-        env=dict(os.environ, SQSUB_VAR="visible in this subprocess"))
-    _log('top88')
+    # subprocess.check_call([TOP88PATH, os.getcwd() + '/' + INPUTFILE],\
+    #     env=dict(os.environ, SQSUB_VAR="visible in this subprocess"))
+    # _log('top88')
 
-    str_result += 'state=finished' + '&'
+    # str_result += 'state=finished' + '&'
 
     return str_result
 
@@ -223,7 +223,9 @@ if __name__ == "__main__":
     session_dir = 'server_session_' + str(long(time.time()))
     subprocess.call('mkdir ' + session_dir, shell=True)
     
-    # print LIBPATH
-    os.environ['DYLD_LIBRARY_PATH'] = LIBPATH
+    # subprocess.check_call([TOP88PATH, os.getcwd() + '/' + INPUTFILE],\
+    #     env=dict(os.environ, SQSUB_VAR="visible in this subprocess"))
+
+    # subprocess.call('./start_matlab.py ' + os.getcwd() + '/' + INPUTFILE, shell=True)
 
     run(port=int(argv[1]))
