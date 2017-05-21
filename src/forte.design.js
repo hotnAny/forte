@@ -20,8 +20,11 @@ FORTE.Design.prototype = {
     constructor: FORTE.Design
 }
 
+//
+//  get data for running matlab optimization
+//
 FORTE.Design.prototype.getData = function () {
-    if(this.loadPoints.length <= 0 || this.boundaryPoints.length <= 0) return;
+    if (this.loadPoints.length <= 0 || this.boundaryPoints.length <= 0) return;
 
     // find bounding box
     var bbox = {
@@ -68,8 +71,8 @@ FORTE.Design.prototype.getData = function () {
     for (lps of this.loadPoints)
         for (p of lps) loadPoints.push(__updatePoint(p.clone(), bbox));
     var loadValues = [];
-    for(lvs of this.loadValues)
-        for(v of lvs) loadValues.push(v);
+    for (lvs of this.loadValues)
+        for (v of lvs) loadValues.push(v);
     var boundaryPoints = [];
     for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox));
 
@@ -88,8 +91,8 @@ FORTE.Design.prototype.getData = function () {
     // str += '\n'
     // log(str)
 
-    log(bbox)
-    FORTE.bbox = bbox;
+    // FORTE.bbox = bbox;
+    this.bbox = bbox;
 
     return {
         resolution: [width, height],

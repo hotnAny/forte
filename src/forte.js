@@ -373,7 +373,7 @@ FORTE.fetchData = function () {
             var bitmap = FORTE.getBitmap(text);
 
             if (FORTE.itrCounter < FORTE.MAXITERATIONS) {
-                FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.bbox.xmin, FORTE.bbox.ymin, 0.5);
+                FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
                 time('[log] redrew for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
                 FORTE.itrCounter += 1;
                 setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
@@ -389,7 +389,7 @@ FORTE.fetchData = function () {
                 FORTE.failureCounter++;
                 if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
                     FORTE.state = 'finished';
-                    FORTE.designLayer.drawFromBitmap(bitmap, FORTE.bbox.xmin, FORTE.bbox.ymin, 0.5);
+                    FORTE.designLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
                     FORTE.optimizedLayer.clear();
                     FORTE.optimizedLayer._canvas.remove();
                 } else {
@@ -405,22 +405,22 @@ FORTE.fetchData = function () {
 //
 //  parse matlab output text as a bitmap
 //
-FORTE.getBitmap = function(text) {
+FORTE.getBitmap = function (text) {
     var rowsep = '\n';
     var colsep = ',';
 
     var rows = text.split(rowsep);
-    
-    var nrows = rows.length;
-    var ncols = nrows>0?rows[0].split(colsep).length:0;
 
-    if(nrows <= 0 || ncols <= 0) return;
+    var nrows = rows.length;
+    var ncols = nrows > 0 ? rows[0].split(colsep).length : 0;
+
+    if (nrows <= 0 || ncols <= 0) return;
 
     bitmap = [];
-    for(row of rows) {
+    for (row of rows) {
         var arrRowStr = row.split(colsep);
         var arrRow = [];
-        for(str of arrRowStr) arrRow.push(parseFloat(str));
+        for (str of arrRowStr) arrRow.push(parseFloat(str));
         bitmap.push(arrRow);
     }
 
