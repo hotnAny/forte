@@ -189,6 +189,10 @@ FORTE.changeResolution = function () {
     for (layer of FORTE.layers) {
         layer._strokeRadius = FORTE.width / 128;
     }
+
+    // special treatments
+    FORTE.loadLayer._context.lineWidth = 8;
+    FORTE.loadLayer._context.lineJoin = 'round';
     FORTE.emptinessLayer._strokeRadius *= 3;
 }
 
