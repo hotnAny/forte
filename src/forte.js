@@ -371,7 +371,6 @@ FORTE.fetchData = function () {
         var baseDir = FORTE.outDir + '/' + FORTE.trial;
         XAC.readTextFile(baseDir + (FORTE.itrCounter + 1) + '.out', function (text) {
             var bitmap = FORTE.getBitmap(text);
-
             if (FORTE.itrCounter < FORTE.MAXITERATIONS) {
                 FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
                 time('[log] redrew for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
@@ -393,9 +392,7 @@ FORTE.fetchData = function () {
                     FORTE.optimizedLayer.clear();
                     FORTE.optimizedLayer._canvas.remove();
                 } else {
-                    // log('[log] failure counter: ' + FORTE.failureCounter);
                     setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
-                    // FORTE.fetchInterval *= 0.9;
                 }
             }
         });
