@@ -31,6 +31,8 @@ $(document).ready(function () {
         for (var i = files.length - 1; i >= 0; i--) {
             var reader = new FileReader();
             reader.onload = (function (e) {
+                for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
+                
                 var dataObject = JSON.parse(e.target.result);
                 $(tbWidth).val(dataObject.width);
                 $(tbHeight).val(dataObject.height);
@@ -263,9 +265,8 @@ FORTE.changeResolution = function () {
 //  switch to different layers (design, emptiness, load, boundary, etc.)
 //
 FORTE.switchLayer = function (e) {
-    for (layer of FORTE.layers) {
-        layer._canvas.css('opacity', 1);
-    }
+    for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
+    
     var idx = parseInt($(e.target).val());
     if (!isNaN(idx)) {
         FORTE.layer = FORTE.layers[idx];
