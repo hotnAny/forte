@@ -110,6 +110,13 @@ $(document).ready(function () {
             if (layer != undefined) layer._canvas.remove();
         }
 
+        for (layer of FORTE.layers) {
+            if (layer != FORTE.designLayer) {
+                layer.removed = true;
+                layer._canvas.remove();
+            }
+        }
+
         FORTE.design.designPoints = FORTE.designLayer.package();
         FORTE.design.emptinessPoints = FORTE.emptinessLayer.package();
         FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
@@ -257,6 +264,9 @@ FORTE.changeResolution = function () {
 //  switch to different layers (design, emptiness, load, boundary, etc.)
 //
 FORTE.switchLayer = function (e) {
+    for (layer of FORTE.layers) {
+        if (layer.removed) layer._parent.append(layer._canvas);
+    }
     var idx = parseInt($(e.target).val());
     if (!isNaN(idx)) {
         FORTE.layer = FORTE.layers[idx];
