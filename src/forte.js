@@ -127,7 +127,7 @@ $(document).ready(function () {
     });
     $('#tdSave').append(FORTE.btnSave);
 
-    // layers
+    // layers of editing
     FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
     FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
     FORTE.emptinessLayer._strokeRadius = 3;
@@ -157,6 +157,27 @@ $(document).ready(function () {
             }
         }
     }
+
+    // layers of optimization
+    var marginPanel = -5;
+    var parentOffset = $('#tdCanvas').offset();
+    FORTE.optimizedPanel = $('<div align="right"></div>');
+    // FORTE.optimizedPanel.css('background', '#ff0000')
+    FORTE.optimizedPanel.width(96);
+    FORTE.optimizedPanel.css('position', 'absolute');
+    var parentWidth = $('#tdCanvas').width();
+    FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth -
+        marginPanel - FORTE.optimizedPanel.width());
+    FORTE.optimizedPanel.css('top', parentOffset.top + marginPanel);
+    FORTE.optimizedPanel.css('z-index', 100);
+    $('#tdCanvas').append(FORTE.optimizedPanel);
+
+    FORTE.optimizedLayerList = $('<ul></ul>');
+    FORTE.optimizedLayerList.tagit();
+    // FORTE.optimizedLayerList.tagit('createTag', 'layer 0 ');
+    // FORTE.optimizedLayerList.tagit('createTag', 'layer 1 ');
+    // FORTE.optimizedLayerList.tagit('createTag', ' ');
+    FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
 
     // first call of server
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
