@@ -24,7 +24,9 @@ $(document).ready(function () {
         $(this).css('font-size', 'small');
     });
 
+    //
     // enable drag and drop
+    //
     XAC.enableDragDrop(function (files) {
         for (var i = files.length - 1; i >= 0; i--) {
             var reader = new FileReader();
@@ -49,7 +51,9 @@ $(document).ready(function () {
         }
     });
 
+    //
     // resolution
+    //
     var tbWidth = $('<input id="tbWidth" type="text" value="' + FORTE.width + '" size="3">');
     var tbHeight = $('<input id="tbHeight" type="text" value="' + FORTE.height + '" size="3">');
     $('#tdResolution').append(tbWidth);
@@ -58,7 +62,9 @@ $(document).ready(function () {
     tbWidth.keydown(FORTE.keydown);
     tbHeight.keydown(FORTE.keydown);
 
-    // slider
+    //
+    // material amount slider
+    //
     FORTE.materialRatio = 1.5;
     var minSlider = 0,
         maxSlider = 100;
@@ -76,7 +82,9 @@ $(document).ready(function () {
         }
     })
 
+    //
     // brushes for design, load and boundary
+    //
     FORTE.nameBrushButtons = 'brushButtons';
     XAC.makeRadioButtons('brushButtons', ['design', 'emptiness', 'load', 'boundary'], [0, 1, 2, 3], $('#tdBrushes'), 0);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("change", FORTE.switchLayer);
@@ -90,7 +98,9 @@ $(document).ready(function () {
     });
     $('#tdClear').append(FORTE.btnClear);
 
+    //
     // run
+    //
     FORTE.btnRun = $('<div>run</div>');
     FORTE.btnRun.button();
     FORTE.btnRun.click(function (e) {
@@ -115,7 +125,9 @@ $(document).ready(function () {
     });
     $('#tdRun').append(FORTE.btnRun);
 
+    //
     // save
+    //
     FORTE.btnSave = $('<div>save</div>');
     FORTE.btnSave.button();
     FORTE.btnSave.click(function (e) {
@@ -140,7 +152,9 @@ $(document).ready(function () {
     });
     $('#tdSave').append(FORTE.btnSave);
 
+    //
     // layers of editing
+    //
     FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
     FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
     FORTE.emptinessLayer._strokeRadius = 3;
@@ -168,12 +182,13 @@ $(document).ready(function () {
         }
     }
 
+    //
     // layers of optimization
+    //
     FORTE.htOptimizedLayers = {};
     var marginPanel = -5;
     var parentOffset = $('#tdCanvas').offset();
     FORTE.optimizedPanel = $('<div align="right"></div>');
-    // FORTE.optimizedPanel.css('background', '#ff0000')
     FORTE.optimizedPanel.width(96);
     FORTE.optimizedPanel.css('position', 'absolute');
     var parentWidth = $('#tdCanvas').width();
@@ -195,13 +210,6 @@ $(document).ready(function () {
             // FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
         }
     });
-    // FORTE.optimizedLayerList.tagit('createTag', 'layer 0 ');
-    // log(Object.keys(FORTE.htOptimizedLayers).length);
-    // FORTE.htOptimizedLayers['layer 0'] = 'hi'
-    // log(Object.keys(FORTE.htOptimizedLayers).length);
-
-    // FORTE.optimizedLayerList.tagit('createTag', 'layer 1 ');
-    // FORTE.optimizedLayerList.tagit('createTag', ' ');
     FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
 
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
@@ -405,6 +413,9 @@ FORTE.customizeLoadLayer = function () {
     }.bind(FORTE.loadLayer));
 }
 
+//
+//  routine to fetch data from matlab output
+//
 FORTE.fetchData = function () {
     if (FORTE.state == 'start') {
         FORTE.itrCounter = 0;
@@ -441,10 +452,6 @@ FORTE.fetchData = function () {
                 FORTE.failureCounter++;
                 if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
                     FORTE.state = 'finished';
-                    // FORTE.designLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
-                    // FORTE.optimizedLayer.clear();
-                    // FORTE.optimizedLayer._canvas.remove();
-                    // FORTE.optimizedLayerList.push(FORTE.optimizedLayer);
                     var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
                     var label = 'layer ' + (numLayers + 1);
                     FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
@@ -484,7 +491,7 @@ FORTE.getBitmap = function (text) {
 }
 
 //
-//
+//  only show selected optimized layer, given its label
 //
 FORTE.showOptimizedLayer = function (tag, label) {
     if (FORTE.selectedTag != undefined) {
