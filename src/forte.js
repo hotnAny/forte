@@ -17,6 +17,8 @@ FORTE.MAXMATERIALRATIO = 3.0;
 FORTE.GIVEUPTHRESHOLD = 10;
 
 $(document).ready(function () {
+    time();
+
     // set font size
     $('*').each(function () {
         $(this).css('font-size', 'small');
@@ -28,6 +30,9 @@ $(document).ready(function () {
             var reader = new FileReader();
             reader.onload = (function (e) {
                 var dataObject = JSON.parse(e.target.result);
+                $(tbWidth).val(dataObject.width);
+                $(tbHeight).val(dataObject.height);
+                FORTE.changeResolution();
                 FORTE.btnClear.trigger('click');
                 FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
                 FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
@@ -89,6 +94,12 @@ $(document).ready(function () {
     FORTE.btnRun = $('<div>run</div>');
     FORTE.btnRun.button();
     FORTE.btnRun.click(function (e) {
+        var keys = Object.keys(FORTE.htOptimizedLayers);
+        for (key of keys) {
+            var layer = FORTE.htOptimizedLayers[key];
+            if (layer != undefined) layer._canvas.remove();
+        }
+
         FORTE.design.designPoints = FORTE.designLayer.package();
         FORTE.design.emptinessPoints = FORTE.emptinessLayer.package();
         FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
@@ -109,6 +120,8 @@ $(document).ready(function () {
     FORTE.btnSave.button();
     FORTE.btnSave.click(function (e) {
         var dataObject = {
+            width: FORTE.width,
+            height: FORTE.height,
             designBitmap: FORTE.designLayer._bitmap,
             emptinessBitmap: FORTE.emptinessLayer._bitmap,
             loadBitmap: FORTE.loadLayer._bitmap,
@@ -141,9 +154,6 @@ $(document).ready(function () {
 
     FORTE.customizeLoadLayer();
     FORTE.changeResolution();
-    FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
-    FORTE.loadLayer._context.lineWidth = 8;
-    FORTE.loadLayer._context.lineJoin = 'round';
 
     FORTE.xmlhttp = new XMLHttpRequest();
     FORTE.xmlhttp.timeout = 1e9;
@@ -159,6 +169,7 @@ $(document).ready(function () {
     }
 
     // layers of optimization
+    FORTE.htOptimizedLayers = {};
     var marginPanel = -5;
     var parentOffset = $('#tdCanvas').offset();
     FORTE.optimizedPanel = $('<div align="right"></div>');
@@ -173,14 +184,28 @@ $(document).ready(function () {
     $('#tdCanvas').append(FORTE.optimizedPanel);
 
     FORTE.optimizedLayerList = $('<ul></ul>');
-    FORTE.optimizedLayerList.tagit();
+    FORTE.optimizedLayerList.tagit({
+        onTagClicked: function (event, ui) {
+            FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
+        },
+        beforeTagRemoved: function (event, ui) {
+            var layer = FORTE.htOptimizedLayers[ui.tagLabel];
+            if (layer != undefined) layer._canvas.remove();
+            FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
+            // FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
+        }
+    });
     // FORTE.optimizedLayerList.tagit('createTag', 'layer 0 ');
+    // log(Object.keys(FORTE.htOptimizedLayers).length);
+    // FORTE.htOptimizedLayers['layer 0'] = 'hi'
+    // log(Object.keys(FORTE.htOptimizedLayers).length);
+
     // FORTE.optimizedLayerList.tagit('createTag', 'layer 1 ');
     // FORTE.optimizedLayerList.tagit('createTag', ' ');
     FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
 
-    // first call of server
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
+    time('ready.')
 });
 
 //
@@ -212,9 +237,12 @@ FORTE.changeResolution = function () {
     }
 
     // special treatments
+    FORTE.emptinessLayer._strokeRadius *= 3;
     FORTE.loadLayer._context.lineWidth = 8;
     FORTE.loadLayer._context.lineJoin = 'round';
-    FORTE.emptinessLayer._strokeRadius *= 3;
+    FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
+    FORTE.loadLayer._context.lineWidth = 8;
+    FORTE.loadLayer._context.lineJoin = 'round';
 }
 
 //
@@ -413,9 +441,15 @@ FORTE.fetchData = function () {
                 FORTE.failureCounter++;
                 if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
                     FORTE.state = 'finished';
-                    FORTE.designLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
-                    FORTE.optimizedLayer.clear();
-                    FORTE.optimizedLayer._canvas.remove();
+                    // FORTE.designLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
+                    // FORTE.optimizedLayer.clear();
+                    // FORTE.optimizedLayer._canvas.remove();
+                    // FORTE.optimizedLayerList.push(FORTE.optimizedLayer);
+                    var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
+                    var label = 'layer ' + (numLayers + 1);
+                    FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
+                    var tag = FORTE.optimizedLayerList.tagit('createTag', label);
+                    FORTE.showOptimizedLayer(tag, label);
                 } else {
                     setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
                 }
@@ -447,4 +481,33 @@ FORTE.getBitmap = function (text) {
     }
 
     return bitmap;
+}
+
+//
+//
+//
+FORTE.showOptimizedLayer = function (tag, label) {
+    if (FORTE.selectedTag != undefined) {
+        $(FORTE.selectedTag).removeClass('ui-state-highlight');
+    }
+
+    var keys = Object.keys(FORTE.htOptimizedLayers);
+    for (key of keys) {
+        var layer = FORTE.htOptimizedLayers[key];
+        if (layer != undefined) layer._canvas.remove();
+    }
+
+    if (FORTE.selectedTag != undefined && FORTE.selectedTag[0] == tag[0]) {
+        FORTE.selectedTag = undefined;
+        return;
+    }
+
+    var layer = FORTE.htOptimizedLayers[label];
+    if (layer != undefined) {
+        layer._parent.append(layer._canvas);
+        FORTE.selectedTag = tag;
+        $(FORTE.selectedTag).addClass('ui-state-highlight');
+    } else {
+        FORTE.selectedTag = undefined;
+    }
 }
