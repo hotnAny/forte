@@ -119,7 +119,7 @@ $(document).ready(function () {
         }
 
         FORTE.design.designPoints = FORTE.designLayer.package();
-        FORTE.design.emptinessPoints = FORTE.emptinessLayer.package();
+        FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
         FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
         var data = JSON.stringify(FORTE.design.getData());
         if (data != undefined) {

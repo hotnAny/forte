@@ -134,7 +134,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # active/passive/favored elements
     matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
     matinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
-    matinput['FAVELMS'] = matinput['PASVELMS']
+    print matinput['PASVELMS']
+    matinput['FAVELMS'] = matinput['ACTVELMS']
 
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 50, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
