@@ -32,7 +32,7 @@ $(document).ready(function () {
             var reader = new FileReader();
             reader.onload = (function (e) {
                 for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
-                
+
                 var dataObject = JSON.parse(e.target.result);
                 $(tbWidth).val(dataObject.width);
                 $(tbHeight).val(dataObject.height);
@@ -113,9 +113,9 @@ $(document).ready(function () {
         }
 
         for (layer of FORTE.layers) {
-            if (layer != FORTE.designLayer) {
-                layer._canvas.css('opacity', 0); //remove();
-            }
+            // if (layer != FORTE.designLayer) {
+            layer._canvas.css('opacity', 0); //remove();
+            // }
         }
 
         FORTE.design.designPoints = FORTE.designLayer.package();
@@ -266,7 +266,7 @@ FORTE.changeResolution = function () {
 //
 FORTE.switchLayer = function (e) {
     for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
-    
+
     var idx = parseInt($(e.target).val());
     if (!isNaN(idx)) {
         FORTE.layer = FORTE.layers[idx];
@@ -432,7 +432,7 @@ FORTE.fetchData = function () {
         log('[log] data fetching started');
         FORTE.state = 'ongoing';
         setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
-        FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.designLayer._strokeColor);
+        FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#888888');
         FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
