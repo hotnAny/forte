@@ -9,15 +9,15 @@
 	<key>CFBundleIconFile</key>
 	<string>membrane.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>top88</string>
+	<string>topopt</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>top88</string>
+	<string>topopt</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
-	<string>top88</string>
+	<string>topopt</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>CFBundleVersionString</key>

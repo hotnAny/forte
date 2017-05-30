@@ -26,7 +26,7 @@ else
       args="${args} \"${token}\"" 
       shift
   done
-  eval "\"${exe_dir}/top88.app/Contents/MacOS/top88\"" $args
+  eval "\"${exe_dir}/topopt.app/Contents/MacOS/topopt\"" $args
 fi
 exit
 

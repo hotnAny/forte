@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration file="/Users/hotnAny/Dropbox/Codebase/forte/top88.prj" location="/Users/hotnAny/Dropbox/Codebase/forte" name="top88" target="target.ezdeploy.standalone" target-name="Application Compiler">
-    <param.appname>top88</param.appname>
+  <configuration build-checksum="734993471" file="/Users/hotnAny/Dropbox/Codebase/forte/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte" name="topopt" preferred-package-location="/Users/hotnAny/Dropbox/Codebase/forte/top88/for_redistribution" preferred-package-type="package.type.app" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>topopt</param.appname>
     <param.icon />
     <param.icons />
     <param.version>1.0</param.version>
@@ -11,7 +11,7 @@
     <param.description />
     <param.screenshot />
     <param.guid />
-    <param.installpath.string>/top88/</param.installpath.string>
+    <param.installpath.string>/topopt/</param.installpath.string>
     <param.installpath.combo>option.installpath.systemwideapp</param.installpath.combo>
     <param.logo />
     <param.install.notes>In the following directions, replace MCR_ROOT by the directory where the MATLAB Runtime is installed on the target machine.
@@ -29,10 +29,10 @@ If it is defined, set it to the concatenation of these strings:
     MCR_ROOT/v91/sys/os/maci64:
     MCR_ROOT/v91/bin/maci64</param.install.notes>
     <param.target.install.notes />
-    <param.intermediate>${PROJECT_ROOT}/top88/for_testing</param.intermediate>
-    <param.files.only>${PROJECT_ROOT}/top88/for_redistribution_files_only</param.files.only>
-    <param.output>${PROJECT_ROOT}/top88/for_redistribution</param.output>
-    <param.logdir>${PROJECT_ROOT}/top88</param.logdir>
+    <param.intermediate>${PROJECT_ROOT}/topopt/for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}/topopt/for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}/topopt/for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}/topopt</param.logdir>
     <param.enable.clean.build>false</param.enable.clean.build>
     <param.user.defined.mcr.options />
     <param.embed.ctf>true</param.embed.ctf>
@@ -82,16 +82,18 @@ If it is defined, set it to the concatenation of these strings:
       <param.log.file />
     </unset>
     <fileset.main>
-      <file>/Users/hotnAny/Documents/MATLAB/top88.m</file>
+      <file>/Users/hotnAny/Documents/MATLAB/topopt.m</file>
     </fileset.main>
     <fileset.resources />
     <fileset.package />
-    <fileset.depfun />
+    <fileset.depfun>
+      <file>/Users/hotnAny/Documents/MATLAB/top88.m</file>
+    </fileset.depfun>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}/top88/for_testing" name="top88.app" optional="false">/Users/hotnAny/Dropbox/Codebase/forte/top88/for_testing/top88.app</file>
-      <file location="${PROJECT_ROOT}/top88/for_testing" name="splash.png" optional="false">/Users/hotnAny/Dropbox/Codebase/forte/top88/for_testing/splash.png</file>
-      <file location="${PROJECT_ROOT}/top88/for_testing" name="readme.txt" optional="true">/Users/hotnAny/Dropbox/Codebase/forte/top88/for_testing/readme.txt</file>
-      <file location="${PROJECT_ROOT}/top88/for_testing" name="run_top88.sh" optional="false">/Users/hotnAny/Dropbox/Codebase/forte/top88/for_testing/run_top88.sh</file>
+      <file location="${PROJECT_ROOT}/topopt/for_testing" name="splash.png" optional="false">/Users/hotnAny/Dropbox/Codebase/forte/topopt/for_testing/splash.png</file>
+      <file location="${PROJECT_ROOT}/topopt/for_testing" name="readme.txt" optional="true">/Users/hotnAny/Dropbox/Codebase/forte/topopt/for_testing/readme.txt</file>
+      <file location="${PROJECT_ROOT}/topopt/for_testing" name="run_topopt.sh" optional="false">/Users/hotnAny/Dropbox/Codebase/forte/topopt/for_testing/run_topopt.sh</file>
+      <file location="${PROJECT_ROOT}/topopt/for_testing" name="topopt.app" optional="false">/Users/hotnAny/Dropbox/Codebase/forte/topopt/for_testing/topopt.app</file>
     </build-deliverables>
     <workflow />
     <matlab>
