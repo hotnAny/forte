@@ -41,9 +41,11 @@ FORTE.Design.prototype.getData = function () {
         bbox.ymax = Math.max(p[1], bbox.ymax);
     }
 
-    var __updatePoint = function (p, bbox) {
+    var __updatePoint = function (p, bbox, margin) {
         p[0] -= bbox.xmin;
+        p[0] = Math.min(Math.max(0, p[0]), bbox.xmax - bbox.xmin - margin * 2);
         p[1] -= bbox.ymin;
+        p[1] = Math.min(Math.max(0, p[1]), bbox.ymax - bbox.ymin - margin * 2);
         return p;
     }
 
@@ -64,17 +66,17 @@ FORTE.Design.prototype.getData = function () {
     var height = bbox.ymax - bbox.ymin;
 
     var designPoints = [];
-    for (p of this.designPoints) designPoints.push(__updatePoint(p.clone(), bbox));
+    for (p of this.designPoints) designPoints.push(__updatePoint(p.clone(), bbox, margin));
     var emptyPoints = [];
-    for (p of this.emptyPoints) emptyPoints.push(__updatePoint(p.clone(), bbox));
+    for (p of this.emptyPoints) emptyPoints.push(__updatePoint(p.clone(), bbox, margin));
     var loadPoints = [];
     for (lps of this.loadPoints)
-        for (p of lps) loadPoints.push(__updatePoint(p.clone(), bbox));
+        for (p of lps) loadPoints.push(__updatePoint(p.clone(), bbox, margin));
     var loadValues = [];
     for (lvs of this.loadValues)
         for (v of lvs) loadValues.push(v);
     var boundaryPoints = [];
-    for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox));
+    for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox, margin));
 
     // [debug]
     // var arr = XAC.initMDArray([height, width], ' ');
