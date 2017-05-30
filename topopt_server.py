@@ -59,7 +59,7 @@ def safe_retrieve_all(buffer, key, alt):
     return buffer[key] if key in buffer else alt
 
 #
-#
+#   compute distance field
 #
 def get_distance_field(elms, nelx, nely, m, alpha):
     infinity = 1e6
@@ -139,8 +139,8 @@ def get_distance_field(elms, nelx, nely, m, alpha):
             df[j][i] = alpha * (cos(df[j][i] * pi / 2))**m
 
     # debug, print normalized distance field
-    # for i in xrange(0, nelx):
-    #     print [(format(x, '1.1f') if x > 0.9 else '   ') for x in df[i]]
+    for i in xrange(0, nelx):
+        print ' '.join([(format(x, '1.1f') if x > 0.9 else '   ') for x in df[i]])
     # return [float(format(j, '1.2f')) for i in df for j in i]
     return df
 
@@ -171,6 +171,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _emptiness = safe_retrieve_all(_designobj, 'emptiness', None)
     _boundaries = safe_retrieve_all(_designobj, 'boundaries', None)
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
+    _m = float(safe_retrieve_one(post_data, 'm', 1))
 
     #
     #   convert to matlab input
@@ -227,9 +228,10 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # print matinput['PASVELMS']
     matinput['FAVELMS'] = matinput['ACTVELMS']
 
-    df = get_distance_field(matinput['FAVELMS'], nelx, nely, 8, 1)
+    df = get_distance_field(matinput['FAVELMS'], nelx, nely, _m, 1)
     matinput['DISTFIELD'] = ';'.join([','.join([format(y, '1.2f') for y in x]) for x in df])
-    print matinput['DISTFIELD']
+    # matinput['DISTFIELD'] = df
+    # print matinput['DISTFIELD']
 
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 50, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
@@ -237,7 +239,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         matinput['DISTFIELD']]
 
     input_file = open(INPUTFILE, 'w')
-    input_file.write(';'.join([str(x) for x in matargs]))
+    input_file.write('&'.join([str(x) for x in matargs]))
     input_file.close()
     # [debug] copy it to matlab dir to debug in matlab
     subprocess.call('cp ' + INPUTFILE + ' /Users/hotnAny/Documents/MATLAB', shell=True)

@@ -124,7 +124,7 @@ $(document).ready(function () {
         var data = JSON.stringify(FORTE.design.getData());
         if (data != undefined) {
             FORTE.trial = 'forte_' + Date.now();
-            XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['trial', 'forte', 'material'], [FORTE.trial, data, FORTE.materialRatio]);
+            XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['trial', 'forte', 'material', 'm'], [FORTE.trial, data, FORTE.materialRatio, FORTE.m]);
             FORTE.state = 'start';
             time();
             FORTE.fetchData();

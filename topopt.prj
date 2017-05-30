@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="734993471" file="/Users/hotnAny/Dropbox/Codebase/forte/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte" name="topopt" preferred-package-location="/Users/hotnAny/Dropbox/Codebase/forte/top88/for_redistribution" preferred-package-type="package.type.app" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration file="/Users/hotnAny/Dropbox/Codebase/forte/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte" name="topopt" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>topopt</param.appname>
     <param.icon />
     <param.icons />

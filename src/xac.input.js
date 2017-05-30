@@ -23,6 +23,7 @@ XAC.ENTER = 13;
 XAC.SHIFT = 16;
 XAC.DELETE = 46;
 
+XAC._activeHits = [];
 XAC.keydowns = {};
 
 XAC._selecteds = [];
