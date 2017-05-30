@@ -18,7 +18,7 @@ import subprocess
 import json
 import traceback
 from numpy import array, hstack, empty
-from math import sqrt
+from math import sqrt, floor, cos, pi, exp
 
 # default input file path/name
 INPUTFILE = '~matinput'
@@ -57,6 +57,96 @@ def safe_retrieve_one(buffer, key, alt):
 
 def safe_retrieve_all(buffer, key, alt):
     return buffer[key] if key in buffer else alt
+
+#
+#
+#
+def get_distance_field(elms, nelx, nely, m, alpha):
+    infinity = 1e6
+    df = []
+    inc = []
+
+    # initialize distance field
+    for j in xrange(0, nely):
+        row = []
+        for i in xrange(0, nelx):
+            row.append(infinity)
+        df.append(row)
+
+    # initialize distance field incrementals
+    for j in xrange(0, nely):
+        row = []
+        for i in xrange(0, nelx):
+            row.append(1)
+        inc.append(row)
+
+    buf_prev = []
+    num = nelx * nely
+    max_val = 0
+    neighbors = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+    ]
+
+    buf_all = []
+
+    idx = 0
+    for elm_num in elms:
+        mpz = int(floor(elm_num / (nelx * nely)))
+        mpx = int(floor((elm_num - mpz * (nelx * nely)) / nely))
+        mpy = int(floor(elm_num - mpz * (nelx * nely) - mpx * nely))
+        df[mpy][mpx] = 0
+        # inc[mpx][mpy] = min_inc + elm_vals[idx] * (1 - min_inc)
+        buf_prev.append([mpx, mpy])
+        buf_all.append([mpx, mpy])
+        idx += 1
+
+    cnt = 0
+    for j in xrange(0, nely):
+        for i in xrange(0, nelx):
+            cnt += 1 if df[j][i] != infinity else 0
+
+    while cnt < num:
+        buf = []
+        for idx in buf_prev:
+            val_df = df[idx[1]][idx[0]]
+            # val_inc = inc[idx[0]][idx[1]]
+            val_inc = 1
+            for didx in neighbors:
+                ii = idx[0] + didx[0]
+                jj = idx[1] + didx[1]
+                if 0 <= ii and ii < nelx and 0 <= jj and jj < nely:
+                    if df[jj][ii] == infinity:
+                        df[jj][ii] = val_df + val_inc
+                        # inc[ii][jj] = min(1, val_inc * 1.1)
+                        max_val = max(df[jj][ii], max_val)
+                        buf.append([ii, jj])
+                        cnt += 1
+
+        buf_prev = list(buf)
+
+    # eps = 0.001  # avoid long tail
+
+    max_val *= 1.0
+    for i in xrange(0, nelx):
+        for j in xrange(0, nely):
+            df[j][i] /= max_val
+            df[j][i] = min(df[j][i], 1)
+            df[j][i] = max(0, df[j][i])
+
+            df[j][i] = alpha * (cos(df[j][i] * pi / 2))**m
+
+    # debug, print normalized distance field
+    # for i in xrange(0, nelx):
+    #     print [(format(x, '1.1f') if x > 0.9 else '   ') for x in df[i]]
+    # return [float(format(j, '1.2f')) for i in df for j in i]
+    return df
+
+# 1 - (1/(1+e^(64*(0.1-x)))-0.039)/(1-0.039)
+def sigmoid(self, t, slope, gradient):
+    return 1 / (1 + exp(slope * (gradient - t)))
 
 #
 #   processing incoming data
@@ -137,9 +227,14 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # print matinput['PASVELMS']
     matinput['FAVELMS'] = matinput['ACTVELMS']
 
+    df = get_distance_field(matinput['FAVELMS'], nelx, nely, 8, 1)
+    matinput['DISTFIELD'] = ';'.join([','.join([format(y, '1.2f') for y in x]) for x in df])
+    print matinput['DISTFIELD']
+
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 50, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
-        matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS']]
+        matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
+        matinput['DISTFIELD']]
 
     input_file = open(INPUTFILE, 'w')
     input_file.write(';'.join([str(x) for x in matargs]))
