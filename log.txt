@@ -1,0 +1,647 @@
+commit 0f8448e214ee0833268ffe1c89c262af32b571e3
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 17:49:59 2017 -0400
+
+    added alpha to control distance field
+
+commit e3c273b485c48b9df9ea5adfb12ddee62f322dee
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 16:52:09 2017 -0400
+
+    make optimized layer look different
+
+commit 3ceb6062cfeb4cdbdb2a006d08c42432707f8eb0
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 16:41:26 2017 -0400
+
+    added distance field
+
+commit b6e7088d2f6f730f3669999dd7722a4fd4555fb8
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 12:27:47 2017 -0400
+
+    removed the use of margin in emptiness
+
+commit a6572270e67e27c6c6bf08ca1e79cebfd4320958
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 12:14:13 2017 -0400
+
+    refractored topopt
+
+commit 87c6e39a99005c6bcdb8087dd7c638422e3b94ee
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 12:13:56 2017 -0400
+
+    made jquery local
+
+commit 06645231ae78b8751d0dd6d28772600285cd3938
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 12:11:50 2017 -0400
+
+    make jquery local
+
+commit 6d84b123b566d92399ea7c89a3400f8a7491ccc9
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 11:43:30 2017 -0400
+
+    refactored matlab code to separate topopt implementation from the recurring call
+
+commit 2c67e02d492141181603b0a082fef9231feb34c7
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 30 10:53:52 2017 -0400
+
+    fixed empty space bug
+
+commit 3e2e0b489bde3c7eb78bc8147cf8d0f8a06a5884
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 22 17:05:59 2017 -0400
+
+    minor update
+
+commit 7e789b4728ddf17520949c32089413ed8a84eaba
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 22 13:15:42 2017 -0400
+
+    minor bug fixes
+
+commit 45a9be8412744d042830a6eb8047f9c7e8a05cbd
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 22 13:06:56 2017 -0400
+
+    make functional requirements disappear while running optimization
+
+commit 49a80b7e9966d54bd16271327541a4023c1418b2
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 22 12:57:06 2017 -0400
+
+    added comments
+
+commit 148c20cb3f13d9fc28b723dd1cd722cdcdcc41a6
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 22 12:53:46 2017 -0400
+
+    added layer panel
+
+commit 3375a424ed09ece0fd0168b53cf74a57bf8c1809
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 22 11:03:44 2017 -0400
+
+    added layer ui
+
+commit 3574b9993728a5a7bceb5ad199e64b2f3a366766
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 14:31:04 2017 -0400
+
+    minor update
+
+commit 34c6b6f23ffd671fc7ee4610264d72140d4cf93f
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 14:26:45 2017 -0400
+
+    minor update
+
+commit 73bc4c8c87ca14a068e16c0c6ea956beccf47df0
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 14:26:36 2017 -0400
+
+    bug fix
+
+commit a478a92c7b6456b4dad9082e540545fbb74b1d47
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 14:26:28 2017 -0400
+
+    changed to index.html
+
+commit e2e1989b1d2966075e90fc99658290e3e777077b
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 14:03:17 2017 -0400
+
+    removed out-of-date files
+
+commit a15b91a76e8cb1869188ffb84161577addc2b757
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:59:31 2017 -0400
+
+    clean-up and comments
+
+commit dae746a1fc4e61305aa02a3abf638b234091cc0b
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:57:30 2017 -0400
+
+    parameterized the script
+
+commit f4aefa464f7fcbd77be89ca680b334a28326143a
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:46:04 2017 -0400
+
+    added a shell script to run the entire backend
+
+commit 00cccf5adc454ba8e943a6a4d8197d3ba0900bd1
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:31:48 2017 -0400
+
+    added comments
+
+commit 00cfacb12076a2951bc77a694032885c624c41c7
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:30:33 2017 -0400
+
+    fixed bounding box ownership
+
+commit abeeeb3eac3291b8b076f903f156ced31bb949dd
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:20:20 2017 -0400
+
+    minonr refactoring
+
+commit 53368594cf5d8dbe30980afd4ff43f0e0540a60d
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:18:02 2017 -0400
+
+    added comments
+
+commit 0668817c32c0199a7685f283915d53f7a4121d59
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:16:59 2017 -0400
+
+    now running matlab separately as a service
+
+commit 6953b6a0d1e59ca59773101e211c06dfaf4f5c65
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:16:52 2017 -0400
+
+    now running matlab separately as a service
+
+commit 6a8e219c686b9a5e5331052ec7842a30c5ad9b27
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:16:27 2017 -0400
+
+    updated matlab service
+
+commit b66f036bd12af77adf76d58af206d98e92146939
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun May 21 13:16:16 2017 -0400
+
+    minor update
+
+commit 464ce557423895e17cf69a9e6e3d672ce14f54c7
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 20 11:29:37 2017 -0400
+
+    implemented saving and loading
+
+commit d924ea83d30a2380ee58c83647cdad487e325419
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 20 10:33:53 2017 -0400
+
+    addd saving design
+
+commit eac58b128ac4f6a77e3f5cf65ff50ba019cc17e3
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 20 10:12:10 2017 -0400
+
+    updated gitignore
+
+commit d0dd62ed68ccbc237128ea10ba29e50f4f4338b9
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 20 10:10:28 2017 -0400
+
+    minor update
+
+commit f45bffcee9c443f5cb68ccb88b848c95e8d30d92
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 20 10:09:46 2017 -0400
+
+    minor update
+
+commit 07a9fbc853a7eb3f85b6a359cd86f3c64314b1bf
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 20 10:09:14 2017 -0400
+
+    implemented material slider
+
+commit f3dab0335e9ef66c44a95f07b2cd4dd2bcd8b38f
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 20 10:09:00 2017 -0400
+
+    bug fixing
+
+commit 601292e8e6c430fef3b2fd3d0d5b3bf2e10b7207
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:48:01 2017 -0400
+
+    display intermediate results
+
+commit 925d95a0ba70875bedfce8a6cfc8b6263fdc113b
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:47:50 2017 -0400
+
+    display intermediate results
+
+commit 6796b3ea87a5c7c64fd8dc99ba195cace062f15f
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:45:59 2017 -0400
+
+    display intermediate results
+
+commit 85746b52daa6b17735c06d1e1537a238565afeff
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:45:18 2017 -0400
+
+    minor update on matlab code
+
+commit a307fe2e310fd7bba0e33e6f3198750d32a055cc
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:44:47 2017 -0400
+
+    fixed parsing bug; connected it to front end
+
+commit bce50ca2cb6390e66aabb4f929dc539df175f412
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:44:21 2017 -0400
+
+    added sandbox
+
+commit 3fca13294f628c965a2e2ced8c1f79a9ddbec3e9
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:44:04 2017 -0400
+
+    added sandbox
+
+commit 3d166ab818143232f37e0a4b9fd33b20874894d0
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri May 19 20:43:34 2017 -0400
+
+    fixed parsing bug; connected it to front end
+
+commit c21c1a0ea13b36e9faec8e2945a6bce1a07e9ad4
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu May 18 18:10:10 2017 -0400
+
+    added more lib
+
+commit 38d4f8e3bd070ef83c25c64d7364f529935986ec
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu May 18 18:10:01 2017 -0400
+
+    added top88 server
+
+commit 961670960877cbc5140612ab1efe672e81cb6361
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu May 18 18:09:27 2017 -0400
+
+    added server communication
+
+commit e2adb4767b3b3fd78aca6497681915d82477adfd
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu May 18 18:09:06 2017 -0400
+
+    added more lib
+
+commit 77400087d0be47a1b4f7aec37431f5d38f7fbd7e
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu May 18 15:44:19 2017 -0400
+
+    added a design object to hold the info
+
+commit b3ed1b6f125454b869cd79b7c9bbfce68608c154
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 17:04:25 2017 -0400
+
+    added trimming digits
+
+commit 2b934483f26ce0168686509b4734d7eb4404888c
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 17:04:12 2017 -0400
+
+    minor update
+
+commit e3fbd38f38a3df4ff36cf636a3e705746220743a
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 17:04:00 2017 -0400
+
+    added load specification
+
+commit 42eb7d7717a0182c4b8ab3b72eb449b3c1175365
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 17:03:41 2017 -0400
+
+    added more libs
+
+commit 8bae2c57f5057630142846718f4a220b501d603c
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 12:54:51 2017 -0400
+
+    added new api
+
+commit bd21dc61e954d44c7bab5cd18c661d5b1a1082e1
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 12:54:39 2017 -0400
+
+    revised radio button generation
+
+commit d041de717b75b9dbeb7110ac4e78b26b3415396a
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 12:54:21 2017 -0400
+
+    added empty layer; preped for specifying load interaction
+
+commit f8060b9abe628c1e973259c0847d8836d5f99229
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 12:53:41 2017 -0400
+
+    minor improvements
+
+commit 90d93e8380c8b771d7a4f0848846749cb11ba584
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 12:52:57 2017 -0400
+
+    added new api
+
+commit f228544250eef80f3cf2ec6c81327536de17e80f
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed May 17 10:29:30 2017 -0400
+
+    refractored the canvas out as a class
+
+commit f8514bf067f5f19e7d085fe6a4aeb58a33b1846d
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 16 17:18:38 2017 -0400
+
+    added simple 2d demo
+
+commit 379f2a3ad51ea8bce1c856234933484df94600ea
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 16 17:18:17 2017 -0400
+
+    updated jquery lib
+
+commit 1aa19ff31e99fd938e2d8cf55168c3efacc8114e
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue May 16 17:17:50 2017 -0400
+
+    moved old src away; added a light version
+
+commit 4bbc5fc17a13f296dc50091584ca56c1d240fa2b
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 15 13:40:34 2017 -0400
+
+    updated git ignore
+
+commit f1a25a0663903158ac9d9abc63b13f686f47f673
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 15 13:39:55 2017 -0400
+
+    implemented all basic input parameters between .forte and matlab.app
+
+commit ded9314e910794fa32fd135f4d20abae6ee5ec19
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Mon May 15 13:38:58 2017 -0400
+
+    updated git ignore
+
+commit 98ab8334b27963e97c013e7099765db120879d12
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 13 11:44:38 2017 -0400
+
+    kept topy_api for transitioning
+
+commit ed9d667506bba9173762e190c66462cd76aded04
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 13 11:44:14 2017 -0400
+
+    remove python scripts
+
+commit 3e0cdb857734b2fb38150e9e112336f2aa9fbfcc
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 13 11:43:38 2017 -0400
+
+    removed topy
+
+commit 12bfeb6d332313994404971bce74f2b24e177da1
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 13 11:41:51 2017 -0400
+
+    added matlab app to run topopt in 88 lines
+
+commit f52e1cc5d5bccb037883f18411a91cbf2e3f02f3
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sat May 13 11:41:11 2017 -0400
+
+    updated git ignore
+
+commit c152e1efcce99daa4e8bf91a26ac97c4564f153f
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Nov 2 13:21:44 2016 -0400
+
+    updated topy code
+
+commit dc5fe31b3beff7747ada62fb33155377dadf1530
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Nov 2 13:20:23 2016 -0400
+
+    removed the table ui layout
+
+commit b3f5904ec95b080c89b1a8165a52204793248860
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Nov 2 13:12:19 2016 -0400
+
+    catch up check in
+
+commit 359fde5b7ae6778b03c9bdf2f4ee08cba6c8e6d0
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 14:26:42 2016 -0400
+
+    commented
+
+commit bb699eaaa8e2785fa2b72e2affb1ff08f15215e0
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 13:49:49 2016 -0400
+
+    fixed lonely diagonals
+
+commit 898de032f38420e58f672a0e004745c001c87e90
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 13:19:54 2016 -0400
+
+    moved unused js files away
+
+commit f953b6ffa631c55da1cb52211e3b1d1496fe675e
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 12:57:06 2016 -0400
+
+    added feature to save 3d models from voxel grid
+
+commit da86d9ecd05aeeb32e7218080cbc534fe00d55a4
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 12:56:32 2016 -0400
+
+    modified topy api for experiment
+
+commit b03af0e481e6c2b50b4f3de110b195603189f1c2
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 12:56:09 2016 -0400
+
+    moved python files
+
+commit c997be46a33f186d87c75c145d5858c6bb689b04
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 12:55:58 2016 -0400
+
+    updated gitignore
+
+commit bce28e0fb70f35a323a0e35a06bcd87cd45b12b9
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Sun Sep 25 12:55:08 2016 -0400
+
+    added experiment code to compare techniques
+
+commit 0b755728d1843ac2976c40a94a8de72ed86c30f0
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 22 10:20:42 2016 -0400
+
+    reorged python files
+
+commit 3e60f4a65dd6ab55f967c78f57db9efb81778b09
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 22 10:20:27 2016 -0400
+
+    reorged python files
+
+commit 7ab24e8059af47f3e56aa24626fd957ac1a401c0
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 22 10:19:46 2016 -0400
+
+    reorged python files
+
+commit 928f9d42d724d6397ec9fbf271e324d50fb1e173
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 22 10:19:33 2016 -0400
+
+    moved post processing to recycle
+
+commit bd160a669c6273d3c0b17ac29159796141c7f84f
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 22 10:19:12 2016 -0400
+
+    reorged python files
+
+commit decd960e2531c06ab16d746778bb7e3f98bd1717
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 21 12:48:53 2016 -0400
+
+    fixed thickness/radius confusion
+
+commit bfaa42f4443a525a530d0f3658a043615a1d2a11
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue Sep 20 15:30:22 2016 -0400
+
+    for marquee selection
+
+commit 64b00faf9364d697ce672ae74fd846fb4d60853a
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue Sep 20 15:30:11 2016 -0400
+
+    distinguished between actv_elem and fav_elem
+
+commit 024c78c871d344ac57307ba9317637b409c2e7bf
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue Sep 20 14:23:41 2016 -0400
+
+    fixed problems with marquee selection
+
+commit 537707e77412b9d5b9cba3472ff5c8a3d9115b9f
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue Sep 20 14:23:21 2016 -0400
+
+    fixed problems with marquee selection
+
+commit 7d7d512cd1da5bd8012ddfa63d7e1c222233af8e
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri Sep 16 13:13:59 2016 -0400
+
+    fixed another selection bug
+
+commit a889c7243adfc2d419eeb4d4f05b69f404c889a9
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Fri Sep 16 12:59:30 2016 -0400
+
+    fixed selection bug
+
+commit df476f40a24e9090184809e2c2b93b56d1421305
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 15 15:30:23 2016 -0400
+
+    basic marquee selection in 3d
+
+commit bae7cbd4a5762f7fcbe237b7e339e214ae5d9e5c
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 15 10:28:37 2016 -0400
+
+    added marquee select
+
+commit 1da6c1963e83208474aa90d3dd65ba1fcb76378b
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Thu Sep 15 10:28:22 2016 -0400
+
+    updated gitignore
+
+commit 03115610a839235eaee8fa59a64ca53ac6114a24
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 14 15:27:05 2016 -0400
+
+    added marquee select
+
+commit 52c69d49c153ae0e73068e280977965cf8eb4ce9
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 14 12:44:40 2016 -0400
+
+    added dae reading capability
+
+commit 08cc3ebc860c349e00ab77494e14106a0f1f599b
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 14 12:44:28 2016 -0400
+
+    minor update on marching cube
+
+commit 789ea216302523bd81500bb1f0bb36337eea7b2d
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 14 12:43:27 2016 -0400
+
+    made the server cleaner; added dae generation
+
+commit 80a6fc40e2fee7c0ef7a80ba746f277dcc272a73
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 14 12:43:06 2016 -0400
+
+    added dae reading capability
+
+commit c0fb89ef7da901305d8eb1348018836199646bc4
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 14 12:42:30 2016 -0400
+
+    fixed unsynced problems
+
+commit f45000eacd3f19e84115408d144e076c6110d0cb
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Wed Sep 14 12:42:04 2016 -0400
+
+    changed filter radius to 1.0
+
+commit 668af579be64a1d0059fcde6c20bebdb5864ebbd
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue Sep 13 10:27:23 2016 -0400
+
+    initial commit
+
+commit aa693f359b820025e0c23fbbfb5198750ffaaefd
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue Sep 13 10:27:15 2016 -0400
+
+    updated gitignore
+
+commit 49d3dd68a1a56d136f5f578662d7b06726bd9a19
+Author: Xiang 'Anthony' Chen <xiangchen@cmu.edu>
+Date:   Tue Sep 13 10:25:32 2016 -0400
+
+    added the old gitignore

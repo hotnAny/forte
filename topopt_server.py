@@ -139,8 +139,8 @@ def get_distance_field(elms, nelx, nely, m, alpha):
             df[j][i] = alpha * (cos(df[j][i] * pi / 2))**m
 
     # debug, print normalized distance field
-    for i in xrange(0, nelx):
-        print ' '.join([(format(x, '1.1f') if x > 0.9 else '   ') for x in df[i]])
+    # for i in xrange(0, nelx):
+    #     print ' '.join([(format(x, '1.1f') if x > 0.9 else '   ') for x in df[i]])
     # return [float(format(j, '1.2f')) for i in df for j in i]
     return df
 
@@ -229,7 +229,11 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matinput['FAVELMS'] = matinput['ACTVELMS']
 
     df = get_distance_field(matinput['FAVELMS'], nelx, nely, _m, 1)
-    matinput['DISTFIELD'] = ';'.join([','.join([format(y, '1.2f') for y in x]) for x in df])
+    s = material * nelx * nely / sum([sum(x) for x in df])
+    print 's = ', s
+    matinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
+    for i in xrange(0, nelx):
+        print ' '.join([(format(x*s, '1.1f') if x > 0.9 else '   ') for x in df[i]])
     # matinput['DISTFIELD'] = df
     # print matinput['DISTFIELD']
 
