@@ -232,8 +232,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     s = material * nelx * nely / sum([sum(x) for x in df])
     print 's = ', s
     matinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
-    for i in xrange(0, nelx):
-        print ' '.join([(format(x*s, '1.1f') if x > 0.9 else '   ') for x in df[i]])
+    # for j in xrange(0, nely):
+    #     print ' '.join([(format(x*s, '1.1f') if x > 0.9 else '   ') for x in df[i]])
     # matinput['DISTFIELD'] = df
     # print matinput['DISTFIELD']
 
