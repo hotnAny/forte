@@ -1,8 +1,8 @@
 //	........................................................................................................
 //
-//	useful recurring routines, v0.0
+//	useful recurring routines, v0.1
 //
-//  by xiangchen@acm.org, 05/2017
+//  by xiangchen@acm.org, 06/2017
 //
 //	........................................................................................................
 
@@ -105,4 +105,35 @@ XAC.readTextFile = function (file, onSuccess, onFailure) {
 	}
 
 	rawFile.send(null);
+}
+
+//
+//	get heatmap like color based on -
+//	@param	score
+//	@param	maxScore
+//
+XAC.getHeatmapColor = function(score, maxScore) {
+	// ceiling the score by maxScore
+	score = Math.min(score, maxScore);
+
+	// var colorSchemes = [0xd7191c, 0xfdae61, 0xffffbf, 0xa6d96a, 0x1a9641];
+	// var colorSchemes = [0xd73027, 0xf46d43, 0xfdae61, 0xfee08b, 0xffffbf,
+	// 	0xd9ef8b, 0xa6d96a, 0x66bd63, 0x1a9850
+	// ]
+	// var colorSchemes = [0xa50026, 0xd73027, 0xf46d43, 0xfdae61, 0xfee08b,
+	// 	0xffffbf, 0xd9ef8b, 0xa6d96a, 0x66bd63, 0x1a9850, 0x006837
+	// ]
+	var colorSchemes = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b',
+		'#ffffbf', '#d9ef8b', '#a6d96a', '#66bd63', '#1a9850', '#006837'
+	]
+	colorSchemes.reverse(); // EXP
+	var color = new THREE.Color(0xffffff);
+	for (var k = 0; k < colorSchemes.length; k++) {
+		if (score <= maxScore * (k + 1) / colorSchemes.length) {
+			// color.setHex(colorSchemes[k]);
+			return colorSchemes[k];
+			// break;
+		}
+	}
+	// return color;
 }

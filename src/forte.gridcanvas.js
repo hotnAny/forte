@@ -117,10 +117,11 @@ FORTE.GridCanvas.prototype.clear = function () {
 //
 //  draw on the canvas from an input bitmap, using (x0, y0) as the origin
 //
-FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
+FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, colorMap) {
     var h = bitmap.length;
     var w = h > 0 ? bitmap[0].length : 0;
     if (h <= 0 || w <= 0) return;
+    var originalStyle = this._context.fillStyle;
 
     for (var j = 0; j < h; j++) {
         for (var i = 0; i < w; i++) {
@@ -131,6 +132,10 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
+                if (colorMap != undefined && colorMap[j][i] != undefined) {
+                    this._context.fillStyle = colorMap[j][i];
+                    // log(colorMap[j][i]);
+                }
                 this._context.fill();
                 this._context.closePath();
             } else if (bitmap[j][i] == 0 && this._bitmap[j + y0][i + x0] == 1) {

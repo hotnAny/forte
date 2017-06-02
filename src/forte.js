@@ -30,25 +30,47 @@ $(document).ready(function () {
     XAC.enableDragDrop(function (files) {
         for (var i = files.length - 1; i >= 0; i--) {
             var reader = new FileReader();
-            reader.onload = (function (e) {
-                for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
-
-                var dataObject = JSON.parse(e.target.result);
-                $(tbWidth).val(dataObject.width);
-                $(tbHeight).val(dataObject.height);
-                FORTE.changeResolution();
-                FORTE.btnClear.trigger('click');
-                FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
-                FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
-                FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, 0);
-                for (arrow of dataObject.loadArrows) {
-                    FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
-                }
-                FORTE.design.loadPoints = dataObject.loadPoints;
-                FORTE.design.loadValues = dataObject.loadValues;
-                FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
-                // FORTE.toggleLayerZindex(FORTE.layers.indexOf(FORTE.loadLayer));
-            });
+            if (files[i].name.endsWith('forte')) {
+                reader.onload = (function (e) {
+                    for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
+                    var dataObject = JSON.parse(e.target.result);
+                    $(tbWidth).val(dataObject.width);
+                    $(tbHeight).val(dataObject.height);
+                    FORTE.changeResolution();
+                    FORTE.btnClear.trigger('click');
+                    FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
+                    FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
+                    FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, 0);
+                    for (arrow of dataObject.loadArrows) {
+                        FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
+                    }
+                    FORTE.design.loadPoints = dataObject.loadPoints;
+                    FORTE.design.loadValues = dataObject.loadValues;
+                    FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
+                    // FORTE.toggleLayerZindex(FORTE.layers.indexOf(FORTE.loadLayer));
+                });
+            }
+            //  [debug]
+            else if (files[i].name.endsWith('out')) {
+                reader.onload = (function (e) {
+                    FORTE.bitmap = FORTE.getBitmap(e.target.result);
+                });
+            }
+            //  [debug]
+            else if (files[i].name.endsWith('dsp')) {
+                reader.onload = (function (e) {
+                    var displacements = e.target.result.split('\n');
+                    for (var i = 0; i < displacements.length; i++) {
+                        var disp = parseFloat(displacements[i]);
+                        if (!isNaN(disp)) displacements[i] = disp;
+                    }
+                    var height = FORTE.bitmap.length;
+                    var width = FORTE.bitmap[0].length;
+                    log([width, height])
+                    var heatmap = FORTE.designLayer.showStress(displacements, width, height);
+                    FORTE.designLayer.drawFromBitmap(FORTE.bitmap, 50, 50, 0.5, heatmap);
+                });
+            }
             reader.readAsBinaryString(files[i]);
         }
     });
@@ -481,6 +503,9 @@ FORTE.fetchData = function () {
 FORTE.getBitmap = function (text) {
     var rowsep = '\n';
     var colsep = ',';
+
+    if (text.charAt(text.length - 1) == rowsep)
+        text = text.substring(0, text.length - 1);
 
     var rows = text.split(rowsep);
 
