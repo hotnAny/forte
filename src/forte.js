@@ -67,7 +67,7 @@ $(document).ready(function () {
                     var height = FORTE.bitmap.length;
                     var width = FORTE.bitmap[0].length;
                     log([width, height])
-                    var heatmap = FORTE.designLayer.showStress(displacements, width, height);
+                    var heatmap = FORTE.designLayer.showStress(displacements, width, height, FORTE.bitmap);
                     FORTE.designLayer.drawFromBitmap(FORTE.bitmap, 50, 50, 0.5, heatmap);
                 });
             }

@@ -62,8 +62,8 @@ FORTE.GridCanvas.prototype.showDisplacements = function (displacements, width, h
     return heatmap;
 }
 
-FORTE.GridCanvas.prototype.showStress = function (displacements, width, height) {
-    var stressInfo = FORTE.computeStress(displacements, width, height);
+FORTE.GridCanvas.prototype.showStress = function (displacements, width, height, bitmap) {
+    var stressInfo = FORTE.computeStress(displacements, width, height, bitmap);
 
     var heatmap = XAC.initMDArray([height, width]);
     for (var j = 0; j < height; j++) {
@@ -79,7 +79,7 @@ FORTE.GridCanvas.prototype.showStress = function (displacements, width, height) 
 // Matrix([[-0.5, 0, 0.5, 0, 0.5, 0, -0.5, 0], [0, -0.5, 0, -0.5, 0, 0.5, 0, 0.5], [-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5]])
 
 
-FORTE.computeStress = function (displacements, width, height) {
+FORTE.computeStress = function (displacements, width, height, bitmap) {
     // hardcoded for now
     var E = 1,
         nu = 0.3;
@@ -130,6 +130,8 @@ FORTE.computeStress = function (displacements, width, height) {
             var stress = Math.sqrt(0.5 * (sq(s11 - s22) + sq(s22 - s33) + sq(s33 - s11) +
                 6 * (sq(s12) + sq(s23) + sq(s31))));
             // log(stress)
+            var density = bitmap[j][i];
+            stress *= density;
             vmrow.push(stress);
             maxStress = Math.max(maxStress, stress);
         }
@@ -140,6 +142,6 @@ FORTE.computeStress = function (displacements, width, height) {
 
     return {
         stresses: vonMises,
-        maxStress: maxStress * 0.9
+        maxStress: maxStress
     };
 }
