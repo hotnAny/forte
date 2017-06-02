@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="2566699100" file="/Users/hotnAny/Dropbox/Codebase/forte/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte" name="topopt" preferred-package-location="/Users/hotnAny/Dropbox/Codebase/forte/topopt/for_redistribution" preferred-package-type="package.type.app" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration file="/Users/hotnAny/Dropbox/Codebase/forte/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte" name="topopt" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>topopt</param.appname>
     <param.icon />
     <param.icons />
@@ -87,7 +87,6 @@ If it is defined, set it to the concatenation of these strings:
     <fileset.resources />
     <fileset.package />
     <fileset.depfun>
-      <file>/Users/hotnAny/Documents/MATLAB/masstransport.m</file>
       <file>/Users/hotnAny/Documents/MATLAB/top88.m</file>
     </fileset.depfun>
     <build-deliverables>
