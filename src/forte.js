@@ -10,13 +10,13 @@ var FORTE = FORTE || {};
 
 FORTE.width = 256;
 FORTE.height = 192;
-FORTE.FETCHINTERVAL = 150;
-FORTE.RENDERINTERVAL = 100;
+FORTE.FETCHINTERVAL = 200;
+FORTE.RENDERINTERVAL = 75;
 FORTE.MAXITERATIONS = 50;
 FORTE.MINMATERIALRATIO = 0.5;
 FORTE.MAXMATERIALRATIO = 2.5;
-FORTE.GIVEUPTHRESHOLD = 10;
-FORTE.DELAYEDSTART = 2;
+FORTE.GIVEUPTHRESHOLD = 5;
+FORTE.DELAYEDSTART = 3;
 
 $(document).ready(function () {
     time();
@@ -281,7 +281,6 @@ FORTE.fetchData = function () {
         FORTE.failureCounter = 0;
         FORTE.__misses = 0;
     } else if (FORTE.state == 'finished') {
-        log('[log] data fetching stopped');
         return;
     } else {
         if (FORTE.outDir == undefined || FORTE.outDir == null)
@@ -300,7 +299,7 @@ FORTE.fetchData = function () {
                     time();
                 }
 
-                // time('[log] redrew for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
+                time('[log] fetched data for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
                 FORTE.itrCounter += 1;
                 setTimeout(FORTE.fetchData, FORTE.fetchInterval);
             }
@@ -317,6 +316,7 @@ FORTE.fetchData = function () {
                 FORTE.failureCounter++;
                 if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
                     FORTE.state = 'finished';
+                    log('[log] data fetching finished');
                     var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
                     var label = 'layer ' + (numLayers + 1);
                     FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
@@ -408,19 +408,24 @@ FORTE.showOptimizedLayer = function (tag, label) {
 //
 FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
+    
+    // if fetching data is not finished, add extrapolated bitmaps
+    if (FORTE.state != 'finished' && FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
+        FORTE.design.extrapolateBitmaps(0.5);
+    }
+
+    // render the next availale bitmap
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
         FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
         XAC.stats.update();
-        time('[log] redrew for itr# ' + (FORTE.pointer + 1) + ' with ' + FORTE.design.bitmaps.length + ' bitmaps stored.');
+        // time('[log] redrew for itr# ' + (FORTE.pointer + 1) + ' with ' + FORTE.design.bitmaps.length + ' bitmaps stored.');
         FORTE.pointer++;
-        FORTE.renderInterval = Math.max(FORTE.RENDERINTERVAL * 0.75, FORTE.renderInterval * 0.9);
+
+        setTimeout(function () {
+            FORTE.render();
+        }, FORTE.renderInterval);
     } else {
-        if(FORTE.state == 'finished') return;
-        FORTE.renderInterval = Math.min(FORTE.RENDERINTERVAL * 2.5, FORTE.renderInterval * 1.1);
-        // FORTE.__misses++;
+        log('[log] rendering stopped.');
     }
-    setTimeout(function () {
-        FORTE.render();
-    }, FORTE.renderInterval);
 }
