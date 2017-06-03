@@ -41,7 +41,7 @@ $(document).ready(function () {
             var reader = new FileReader();
             if (files[i].name.endsWith('forte')) {
                 reader.onload = (function (e) {
-                    for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
+                    // for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
                     var dataObject = JSON.parse(e.target.result);
                     $(tbWidth).val(dataObject.width);
                     $(tbHeight).val(dataObject.height);
@@ -119,7 +119,7 @@ $(document).ready(function () {
     // brushes for design, load and boundary
     //
     FORTE.nameBrushButtons = 'brushButtons';
-    FORTE.resetRadioButtons();
+    FORTE.resetRadioButtons(0);
 
     // clear
     FORTE.btnClear = $('<div>clear</div>');
@@ -262,19 +262,22 @@ FORTE.keydown = function (e) {
 //
 //
 //
-FORTE.resetRadioButtons = function () {
+FORTE.resetRadioButtons = function (idx) {
     $('[name="' + FORTE.nameBrushButtons + '"]').remove();
     $('[name="lb' + FORTE.nameBrushButtons + '"]').remove();
-    XAC.makeRadioButtons('brushButtons', ['design', 'emptiness', 'load', 'boundary'], [0, 1, 2, 3],
-        $('#tdBrushes'));
+    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', ['design', 'emptiness', 'load', 'boundary'], [0, 1, 2, 3],
+        $('#tdBrushes'), idx);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
+        // $('[name="' + FORTE.nameBrushButtons + '"]').attr('checked', false);
         var checked = $(e.target).attr('checked');
         if (checked == 'checked') {
             FORTE.switchLayer(-1);
             FORTE.resetRadioButtons();
         } else {
             FORTE.switchLayer(parseInt($(e.target).val()));
+            if (FORTE.checkedButton != undefined) FORTE.checkedButton.attr('checked', false);
             $(e.target).attr('checked', true);
+            FORTE.checkedButton = $(e.target);
         }
     });
 

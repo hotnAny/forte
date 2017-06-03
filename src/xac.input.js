@@ -237,6 +237,7 @@ XAC.makeSlider = function (id, label, min, max, value, parent) {
 //  make radio buttons
 //
 XAC.makeRadioButtons = function (name, labels, values, parent, idxChecked) {
+    var checkedInput;
     var id = (Math.random() * 1000 | 0).toString();
     for (var i = 0; i < labels.length; i++) {
         var label = $('<label for="input' + id + i + '" name="lb' + name + '">' + labels[i] + '</label>');
@@ -244,6 +245,7 @@ XAC.makeRadioButtons = function (name, labels, values, parent, idxChecked) {
             '" id="input' + id + i + '">');
         if (i == idxChecked) {
             input.attr('checked', true);
+            checkedInput = input;
         }
         parent.append(label);
         parent.append(input);
@@ -251,5 +253,5 @@ XAC.makeRadioButtons = function (name, labels, values, parent, idxChecked) {
     $('[name="' + name + '"]').checkboxradio({
         icon: false
     });
-    return name;
+    return $(checkedInput);
 }
