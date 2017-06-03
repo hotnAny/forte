@@ -39,6 +39,19 @@ FORTE.GridCanvas.prototype = {
     constructor: FORTE.GridCanvas
 };
 
+FORTE.GridCanvas.prototype.remove = function () {
+    this._canvas.remove();
+    this._removed = true;
+}
+
+FORTE.GridCanvas.prototype.revive = function () {
+    if (!this._removed) return;
+    this._parent.append(this._canvas);
+    this._canvas.mousedown(this.drawDown.bind(this));
+    this._canvas.mousemove(this.drawMove.bind(this));
+    this._canvas.mouseup(this.drawUp.bind(this));
+}
+
 //
 // set the resolution of the grid
 //
