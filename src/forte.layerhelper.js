@@ -37,11 +37,11 @@ FORTE.changeResolution = function () {
 //
 //  switch to different layers (design, emptiness, load, boundary, etc.)
 //
-FORTE.switchLayer = function (e) {
-    for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
+FORTE.switchLayer = function (idx) {
+    for (layer of FORTE.layers) layer._canvas.css('opacity', idx >= 0 ? 1 : 0);
 
-    var idx = parseInt($(e.target).val());
-    if (!isNaN(idx)) {
+    // var idx = parseInt($(e.target).val());
+    if (!isNaN(idx) && idx >= 0) {
         FORTE.layer = FORTE.layers[idx];
         FORTE.toggleLayerZindex(idx);
     }
