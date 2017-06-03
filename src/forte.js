@@ -159,7 +159,6 @@ $(document).ready(function () {
             FORTE.state = 'start';
             time();
             FORTE.fetchData();
-            FORTE.design.bitmaps = [];
         }
 
     });
@@ -280,6 +279,7 @@ FORTE.fetchData = function () {
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
         FORTE.__misses = 0;
+        FORTE.design.bitmaps = [];
     } else if (FORTE.state == 'finished') {
         return;
     } else {
@@ -408,7 +408,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
 //
 FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
-    
+
     // if fetching data is not finished, add extrapolated bitmaps
     if (FORTE.state != 'finished' && FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
         FORTE.design.extrapolateBitmaps(0.5);
@@ -426,6 +426,7 @@ FORTE.render = function (pointer) {
             FORTE.render();
         }, FORTE.renderInterval);
     } else {
+        FORTE.pointer = 0;
         log('[log] rendering stopped.');
     }
 }
