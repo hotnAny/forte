@@ -10,11 +10,13 @@ var FORTE = FORTE || {};
 
 FORTE.width = 256;
 FORTE.height = 192;
-FORTE.FETCHINTERVAL = 100;
+FORTE.FETCHINTERVAL = 150;
+FORTE.RENDERINTERVAL = 100;
 FORTE.MAXITERATIONS = 50;
 FORTE.MINMATERIALRATIO = 0.5;
 FORTE.MAXMATERIALRATIO = 2.5;
 FORTE.GIVEUPTHRESHOLD = 10;
+FORTE.DELAYEDSTART = 2;
 
 $(document).ready(function () {
     time();
@@ -23,6 +25,13 @@ $(document).ready(function () {
     $('*').each(function () {
         $(this).css('font-size', 'small');
     });
+
+    // stats window
+    XAC.stats = new Stats();
+    XAC.stats.domElement.style.position = 'absolute';
+    XAC.stats.domElement.style.top = '0px';
+    XAC.stats.domElement.style.right = '0px';
+    $(document.body).append(XAC.stats.domElement);
 
     //
     // enable drag and drop
@@ -150,6 +159,7 @@ $(document).ready(function () {
             FORTE.state = 'start';
             time();
             FORTE.fetchData();
+            FORTE.design.bitmaps = [];
         }
 
     });
@@ -269,6 +279,7 @@ FORTE.fetchData = function () {
         FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
+        FORTE.__misses = 0;
     } else if (FORTE.state == 'finished') {
         log('[log] data fetching stopped');
         return;
@@ -277,21 +288,31 @@ FORTE.fetchData = function () {
             console.error('output directory unavailable');
         var baseDir = FORTE.outDir + '/' + FORTE.trial;
         XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out', function (text) {
+            FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 0.75, FORTE.fetchInterval * 0.9);
             var bitmap = FORTE.getBitmap(text);
             if (FORTE.itrCounter < FORTE.MAXITERATIONS) {
                 // FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
+                // XAC.stats.update();
                 FORTE.design.bitmaps.push(bitmap);
-                time('[log] redrew for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
+                if (FORTE.itrCounter == FORTE.DELAYEDSTART) {
+                    FORTE.renderInterval = FORTE.RENDERINTERVAL;
+                    FORTE.render(0);
+                    time();
+                }
+
+                // time('[log] redrew for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
                 FORTE.itrCounter += 1;
-                setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
+                setTimeout(FORTE.fetchData, FORTE.fetchInterval);
             }
 
-            FORTE.fetchInterval = FORTE.FETCHINTERVAL;
+            // FORTE.fetchInterval = FORTE.FETCHINTERVAL;
             FORTE.failureCounter = 0;
         }, function () {
+            FORTE.__misses++;
+            FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 2.5, FORTE.fetchInterval * 1.1);
             if (FORTE.itrCounter == 0) {
                 setTimeout(FORTE.fetchData, FORTE.fetchInterval);
-                FORTE.fetchInterval *= 1.1;
+                // FORTE.fetchInterval *= 1.1;
             } else {
                 FORTE.failureCounter++;
                 if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
@@ -306,7 +327,7 @@ FORTE.fetchData = function () {
                     FORTE.design.displacements = [];
                     for (label of displacementFileLabels) {
                         XAC.readTextFile(baseDir + '_' + label + '.dsp', function (text) {
-                            var displacements = e.target.result.split('\n');
+                            var displacements = text.split('\n');
                             for (var i = 0; i < displacements.length; i++) {
                                 var disp = parseFloat(displacements[i]);
                                 if (!isNaN(disp)) displacements[i] = disp;
@@ -315,8 +336,10 @@ FORTE.fetchData = function () {
                         });
                     }
 
+                    log('[log] misses: ' + FORTE.__misses);
+
                 } else {
-                    setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
+                    setTimeout(FORTE.fetchData, FORTE.fetchInterval);
                 }
             }
         });
@@ -378,4 +401,26 @@ FORTE.showOptimizedLayer = function (tag, label) {
     } else {
         FORTE.selectedTag = undefined;
     }
+}
+
+//
+//
+//
+FORTE.render = function (pointer) {
+    FORTE.pointer = FORTE.pointer || pointer;
+    if (FORTE.pointer < FORTE.design.bitmaps.length) {
+        var bitmap = FORTE.design.bitmaps[FORTE.pointer];
+        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
+        XAC.stats.update();
+        time('[log] redrew for itr# ' + (FORTE.pointer + 1) + ' with ' + FORTE.design.bitmaps.length + ' bitmaps stored.');
+        FORTE.pointer++;
+        FORTE.renderInterval = Math.max(FORTE.RENDERINTERVAL * 0.75, FORTE.renderInterval * 0.9);
+    } else {
+        if(FORTE.state == 'finished') return;
+        FORTE.renderInterval = Math.min(FORTE.RENDERINTERVAL * 2.5, FORTE.renderInterval * 1.1);
+        // FORTE.__misses++;
+    }
+    setTimeout(function () {
+        FORTE.render();
+    }, FORTE.renderInterval);
 }
