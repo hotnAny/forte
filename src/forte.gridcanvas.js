@@ -63,6 +63,10 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     this._isDown = true;
     this._context.beginPath();
     this._strokePoints = [];
+    this._prevPoint = {
+        x: 0,
+        y: 0
+    };
 };
 
 //
@@ -74,14 +78,10 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
 
-    var strokeRadiusSquare = Math.pow(this._strokeRadius, 2);
     for (var dx = -this._strokeRadius; dx <= this._strokeRadius; dx += 1) {
         for (var dy = -this._strokeRadius; dy <= this._strokeRadius; dy += 1) {
             var x = Math.max(0, Math.min(this._gridWidth - 1, xcenter + dx));
             var y = Math.max(0, Math.min(this._gridHeight - 1, ycenter + dy));
-            // [note] removed because of speed
-            // if (Math.pow(x * this._cellSize + canvasOffset.left - e.clientX, 2) +
-            //     Math.pow(y * this._cellSize + canvasOffset.top - e.clientY, 2) <= strokeRadiusSquare) {
             if (this._bitmap[y][x] != 1) {
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
@@ -93,7 +93,13 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
                 });
             }
         }
+
     }
+
+    this._prevPoint = {
+        x: xcenter,
+        y: ycenter
+    };
 };
 
 //
