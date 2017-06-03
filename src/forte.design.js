@@ -20,6 +20,24 @@ FORTE.Design.prototype = {
     constructor: FORTE.Design
 }
 
+FORTE.Design.prototype.extrapolateBitmaps = function (step) {
+    if(this.bitmaps.length < 2) return;
+    var bmp0 = this.bitmaps.lastBut(1);
+    var bmp1 = this.bitmaps.pop();
+    var height = bmp1.length;
+    if (height > 0) {
+        var width = bmp1[0].length;
+        var bmp = XAC.initMDArray([height, width], 0);
+        for (var j = 0; j < height; j++) {
+            for (var i = 0; i < width; i++) {
+                bmp[j][i] = bmp0[j][i] * step + bmp1[j][i] * (1 - step);
+            }
+        }
+        this.bitmaps.push(bmp);
+    }
+    this.bitmaps.push(bmp1);
+}
+
 //
 //  get data for running matlab optimization
 //
