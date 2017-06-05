@@ -144,10 +144,12 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
 
     for (var j = 0; j < h; j++) {
         for (var i = 0; i < w; i++) {
-            bitmap[j][i] = bitmap[j][i] > thres ? 1 : 0;
+            // bitmap[j][i] = bitmap[j][i] > thres ? 1 : 0;
             var x = x0 + i;
             var y = y0 + j;
-            if (bitmap[j][i] == 1 && this._bitmap[j + y0][i + x0] == 0) {
+            // if (bitmap[j][i] == 1 && this._bitmap[j + y0][i + x0] == 0) {
+            if (bitmap[j][i] > thres && this._bitmap[j + y0][i + x0] <= thres) {
+                // this._context.globalAlpha = bitmap[j][i] + thres;
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
@@ -157,13 +159,15 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
                 }
                 this._context.fill();
                 this._context.closePath();
-            } else if (bitmap[j][i] == 0 && this._bitmap[j + y0][i + x0] == 1) {
+                // } else if (bitmap[j][i] == 0 && this._bitmap[j + y0][i + x0] == 1) {
+            } else if (bitmap[j][i] <= thres && this._bitmap[j + y0][i + x0] > thres) {
                 this._context.clearRect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
             }
             this._bitmap[j + y0][i + x0] = bitmap[j][i];
         }
     }
+    // this._context.globalAlpha = 1.0;
 }
 
 //
