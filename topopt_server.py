@@ -246,7 +246,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     input_file.write('&'.join([str(x) for x in matargs]))
     input_file.close()
     # [debug] copy it to matlab dir to debug in matlab
-    subprocess.call('cp ' + INPUTFILE + ' /Users/hotnAny/Documents/MATLAB', shell=True)
+    subprocess.call('cp ' + INPUTFILE + ' matlab/', shell=True)
 
     _log('prepared matlab input')
 
