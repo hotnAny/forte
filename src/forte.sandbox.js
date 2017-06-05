@@ -9,6 +9,12 @@ $(document).ready(function () {
         FORTE.m /= 2;
         log(FORTE.m);
     });
+    XAC.on('B', function (e) {
+        log('before')
+    });
+    XAC.on('A', function (e) {
+        log('after')
+    });
 });
 
 //
