@@ -294,7 +294,7 @@ FORTE.fetchData = function () {
         log('[log] data fetching started');
         FORTE.state = 'ongoing';
         setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
-        FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#888888');
+        FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
         FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
@@ -357,6 +357,11 @@ FORTE.fetchData = function () {
                     }
 
                     log('[log] misses: ' + FORTE.__misses);
+
+                    // if (FORTE.m < 64) {
+                    //     FORTE.m*=2;
+                    //     FORTE.btnRun.trigger('click');
+                    // }
 
                 } else {
                     setTimeout(FORTE.fetchData, FORTE.fetchInterval);
@@ -437,7 +442,7 @@ FORTE.render = function (pointer) {
     // render the next availale bitmap
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
-        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
+        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.1);
         XAC.stats.update();
         // time('[log] redrew for itr# ' + (FORTE.pointer + 1) + ' with ' + FORTE.design.bitmaps.length + ' bitmaps stored.');
         FORTE.pointer++;
