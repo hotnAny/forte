@@ -19,9 +19,11 @@ function top88(trial, args)
     %% [xac] mass transport
     niters = 16;
     lambda = 0.5;
-    decay = 0.9;
-    massmove = 0.2;
-    
+    decay = 0.95;
+    optmove = 0.2;
+    massmove = optmove + 0.1;
+    minmove = optmove - 0.1;
+    eps = 0.001;
     %% MATERIAL PROPERTIES
     E0 = 1;
     Emin = 1e-9;
@@ -68,7 +70,8 @@ function top88(trial, args)
     H = sparse(iH,jH,sH);
     Hs = sum(H,2);
     %% INITIALIZE ITERATION
-    x = repmat(volfrac,nely,nelx);
+%     x = repmat(volfrac,nely,nelx);
+    x = eps + max(0, distfield-eps);
     xPhys = x;
     loop = 0;
     change = 1;
@@ -94,7 +97,7 @@ function top88(trial, args)
         dv(:) = H*(dv(:)./Hs);
       end
       %% OPTIMALITY CRITERIA UPDATE OF DESIGN VARIABLES AND PHYSICAL DENSITIES
-      l1 = 0; l2 = 1e9; move = 0.2;
+      l1 = 0; l2 = 1e9; move = optmove;
       while (l2-l1)/(l1+l2) > 1e-3
         lmid = 0.5*(l2+l1);
         xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
@@ -117,9 +120,13 @@ function top88(trial, args)
 %       [xac] also naive approach
 %       xPhys = xPhys .* distfield;
 
-      xMoved = masstransport(xPhys, distfield, lambda, niters, 7);
-      xPhys = max(xPhys-massmove, min(xMoved, xPhys+massmove));
-      massmove = massmove * decay;
+%       colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+%       waitforbuttonpress;
+%       xPhys = masstransport(distfield, xPhys, lambda, niters, 7);
+      
+%       disp(lambda)
+%       xPhys = max(xPhys-massmove, min(xMoved, xPhys+massmove));
+%       massmove = minmove+(massmove-minmove) * decay;
 
 %       distfield = masstransport(xPhys, distfield, lambda, niters, 7);
 %         distfield = xPhys;
@@ -127,7 +134,8 @@ function top88(trial, args)
       %% PRINT RESULTS
       fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop,toc,c, ...
         mean(xPhys(:)),change);
-%       colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+      colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+%       waitforbuttonpress;
       try dlmwrite(strcat(trial, '_', num2str(loop), '.out'), xPhys); catch ; end
     end
     

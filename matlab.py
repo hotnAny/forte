@@ -9,7 +9,7 @@ MCRPATH = '/Applications/MATLAB/MATLAB_Runtime/v91'
 LIBPATH = '.:' + MCRPATH + '/runtime/maci64'
 LIBPATH = LIBPATH + ':' + MCRPATH + '/bin/maci64'
 LIBPATH = LIBPATH + ':' + MCRPATH + '/sys/os/maci64'
-TOP88PATH = './topopt/for_testing/topopt.app/Contents/MacOS/topopt'
+TOP88PATH = './matlab/topopt/for_testing/topopt.app/Contents/MacOS/topopt'
 
 if __name__ == "__main__":
     if len(argv) != 2:
