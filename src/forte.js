@@ -321,6 +321,8 @@ FORTE.fetchData = function () {
         FORTE.failureCounter = 0;
         FORTE.__misses = 0;
         FORTE.design.bitmaps = [];
+        FORTE.renderStarted = false;
+        FORTE.pointer = 0;
     } else if (FORTE.state == 'finished') {
         return;
     } else {
@@ -330,21 +332,18 @@ FORTE.fetchData = function () {
         XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out', function (text) {
             FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 0.75, FORTE.fetchInterval * 0.9);
             var bitmap = FORTE.getBitmap(text);
-            if (FORTE.itrCounter < FORTE.MAXITERATIONS) {
-                // FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
-                // XAC.stats.update();
-                FORTE.design.bitmaps.push(bitmap);
-                if (FORTE.itrCounter >= FORTE.DELAYEDSTART && !FORTE.renderStarted) {
-                    FORTE.renderInterval = FORTE.RENDERINTERVAL;
-                    FORTE.render(0);
-                    FORTE.renderStarted = true;
-                    time();
-                }
-
-                time('[log] fetched data for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
-                FORTE.itrCounter += 1;
-                setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+            FORTE.design.bitmaps.push(bitmap);
+            if (FORTE.itrCounter >= FORTE.DELAYEDSTART && !FORTE.renderStarted) {
+                FORTE.renderInterval = FORTE.RENDERINTERVAL;
+                FORTE.render(0);
+                FORTE.renderStarted = true;
+                time();
             }
+
+            time('[log] fetched data for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
+            FORTE.itrCounter += 1;
+            setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+            // }
 
             // FORTE.fetchInterval = FORTE.FETCHINTERVAL;
             FORTE.failureCounter = 0;
@@ -473,8 +472,6 @@ FORTE.render = function (pointer) {
             FORTE.render();
         }, FORTE.renderInterval);
     } else {
-        FORTE.pointer = 0;
-        FORTE.renderStarted = false;
         log('[log] rendering stopped.');
     }
 }

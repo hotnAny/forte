@@ -137,9 +137,9 @@ function top88(trial, args)
       %% PRINT RESULTS
       fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop,toc,c, ...
         mean(xPhys(:)),change);
-%       colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+      colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
 %       waitforbuttonpress;
-        trial
+        
       try dlmwrite(strcat(trial, '_', num2str(loop), '.out'), xPhys); catch ; end
     end
     
