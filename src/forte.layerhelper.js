@@ -38,23 +38,12 @@ FORTE.changeResolution = function () {
 //  switch to different layers (design, emptiness, load, boundary, etc.)
 //
 FORTE.switchLayer = function (idx) {
-    for (layer of FORTE.layers) {
-        if (layer != FORTE.designLayer || idx < 0) layer.remove();
-        // else layer._canvas.css('opacity', 0);
-        // if (idx >= 0) layer.remove();
-        // else $('#tdCanvas').append(layer);
-    }
-    // layer._canvas.css('opacity', idx >= 0 ? 1 : 0);
+    for (layer of FORTE.layers) layer.disable();
 
-    // var idx = parseInt($(e.target).val());
     if (!isNaN(idx) && idx >= 0) {
         FORTE.layer = FORTE.layers[idx];
-        FORTE.layer.revive();
-        if (FORTE.layer == FORTE.loadLayer)
-            FORTE.customizeLoadLayer();
-        // else FORTE.layer._canvas.css('opacity', 1);
+        FORTE.layer.enable();
         FORTE.toggleLayerZindex(idx);
-        FORTE.designLayer.revive();
     }
 }
 

@@ -30,6 +30,8 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._canvas.mousemove(this.drawMove.bind(this));
     this._canvas.mouseup(this.drawUp.bind(this));
 
+    this._enabled = true;
+
 };
 
 // max canvas height to stay within a normal screen
@@ -50,6 +52,17 @@ FORTE.GridCanvas.prototype.revive = function () {
     this._canvas.mousedown(this.drawDown.bind(this));
     this._canvas.mousemove(this.drawMove.bind(this));
     this._canvas.mouseup(this.drawUp.bind(this));
+    this._removed = false;
+}
+
+FORTE.GridCanvas.prototype.enable = function () {
+    this._enabled = true;
+    this._canvas.css('opacity', 1);
+}
+
+FORTE.GridCanvas.prototype.disable = function () {
+    this._enabled = false;
+    this._canvas.css('opacity', 0.25);
 }
 
 //
@@ -73,6 +86,7 @@ FORTE.GridCanvas.prototype.setResolution = function (w, h) {
 //  mousedown for drawing
 //
 FORTE.GridCanvas.prototype.drawDown = function (e) {
+    if (!this._enabled) return;
     this._isDown = true;
     this._context.beginPath();
     this._strokePoints = [];
@@ -86,6 +100,7 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
 //  mousemove for drawing
 //
 FORTE.GridCanvas.prototype.drawMove = function (e) {
+    if (!this._enabled) return;
     if (!this._isDown) return;
     var canvasOffset = this._canvas.offset();
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
@@ -119,6 +134,7 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
 //  mouseup for drawing
 //
 FORTE.GridCanvas.prototype.drawUp = function (e) {
+    if (!this._enabled) return;
     this._isDown = false;
     this._context.closePath();
 };
