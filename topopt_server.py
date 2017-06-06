@@ -239,7 +239,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         matinput['DISTFIELD'] = ''
 
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
-        matinput['VOLFRAC'], 3, 1.5, 1, 50, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
+        matinput['VOLFRAC'], 3, 1.5, 1, 32, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
         matinput['DISTFIELD']]
 

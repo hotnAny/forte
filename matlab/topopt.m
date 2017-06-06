@@ -1,4 +1,3 @@
-%%%% AN 88 LINE TOPOLOGY OPTIMIZATION CODE Nov, 2010 %%%%
 function topopt(argsfile)
     disp('topopt service started ...');
     prevtrial = '';

@@ -79,7 +79,7 @@ function top88(trial, args)
     loop = 0;
     change = 1;
     %% START ITERATION [xac] added maxloop
-    while change > 0.01 && loop < maxloop
+    while change > 0.05 && loop < maxloop
       tic
       loop = loop + 1;
       %% FE-ANALYSIS
