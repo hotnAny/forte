@@ -8,8 +8,8 @@
 
 var FORTE = FORTE || {};
 
-FORTE.width = 256;
-FORTE.height = 192;
+FORTE.width = 240;
+FORTE.height = 160;
 FORTE.FETCHINTERVAL = 200;
 FORTE.RENDERINTERVAL = 40;
 FORTE.MAXITERATIONS = 50;
@@ -31,9 +31,9 @@ $(document).ready(function () {
     // stats window
     XAC.stats = new Stats();
     XAC.stats.domElement.style.position = 'absolute';
-    XAC.stats.domElement.style.top = '0px';
-    XAC.stats.domElement.style.right = '0px';
-    $(document.body).append(XAC.stats.domElement);
+    XAC.stats.domElement.style.bottom = '0px';
+    XAC.stats.domElement.style.left = '0px';
+    // $(document.body).append(XAC.stats.domElement);
 
     //
     // enable drag and drop
@@ -105,8 +105,10 @@ $(document).ready(function () {
         maxSlider = 100;
     var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
     var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
-    $('#tdMaterial').width('160px');
-    FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
+    $('#tdMaterial').width('180px');
+    // var lbMaterial = '<img src="assets/material.png"></img>';
+    var lbMaterial = 'material';
+    FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', lbMaterial,
         minSlider, maxSlider, valueSlider, $('#tdMaterial'));
     FORTE.sldrMaterial.slider({
         change: function (event, ui) {
@@ -126,7 +128,8 @@ $(document).ready(function () {
     //
     // clear
     //
-    FORTE.btnClear = $('<div>clear</div>');
+    FORTE.btnClear = $('<div></div>');
+    FORTE.btnClear.append($('<img src="assets/clear.png"></img>'));
     FORTE.btnClear.button();
     FORTE.btnClear.click(function (e) {
         for (layer of FORTE.layers) layer.clear();
@@ -141,8 +144,10 @@ $(document).ready(function () {
     var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
         (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
     var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
-    $('#tdSimilarity').width('160px');
-    FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', 'similarity',
+    $('#tdSimilarity').width('180px');
+    // var lbSimilarity = '<img src="assets/similarity.png"></img>';
+    var lbSimilarity = 'similarity';
+    FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', lbSimilarity,
         minSlider, maxSlider, valueSlider, $('#tdSimilarity'));
     FORTE.sldrSimilarity.slider({
         change: function (event, ui) {
@@ -168,7 +173,7 @@ $(document).ready(function () {
     //
     // add
     //
-    FORTE.btnAdd = $('<div>add</div>');
+    FORTE.btnAdd = $('<div>add structs</div>');
     FORTE.btnAdd.button();
     FORTE.btnAdd.click(function (e) {
         var _similarity = FORTE.similarityRatio;
@@ -182,7 +187,8 @@ $(document).ready(function () {
     //
     // save
     //
-    FORTE.btnSave = $('<div>save</div>');
+    FORTE.btnSave = $('<div></div>');
+    FORTE.btnSave.append($('<img src="assets/save.png"></img>'));
     FORTE.btnSave.button();
     FORTE.btnSave.click(function (e) {
         var dataObject = {
@@ -213,8 +219,8 @@ $(document).ready(function () {
     FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
     FORTE.emptinessLayer._strokeRadius = 3;
     FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
-    FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#007fff');
-    $('#tdCanvas').css('background', '#f8f8f8');
+    FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#00afff');
+    $('#tdCanvas').css('background', '#f0f0f0');
 
     FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
     FORTE.layer = FORTE.designLayer;
@@ -286,7 +292,10 @@ FORTE.resetRadioButtons = function (idx) {
     $('[name="' + FORTE.nameBrushButtons + '"]').remove();
     $('[name="lb' + FORTE.nameBrushButtons + '"]').remove();
     // ['&#9998;', '&#8709;', '&#9750;', '&#11034;']
-    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', ['design', 'void', 'load', 'boundary'], [0, 1, 2, 3],
+    var imgSrcs = ['design.png', 'void.png', 'load.png', 'boundary.png'];
+    var labels = [];
+    for (src of imgSrcs) labels.push('<img src="assets/' + src + '"></img>');
+    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', labels, [0, 1, 2, 3],
         $('#tdBrushes'), idx);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
         // $('[name="' + FORTE.nameBrushButtons + '"]').attr('checked', false);

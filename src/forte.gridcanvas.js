@@ -70,9 +70,8 @@ FORTE.GridCanvas.prototype.disable = function () {
 //
 FORTE.GridCanvas.prototype.setResolution = function (w, h) {
     this._canvas[0].width = this._parent.width();
-    this._canvas[0].height = Math.min(FORTE.GridCanvas.MAXCANVASHEIGHT,
-        this._canvas[0].width * h / w);
-    this._canvas[0].width = this._canvas[0].height * w / h;
+    this._canvas[0].height = this._canvas[0].width * h / w;
+    // this._canvas[0].width = this._canvas[0].height * w / h;
     this._cellSize = this._canvas[0].width / w;
     this._bitmap = XAC.initMDArray([h, w], 0);
     this._gridWidth = w;

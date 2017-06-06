@@ -22,7 +22,7 @@ FORTE.changeResolution = function () {
     FORTE.height = height;
 
     for (layer of FORTE.layers) {
-        layer._strokeRadius = FORTE.width / 128;
+        layer._strokeRadius = FORTE.width / 96 | 0;
     }
 
     // special treatments
