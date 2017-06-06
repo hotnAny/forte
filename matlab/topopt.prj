@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration file="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte/matlab" name="topopt" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3823272151" file="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte/matlab" name="topopt" preferred-package-location="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt/for_redistribution" preferred-package-type="package.type.app" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>topopt</param.appname>
     <param.icon />
     <param.icons />
@@ -73,10 +73,7 @@
     </fileset.main>
     <fileset.resources />
     <fileset.package />
-    <fileset.depfun>
-      <file>/Users/hotnAny/Documents/MATLAB/masstransport.m</file>
-      <file>/Users/hotnAny/Documents/MATLAB/top88.m</file>
-    </fileset.depfun>
+    <fileset.depfun />
     <build-deliverables>
       <file location="${PROJECT_ROOT}/topopt/for_testing" name="readme.txt" optional="true">/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt/for_testing/readme.txt</file>
       <file location="${PROJECT_ROOT}/topopt/for_testing" name="splash.png" optional="false">/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt/for_testing/splash.png</file>
