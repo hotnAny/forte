@@ -15,6 +15,8 @@ FORTE.RENDERINTERVAL = 40;
 FORTE.MAXITERATIONS = 50;
 FORTE.MINMATERIALRATIO = 0.5;
 FORTE.MAXMATERIALRATIO = 2.5;
+FORTE.MINSIMILARITYRATIO = 0;
+FORTE.MAXSIMILARITYRATIO = 10;
 FORTE.GIVEUPTHRESHOLD = 5;
 FORTE.DELAYEDSTART = 1;
 
@@ -103,9 +105,9 @@ $(document).ready(function () {
         maxSlider = 100;
     var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
     var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
-    $('#tdMaterial').width('192px');
+    $('#tdMaterial').width('160px');
     FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
-        0, 100, valueSlider, $('#tdMaterial'));
+        minSlider, maxSlider, valueSlider, $('#tdMaterial'));
     FORTE.sldrMaterial.slider({
         change: function (event, ui) {
             var max = $(event.target).slider("option", "max");
@@ -121,7 +123,9 @@ $(document).ready(function () {
     FORTE.nameBrushButtons = 'brushButtons';
     FORTE.resetRadioButtons(0);
 
+    //
     // clear
+    //
     FORTE.btnClear = $('<div>clear</div>');
     FORTE.btnClear.button();
     FORTE.btnClear.click(function (e) {
@@ -131,9 +135,30 @@ $(document).ready(function () {
     $('#tdClear').append(FORTE.btnClear);
 
     //
+    //  similarity slider
+    //
+    FORTE.similarityRatio = 4;
+    var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
+        (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
+    var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
+    $('#tdSimilarity').width('160px');
+    FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', 'similarity',
+        minSlider, maxSlider, valueSlider, $('#tdSimilarity'));
+    FORTE.sldrSimilarity.slider({
+        change: function (event, ui) {
+            var max = $(event.target).slider("option", "max");
+            var min = $(event.target).slider("option", "min");
+            var value = (ui.value - min) * 1.0 / (max - min);
+            FORTE.similarityRatio = FORTE.MINSIMILARITYRATIO * (1 - value) +
+                FORTE.MAXSIMILARITYRATIO * value;
+            log(FORTE.similarityRatio);
+        }
+    })
+
+    //
     // run
     //
-    FORTE.btnRun = $('<div>run</div>');
+    FORTE.btnRun = $('<div>suggest</div>');
     FORTE.btnRun.button();
     FORTE.btnRun.click(function (e) {
         FORTE.resetRadioButtons();
@@ -150,7 +175,7 @@ $(document).ready(function () {
         var data = JSON.stringify(FORTE.design.getData());
         if (data != undefined) {
             FORTE.trial = 'forte_' + Date.now();
-            XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['trial', 'forte', 'material', 'm'], [FORTE.trial, data, FORTE.materialRatio, FORTE.m]);
+            XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['trial', 'forte', 'material', 'm'], [FORTE.trial, data, FORTE.materialRatio, Math.pow(2, FORTE.similarityRatio)]);
             FORTE.state = 'start';
             time();
             FORTE.fetchData();
@@ -194,7 +219,7 @@ $(document).ready(function () {
     FORTE.emptinessLayer._strokeRadius = 3;
     FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
     FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#007fff');
-    $('#tdCanvas').css('background', '#eeeeee');
+    $('#tdCanvas').css('background', '#f8f8f8');
 
     FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
     FORTE.layer = FORTE.designLayer;
@@ -265,7 +290,8 @@ FORTE.keydown = function (e) {
 FORTE.resetRadioButtons = function (idx) {
     $('[name="' + FORTE.nameBrushButtons + '"]').remove();
     $('[name="lb' + FORTE.nameBrushButtons + '"]').remove();
-    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', ['design', 'emptiness', 'load', 'boundary'], [0, 1, 2, 3],
+    // ['&#9998;', '&#8709;', '&#9750;', '&#11034;']
+    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', ['design', 'void', 'load', 'boundary'], [0, 1, 2, 3],
         $('#tdBrushes'), idx);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
         // $('[name="' + FORTE.nameBrushButtons + '"]').attr('checked', false);
@@ -313,9 +339,10 @@ FORTE.fetchData = function () {
                 // FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.5);
                 // XAC.stats.update();
                 FORTE.design.bitmaps.push(bitmap);
-                if (FORTE.itrCounter == FORTE.DELAYEDSTART) {
+                if (FORTE.itrCounter >= FORTE.DELAYEDSTART && !FORTE.renderStarted) {
                     FORTE.renderInterval = FORTE.RENDERINTERVAL;
                     FORTE.render(0);
+                    FORTE.renderStarted = true;
                     time();
                 }
 
@@ -452,6 +479,7 @@ FORTE.render = function (pointer) {
         }, FORTE.renderInterval);
     } else {
         FORTE.pointer = 0;
+        FORTE.renderStarted = false;
         log('[log] rendering stopped.');
     }
 }

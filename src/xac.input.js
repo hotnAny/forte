@@ -253,5 +253,6 @@ XAC.makeRadioButtons = function (name, labels, values, parent, idxChecked) {
     $('[name="' + name + '"]').checkboxradio({
         icon: false
     });
+
     return $(checkedInput);
 }
