@@ -15,7 +15,7 @@ function top88(trial, args)
     favelms = str2num(char(args(13)));
     pasvelms = str2num(char(args(14)));
     distfield = str2num(char(args(15)));
-    
+    isadding = size(distfield) == [0, 0];
     %% [xac] mass transport
     niters = 16;
     lambda = 0.5;
@@ -70,8 +70,11 @@ function top88(trial, args)
     H = sparse(iH,jH,sH);
     Hs = sum(H,2);
     %% INITIALIZE ITERATION
-%     x = repmat(volfrac,nely,nelx);
-    x = eps + max(0, distfield-eps);
+    if isadding
+        x = repmat(volfrac,nely,nelx);
+    else
+        x = eps + max(0, distfield-eps);
+    end
     xPhys = x;
     loop = 0;
     change = 1;
@@ -114,7 +117,7 @@ function top88(trial, args)
       xPhys(pasvelms) = 0;
       
 %       [xac] naive approach
-%       xPhys(actvelms) = 1;
+       if isadding xPhys(actvelms) = 1; end
 %       xPhys(favelms) = 1;
 
 %       [xac] also naive approach
@@ -134,8 +137,9 @@ function top88(trial, args)
       %% PRINT RESULTS
       fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop,toc,c, ...
         mean(xPhys(:)),change);
-      colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+%       colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
 %       waitforbuttonpress;
+        trial
       try dlmwrite(strcat(trial, '_', num2str(loop), '.out'), xPhys); catch ; end
     end
     

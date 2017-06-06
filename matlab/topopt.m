@@ -1,5 +1,4 @@
 %%%% AN 88 LINE TOPOLOGY OPTIMIZATION CODE Nov, 2010 %%%%
-% function top88(trial, nelx,nely,volfrac,penal,rmin,ft,maxloop,fixeddofs,loadnodes,loadvalues)
 function topopt(argsfile)
     disp('topopt service started ...');
     prevtrial = '';
@@ -29,5 +28,4 @@ function topopt(argsfile)
         end
 %         break;
     end
-% colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
 end

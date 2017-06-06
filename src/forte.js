@@ -137,7 +137,7 @@ $(document).ready(function () {
     //
     //  similarity slider
     //
-    FORTE.similarityRatio = -1;
+    FORTE.similarityRatio = 4;
     var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
         (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
     var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
@@ -494,8 +494,8 @@ FORTE.optimize = function () {
     var data = JSON.stringify(FORTE.design.getData());
     if (data != undefined) {
         var fields = ['trial', 'forte', 'material', 'm'];
-        var values = [FORTE.trial, data, FORTE.materialRatio, Math.pow(2, FORTE.similarityRatio)];
         FORTE.trial = 'forte_' + Date.now();
+        var values = [FORTE.trial, data, FORTE.materialRatio, Math.pow(2, FORTE.similarityRatio)];
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'start';
         time();
