@@ -137,7 +137,7 @@ $(document).ready(function () {
     //
     //  similarity slider
     //
-    FORTE.similarityRatio = 4;
+    FORTE.similarityRatio = -1;
     var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
         (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
     var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
@@ -156,33 +156,28 @@ $(document).ready(function () {
     })
 
     //
-    // run
+    // suggest
     //
-    FORTE.btnRun = $('<div>suggest</div>');
-    FORTE.btnRun.button();
-    FORTE.btnRun.click(function (e) {
-        FORTE.resetRadioButtons();
-
-        var keys = Object.keys(FORTE.htOptimizedLayers);
-        for (key of keys) {
-            var layer = FORTE.htOptimizedLayers[key];
-            if (layer != undefined) layer._canvas.remove();
-        }
-
-        FORTE.design.designPoints = FORTE.designLayer.package();
-        FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
-        FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-        var data = JSON.stringify(FORTE.design.getData());
-        if (data != undefined) {
-            FORTE.trial = 'forte_' + Date.now();
-            XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['trial', 'forte', 'material', 'm'], [FORTE.trial, data, FORTE.materialRatio, Math.pow(2, FORTE.similarityRatio)]);
-            FORTE.state = 'start';
-            time();
-            FORTE.fetchData();
-        }
-
+    FORTE.btnSuggest = $('<div>suggest</div>');
+    FORTE.btnSuggest.button();
+    FORTE.btnSuggest.click(function (e) {
+        FORTE.optimize();
     });
-    $('#tdRun').append(FORTE.btnRun);
+    $('#tdSuggest').append(FORTE.btnSuggest);
+
+    //
+    // add
+    //
+    FORTE.btnAdd = $('<div>add</div>');
+    FORTE.btnAdd.button();
+    FORTE.btnAdd.click(function (e) {
+        var _similarity = FORTE.similarityRatio;
+        FORTE.similarityRatio = -1;
+        FORTE.optimize();
+        FORTE.similarityRatio = _similarity;
+    });
+    $('#tdAdd').append(FORTE.btnAdd);
+
 
     //
     // save
@@ -387,7 +382,7 @@ FORTE.fetchData = function () {
 
                     // if (FORTE.m < 64) {
                     //     FORTE.m*=2;
-                    //     FORTE.btnRun.trigger('click');
+                    //     FORTE.btnSuggest.trigger('click');
                     // }
 
                 } else {
@@ -481,5 +476,29 @@ FORTE.render = function (pointer) {
         FORTE.pointer = 0;
         FORTE.renderStarted = false;
         log('[log] rendering stopped.');
+    }
+}
+
+FORTE.optimize = function () {
+    FORTE.resetRadioButtons();
+
+    var keys = Object.keys(FORTE.htOptimizedLayers);
+    for (key of keys) {
+        var layer = FORTE.htOptimizedLayers[key];
+        if (layer != undefined) layer._canvas.remove();
+    }
+
+    FORTE.design.designPoints = FORTE.designLayer.package();
+    FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
+    FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
+    var data = JSON.stringify(FORTE.design.getData());
+    if (data != undefined) {
+        var fields = ['trial', 'forte', 'material', 'm'];
+        var values = [FORTE.trial, data, FORTE.materialRatio, Math.pow(2, FORTE.similarityRatio)];
+        FORTE.trial = 'forte_' + Date.now();
+        XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
+        FORTE.state = 'start';
+        time();
+        FORTE.fetchData();
     }
 }
