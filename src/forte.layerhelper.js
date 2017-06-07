@@ -86,8 +86,16 @@ FORTE.distriute = function (points, vector, midPoint, normalizeFactor) {
     var distrVectors = [];
 
     // fit the load points on an arc
-    var circleInfo = XAC.fitCircle(points);
-    var ctr = new THREE.Vector3(circleInfo.x0, circleInfo.y0, 0);
+    var ctr;
+    try {
+        var circleInfo = XAC.fitCircle(points);
+        ctr = new THREE.Vector3(circleInfo.x0, circleInfo.y0, 0);
+    } catch (e) {
+        console.error(e);
+        ctr = new THREE.Vector3();
+        for (p of points) ctr.add(p);
+        ctr.divideScalar(Math.max(points.length, 1));
+    }
 
     // [debug] to show the load direction at each point
     // var offset = FORTE.loadLayer._canvas.offset();
@@ -123,8 +131,8 @@ FORTE.customizeLoadLayer = function () {
     // interaction on the load layer
     FORTE.loadLayer.specifyingLoad = false;
     FORTE.loadLayer._canvas.mousedown(function (e) {
+        if (this.__centerLoadPoint == undefined) return;
         if (this.specifyingLoad) {
-            // log('done')
             // compute distributed record load information
             this._context.strokeStyle = this.__loadValueLayer._context.strokeStyle;
             this._context.lineWidth = this.__loadValueLayer._context.lineWidth;
@@ -149,9 +157,11 @@ FORTE.customizeLoadLayer = function () {
             FORTE.design.loadPoints.push(arrStrokePoints);
             FORTE.design.loadValues.push(FORTE.distriute(this.__strokePoints, vector, midPoint, 1));
 
+            this._enabled = true;
         }
     }.bind(FORTE.loadLayer));
     FORTE.loadLayer._canvas.mousemove(function (e) {
+        if (this.__centerLoadPoint == undefined) return;
         if (this.specifyingLoad) {
             // draw or update an arrow between center point and current mouse
             this.__loadValueLayer.clear();
@@ -185,6 +195,10 @@ FORTE.customizeLoadLayer = function () {
                 }
             }
 
+            if (this.__centerLoadPoint == undefined) this.__centerLoadPoint = this._strokePoints[0];
+
+            if (this.__centerLoadPoint == undefined) return;
+
             this._arrows = this._arrows || [];
             this.__loadValueLayer = new FORTE.GridCanvas(this._parent, this._gridWidth, this._gridHeight);
             this.__loadValueLayer._context = this.__loadValueLayer._canvas[0].getContext('2d');
@@ -192,6 +206,8 @@ FORTE.customizeLoadLayer = function () {
             this.__loadValueLayer._context.lineWidth = this._context.lineWidth;
             this.__loadValueLayer._context.lineJoin = this._context.lineJoin;
             this.__strokePoints = this._strokePoints.clone();
+
+            this._enabled = false;
         }
     }.bind(FORTE.loadLayer));
 }

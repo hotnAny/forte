@@ -91,10 +91,18 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     this._isDown = true;
     this._context.beginPath();
     this._strokePoints = [];
-    this._prevPoint = {
-        x: 0,
-        y: 0
-    };
+    this._doDraw(e);
+    // var canvasOffset = this._canvas.offset();
+    // var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
+    // var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
+    // this._strokePoints = [{
+    //     x: xcenter,
+    //     y: ycenter
+    // }];
+    // this._prevPoint = {
+    //     x: 0,
+    //     y: 0
+    // };
 };
 
 //
@@ -103,6 +111,24 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
 FORTE.GridCanvas.prototype.drawMove = function (e) {
     if (!this._enabled) return;
     if (!this._isDown) return;
+    
+    this._doDraw(e);
+    // this._prevPoint = {
+    //     x: xcenter,
+    //     y: ycenter
+    // };
+};
+
+//
+//  mouseup for drawing
+//
+FORTE.GridCanvas.prototype.drawUp = function (e) {
+    if (!this._enabled) return;
+    this._isDown = false;
+    this._context.closePath();
+};
+
+FORTE.GridCanvas.prototype._doDraw = function(e) {
     var canvasOffset = this._canvas.offset();
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
@@ -122,23 +148,8 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
                 });
             }
         }
-
     }
-
-    this._prevPoint = {
-        x: xcenter,
-        y: ycenter
-    };
-};
-
-//
-//  mouseup for drawing
-//
-FORTE.GridCanvas.prototype.drawUp = function (e) {
-    if (!this._enabled) return;
-    this._isDown = false;
-    this._context.closePath();
-};
+}
 
 //
 //  clear the canvas
@@ -187,6 +198,9 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
     // this._context.globalAlpha = 1.0;
 }
 
+//
+//  force to redraw everything
+//
 FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     for (var j = 0; j < this._gridHeight; j++) {
