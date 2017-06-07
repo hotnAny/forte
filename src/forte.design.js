@@ -14,6 +14,8 @@ FORTE.Design = function (width, height) {
     this.loadPoints = [];
     this.loadValues = [];
     this.boundaryPoints = [];
+
+    this.maxStress = 0;
 };
 
 FORTE.Design.prototype = {
