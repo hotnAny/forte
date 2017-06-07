@@ -9,6 +9,8 @@
 var FORTE = FORTE || {};
 
 FORTE.GridCanvas = function (parent, width, height, strokeColor) {
+    this._id = (100 + Math.random() * 900 | 0).toString();
+
     this._parent = parent;
 
     this._strokeRadius = 1;
@@ -60,9 +62,9 @@ FORTE.GridCanvas.prototype.enable = function () {
     this._canvas.css('opacity', 1);
 }
 
-FORTE.GridCanvas.prototype.disable = function () {
+FORTE.GridCanvas.prototype.disable = function (opacity) {
     this._enabled = false;
-    this._canvas.css('opacity', 0.25);
+    this._canvas.css('opacity', opacity);
 }
 
 //
@@ -163,7 +165,7 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
             var x = x0 + i;
             var y = y0 + j;
             // if (bitmap[j][i] == 1 && this._bitmap[j + y0][i + x0] == 0) {
-            if (bitmap[j][i] > thres && this._bitmap[j + y0][i + x0] <= thres) {
+            if (bitmap[j][i] > thres && this._bitmap[y][x] <= thres) {
                 // this._context.globalAlpha = bitmap[j][i] + thres;
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
@@ -175,7 +177,7 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
                 this._context.fill();
                 this._context.closePath();
                 // } else if (bitmap[j][i] == 0 && this._bitmap[j + y0][i + x0] == 1) {
-            } else if (bitmap[j][i] <= thres && this._bitmap[j + y0][i + x0] > thres) {
+            } else if (bitmap[j][i] <= thres && this._bitmap[y][x] > thres) {
                 this._context.clearRect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
             }
@@ -183,6 +185,26 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
         }
     }
     // this._context.globalAlpha = 1.0;
+}
+
+FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
+    this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+    for (var j = 0; j < this._gridHeight; j++) {
+        for (var i = 0; i < this._gridWidth; i++) {
+            var x = i,
+                y = j;
+            if (this._bitmap[j][i] > thres) {
+                this._context.beginPath();
+                this._context.rect(x * this._cellSize, y * this._cellSize,
+                    this._cellSize, this._cellSize);
+                if (colorMap != undefined && colorMap[j][i] != undefined) {
+                    this._context.fillStyle = colorMap[j][i];
+                }
+                this._context.fill();
+                this._context.closePath();
+            }
+        }
+    }
 }
 
 //
