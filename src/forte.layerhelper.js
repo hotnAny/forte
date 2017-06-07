@@ -38,7 +38,7 @@ FORTE.changeResolution = function () {
 //  switch to different layers (design, emptiness, load, boundary, etc.)
 //
 FORTE.switchLayer = function (idx) {
-    for (layer of FORTE.layers) layer.disable();
+    for (layer of FORTE.layers) layer.disable(idx >= 0 ? 0.25 : 0);
 
     if (!isNaN(idx) && idx >= 0) {
         FORTE.layer = FORTE.layers[idx];
