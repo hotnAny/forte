@@ -17,7 +17,7 @@ FORTE.MINMATERIALRATIO = 0.5;
 FORTE.MAXMATERIALRATIO = 2.5;
 FORTE.MINSIMILARITYRATIO = 0;
 FORTE.MAXSIMILARITYRATIO = 10;
-FORTE.GIVEUPTHRESHOLD = 5;
+FORTE.GIVEUPTHRESHOLD = 3;
 FORTE.DELAYEDSTART = 1;
 
 $(document).ready(function () {
@@ -59,27 +59,6 @@ $(document).ready(function () {
                     FORTE.design.loadValues = dataObject.loadValues;
                     FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
                     // FORTE.toggleLayerZindex(FORTE.layers.indexOf(FORTE.loadLayer));
-                });
-            }
-            //  [debug]
-            else if (files[i].name.endsWith('out')) {
-                reader.onload = (function (e) {
-                    FORTE.bitmap = FORTE.getBitmap(e.target.result);
-                });
-            }
-            //  [debug]
-            else if (files[i].name.endsWith('dsp')) {
-                reader.onload = (function (e) {
-                    var displacements = e.target.result.split('\n');
-                    for (var i = 0; i < displacements.length; i++) {
-                        var disp = parseFloat(displacements[i]);
-                        if (!isNaN(disp)) displacements[i] = disp;
-                    }
-                    var height = FORTE.bitmap.length;
-                    var width = FORTE.bitmap[0].length;
-                    log([width, height])
-                    var heatmap = FORTE.designLayer.showStress(displacements, width, height, FORTE.bitmap);
-                    FORTE.designLayer.drawFromBitmap(FORTE.bitmap, 50, 50, 0.5, heatmap);
                 });
             }
             reader.readAsBinaryString(files[i]);
@@ -163,7 +142,7 @@ $(document).ready(function () {
     //
     // suggest
     //
-    FORTE.btnSuggest = $('<div>suggest</div>');
+    FORTE.btnSuggest = $('<div>get variation</div>');
     FORTE.btnSuggest.button();
     FORTE.btnSuggest.click(function (e) {
         FORTE.optimize();
@@ -268,6 +247,24 @@ $(document).ready(function () {
             if (layer != undefined) layer._canvas.remove();
             FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
             // FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
+
+            FORTE.design.maxStress = 0;
+            var keys = Object.keys(FORTE.htOptimizedLayers);
+            for (key of keys) {
+                var layer2 = FORTE.htOptimizedLayers[key];
+                if (layer2 != undefined && layer2 != layer) {
+                    FORTE.design.maxStress =
+                        Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
+                }
+            }
+
+            for (key of keys) {
+                var layer2 = FORTE.htOptimizedLayers[key];
+                if (layer2 != undefined && layer2 != layer) {
+                    layer2.updateHeatmap(FORTE.design.maxStress);
+                    layer2.forceRedraw(0.1, layer2._heatmap);
+                }
+            }
         }
     });
     FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
@@ -338,66 +335,92 @@ FORTE.fetchData = function () {
         if (FORTE.outDir == undefined || FORTE.outDir == null)
             console.error('output directory unavailable');
         var baseDir = FORTE.outDir + '/' + FORTE.trial;
-        XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out', function (text) {
-            FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 0.75, FORTE.fetchInterval * 0.9);
-            var bitmap = FORTE.getBitmap(text);
-            FORTE.design.bitmaps.push(bitmap);
-            if (FORTE.itrCounter >= FORTE.DELAYEDSTART && !FORTE.renderStarted) {
-                FORTE.renderInterval = FORTE.RENDERINTERVAL;
-                FORTE.render(0);
-                FORTE.renderStarted = true;
-                time();
-            }
-
-            time('[log] fetched data for itr# ' + (FORTE.itrCounter + 1) + ' after failing ' + FORTE.failureCounter + ' time(s)');
-            FORTE.itrCounter += 1;
-            setTimeout(FORTE.fetchData, FORTE.fetchInterval);
-            // }
-
-            // FORTE.fetchInterval = FORTE.FETCHINTERVAL;
-            FORTE.failureCounter = 0;
-        }, function () {
-            FORTE.__misses++;
-            FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 2.5, FORTE.fetchInterval * 1.1);
-            if (FORTE.itrCounter == 0) {
-                setTimeout(FORTE.fetchData, FORTE.fetchInterval);
-                // FORTE.fetchInterval *= 1.1;
-            } else {
-                FORTE.failureCounter++;
-                if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
-                    FORTE.state = 'finished';
-                    log('[log] data fetching finished');
-                    var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
-                    var label = 'layer ' + (numLayers + 1);
-                    FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
-                    var tag = FORTE.optimizedLayerList.tagit('createTag', label);
-                    FORTE.showOptimizedLayer(tag, label);
-
-                    var displacementFileLabels = ['before', 'after'];
-                    FORTE.design.displacements = [];
-                    for (label of displacementFileLabels) {
-                        XAC.readTextFile(baseDir + '_' + label + '.dsp', function (text) {
-                            var displacements = text.split('\n');
-                            for (var i = 0; i < displacements.length; i++) {
-                                var disp = parseFloat(displacements[i]);
-                                if (!isNaN(disp)) displacements[i] = disp;
-                            }
-                            FORTE.design.displacements.push(displacements);
-                        });
-                    }
-
-                    log('[log] misses: ' + FORTE.__misses);
-
-                    // if (FORTE.m < 64) {
-                    //     FORTE.m*=2;
-                    //     FORTE.btnSuggest.trigger('click');
-                    // }
-
-                } else {
-                    setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+        XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out',
+            // on successfully reading results
+            function (text) {
+                FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 0.75, FORTE.fetchInterval * 0.9);
+                var bitmap = FORTE.getBitmap(text);
+                FORTE.design.bitmaps.push(bitmap);
+                if (FORTE.itrCounter >= FORTE.DELAYEDSTART && !FORTE.renderStarted) {
+                    FORTE.renderInterval = FORTE.RENDERINTERVAL;
+                    FORTE.render(0);
+                    FORTE.renderStarted = true;
+                    time();
                 }
-            }
-        });
+
+                time('[log] fetched data for itr# ' + (FORTE.itrCounter + 1) +
+                    ' after failing ' + FORTE.failureCounter + ' time(s)');
+                FORTE.itrCounter += 1;
+                setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+                // }
+
+                // FORTE.fetchInterval = FORTE.FETCHINTERVAL;
+                FORTE.failureCounter = 0;
+            },
+            // on unsuccessfully reading results
+            function () {
+                FORTE.__misses++;
+                FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 2.5, FORTE.fetchInterval * 1.1);
+                if (FORTE.itrCounter == 0) {
+                    setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+                    // FORTE.fetchInterval *= 1.1;
+                } else {
+                    FORTE.failureCounter++;
+                    if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
+                        FORTE.state = 'finished';
+                        log('[log] data fetching finished');
+
+                        // update tags
+                        var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
+                        var label = 'layer ' + (numLayers + 1);
+                        FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
+                        var tag = FORTE.optimizedLayerList.tagit('createTag', label);
+                        FORTE.showOptimizedLayer(tag, label);
+
+                        var displacementFileLabels = ['before', 'after'];
+                        // var associatedLayers = [FORTE.designLayer, FORTE.optimizedLayer]
+                        FORTE.design.displacements = [];
+                        for (var i = 0; i < displacementFileLabels.length; i++) {
+                            // for (label of displacementFileLabels) {
+                            var label = displacementFileLabels[i];
+                            XAC.readTextFile(baseDir + '_' + label + '.dsp', function (text) {
+                                var displacements = text.split('\n');
+                                for (var i = 0; i < displacements.length; i++) {
+                                    var disp = parseFloat(displacements[i]);
+                                    if (!isNaN(disp)) displacements[i] = disp;
+                                }
+                                FORTE.design.displacements.push(displacements);
+                                var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
+                                var height = FORTE.resolution[1];
+                                var width = FORTE.resolution[0];
+
+                                // need to fix the global value
+                                var maxStress = layer.updateStress(displacements, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin,
+                                    width, height, layer._bitmap, 0.1);
+                                if (label == 'after') {
+                                    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
+                                    var layers = [FORTE.designLayer];
+                                    var keys = Object.keys(FORTE.htOptimizedLayers);
+                                    for (key of keys) layers.push(FORTE.htOptimizedLayers[key]);
+                                    for (layer of layers) {
+                                        if(layer == undefined) continue;
+                                        layer.updateHeatmap(FORTE.design.maxStress);
+                                        layer.forceRedraw(0.1, layer._heatmap);
+                                    }
+                                }
+                                // var bitmap = layer._bitmap.clone();
+                                // layer._bitmap = XAC.initMDArray([layer._gridHeight, layer._gridWidth], 0);
+                                // layer.drawFromBitmap(bitmap, 0, 0, 0.1, layer._heatmap);
+                            });
+                        }
+
+                        log('[log] misses: ' + FORTE.__misses);
+
+                    } else {
+                        setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+                    }
+                }
+            });
     }
 }
 
@@ -465,7 +488,8 @@ FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
 
     // if fetching data is not finished, add extrapolated bitmaps
-    if (FORTE.state != 'finished' && FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
+    if (FORTE.state != 'finished' &&
+        FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
         FORTE.design.extrapolateBitmaps(0.5);
     }
 
@@ -485,6 +509,9 @@ FORTE.render = function (pointer) {
     }
 }
 
+//
+//
+//
 FORTE.optimize = function () {
     FORTE.resetRadioButtons();
 
@@ -497,7 +524,10 @@ FORTE.optimize = function () {
     FORTE.design.designPoints = FORTE.designLayer.package();
     FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-    var data = JSON.stringify(FORTE.design.getData());
+    var dataObject = FORTE.design.getData();
+    FORTE.resolution = dataObject.resolution;
+
+    var data = JSON.stringify(dataObject);
     if (data != undefined) {
         var fields = ['trial', 'forte', 'material', 'm'];
         FORTE.trial = 'forte_' + Date.now();
