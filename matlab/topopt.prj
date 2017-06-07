@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3823272151" file="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte/matlab" name="topopt" preferred-package-location="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt/for_redistribution" preferred-package-type="package.type.app" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration file="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte/matlab" name="topopt" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>topopt</param.appname>
     <param.icon />
     <param.icons />
@@ -14,7 +14,20 @@
     <param.installpath.string>/topopt/</param.installpath.string>
     <param.installpath.combo>option.installpath.systemwideapp</param.installpath.combo>
     <param.logo />
-    <param.install.notes />
+    <param.install.notes>In the following directions, replace MCR_ROOT by the directory where the MATLAB Runtime is installed on the target machine.
+
+If the environment variable DYLD_LIBRARY_PATH is undefined, set it to the concatenation of the following strings:
+
+    MCR_ROOT/v91/runtime/maci64:
+    MCR_ROOT/v91/sys/os/maci64:
+    MCR_ROOT/v91/bin/maci64
+
+If it is defined, set it to the concatenation of these strings:
+
+    ${LD_LIBRARY_PATH}: 
+    MCR_ROOT/v91/runtime/maci64:
+    MCR_ROOT/v91/sys/os/maci64:
+    MCR_ROOT/v91/bin/maci64</param.install.notes>
     <param.target.install.notes />
     <param.intermediate>${PROJECT_ROOT}/topopt/for_testing</param.intermediate>
     <param.files.only>${PROJECT_ROOT}/topopt/for_redistribution_files_only</param.files.only>

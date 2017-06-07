@@ -86,7 +86,7 @@ function top88(trial, args)
       sK = reshape(KE(:)*(Emin+xPhys(:)'.^penal*(E0-Emin)),64*nelx*nely,1);
       K = sparse(iK,jK,sK); K = (K+K')/2;
       U(freedofs) = K(freedofs,freedofs)\F(freedofs);
-      if loop == 0 U0 = U; end
+      if loop == 1 U0 = U; end
       %% OBJECTIVE FUNCTION AND SENSITIVITY ANALYSIS
       ce = reshape(sum((U(edofMat)*KE).*U(edofMat),2),nely,nelx);
       c = sum(sum((Emin+xPhys.^penal*(E0-Emin)).*ce));
