@@ -196,12 +196,14 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
         }
     }
     // this._context.globalAlpha = 1.0;
+    this._context.fillStyle = originalStyle;
 }
 
 //
 //  force to redraw everything
 //
 FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
+    var originalStyle = this._context.fillStyle;
     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     for (var j = 0; j < this._gridHeight; j++) {
         for (var i = 0; i < this._gridWidth; i++) {
@@ -219,6 +221,7 @@ FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
             }
         }
     }
+    this._context.fillStyle = originalStyle;
 }
 
 //
