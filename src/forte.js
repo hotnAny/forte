@@ -525,6 +525,8 @@ FORTE.optimize = function () {
     FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
     var dataObject = FORTE.design.getData();
+    if(dataObject == undefined) return;
+    
     FORTE.resolution = dataObject.resolution;
 
     var data = JSON.stringify(dataObject);
