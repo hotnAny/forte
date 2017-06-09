@@ -30,8 +30,6 @@ FORTE.changeResolution = function () {
     FORTE.loadLayer._context.lineWidth = 8;
     FORTE.loadLayer._context.lineJoin = 'round';
     FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
-    FORTE.loadLayer._context.lineWidth = 8;
-    FORTE.loadLayer._context.lineJoin = 'round';
 }
 
 //
@@ -137,6 +135,8 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
         // FORTE.loadLayer._context.lineWidth = 8;
     }
 
+    // log(distrVectors)
+
     return distrVectors;
 }
 
@@ -218,7 +218,10 @@ FORTE.customizeLoadLayer = function () {
             this.__loadValueLayer._context.strokeStyle = this._context.fillStyle;
             this.__loadValueLayer._context.lineWidth = this._context.lineWidth;
             this.__loadValueLayer._context.lineJoin = this._context.lineJoin;
+            
             this.__strokePoints = this._strokePoints.clone();
+
+            // this.__strokePoints = [this._strokePoints[0]];
 
             this._enabled = false;
         }
