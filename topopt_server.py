@@ -213,15 +213,15 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         node = node_nums_2d(nelx, nely, x[0] + 1, x[1] + 1)
         list_nodes = node.tolist()
         for idx in list_nodes:
-            tb_loadnodes.append(dof*(idx-1)+0)
-            tb_loadnodes.append(dof*(idx-1)+1)
+            tb_loadnodes.append(dof*(idx)-1)
+            tb_loadnodes.append(dof*(idx))
 
     tb_loadvalues = []
     for v in _loadvalues:
         vsum = sqrt(v[0]**2+v[1]**2)
         for i in xrange(0, nnodes):
             tb_loadvalues.append(v[0]/vsum)
-            tb_loadvalues.append(v[1]/vsum)
+            tb_loadvalues.append(-v[1]/vsum)
     
     matinput['LOADNODES'] = tb_loadnodes
     # print len(matinput['LOADNODES'])
