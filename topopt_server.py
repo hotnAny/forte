@@ -44,6 +44,12 @@ def elm_num_2d(nelx, nely, mpx, mpy):
 #   get 2d node number
 #
 def node_nums_2d(nelx, nely, mpx, mpy):
+    # debug
+    if mpx > nelx:
+        print mpx, nelx
+    if mpy > nely:
+        print mpy, nely
+
     inn = array([0, 1, nely + 1, nely + 2]) #  initial node numbers
     en = nely * (mpx - 1) + mpy #  element number
     nn = inn + en + mpx - 1 #  node numbers
@@ -194,11 +200,11 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     for node in boundary_nodes:
         list_nodes = node.tolist()
         for idx in list_nodes:
+            tb_boundary[dof*(idx-1)+0] = 1
             tb_boundary[dof*(idx-1)+1] = 1
-            tb_boundary[dof*(idx-1)+2] = 1
     for idx in xrange(0, len(tb_boundary)):
         if tb_boundary[idx] == 1:
-            matinput['FIXEDDOFS'].append(idx)
+            matinput['FIXEDDOFS'].append(idx+1)
     # print matinput['FIXEDDOFS']
 
     # load
@@ -207,8 +213,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         node = node_nums_2d(nelx, nely, x[0] + 1, x[1] + 1)
         list_nodes = node.tolist()
         for idx in list_nodes:
+            tb_loadnodes.append(dof*(idx-1)+0)
             tb_loadnodes.append(dof*(idx-1)+1)
-            tb_loadnodes.append(dof*(idx-1)+2)
 
     tb_loadvalues = []
     for v in _loadvalues:
@@ -221,6 +227,20 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # print len(matinput['LOADNODES'])
     matinput['LOADVALUES'] = tb_loadvalues
     # print len(matinput['LOADVALUES'])
+
+    # [debug]
+    # vis_str = ''
+    # for j in xrange(0, nely+1):
+    #     for i in xrange(0, nelx+1):
+    #         idx = i * (nely+1) + j
+    #         if tb_boundary[dof*idx]== 1 and tb_boundary[dof*idx+1]==1:
+    #             vis_str += ' x '
+    #         elif dof*idx in tb_loadnodes and dof*idx+1 in tb_loadnodes:
+    #             vis_str += ' O '
+    #         else:
+    #             vis_str += ' . '
+    #     vis_str += '\n'
+    # print vis_str
 
     # active/passive/favored elements
     matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
@@ -236,7 +256,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         # for j in xrange(0, nely):
         #     print ' '.join([(format(x*s, '1.1f') if x > 0.9 else '   ') for x in df[j]])
     else:
-        matinput['DISTFIELD'] = ''
+        matinput['DISTFIELD'] = ';'
 
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 32, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
