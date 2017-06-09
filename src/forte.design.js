@@ -23,7 +23,7 @@ FORTE.Design.prototype = {
 }
 
 FORTE.Design.prototype.extrapolateBitmaps = function (step) {
-    if(this.bitmaps.length < 2) return;
+    if (this.bitmaps.length < 2) return;
     var bmp0 = this.bitmaps.lastBut(1);
     var bmp1 = this.bitmaps.pop();
     var height = bmp1.length;
@@ -61,11 +61,11 @@ FORTE.Design.prototype.getData = function () {
         bbox.ymax = Math.max(p[1], bbox.ymax);
     }
 
-    var __updatePoint = function (p, bbox) {
+    var __updatePoint = function (p, bbox, x0, y0) {
         p[0] -= bbox.xmin;
-        p[0] = Math.min(Math.max(0, p[0]), bbox.xmax - bbox.xmin - 1);
+        p[0] = x0 + Math.min(Math.max(0, p[0]), bbox.xmax - bbox.xmin - 1);
         p[1] -= bbox.ymin;
-        p[1] = Math.min(Math.max(0, p[1]), bbox.ymax - bbox.ymin - 1);
+        p[1] = y0 + Math.min(Math.max(0, p[1]), bbox.ymax - bbox.ymin - 1);
         return p;
     }
 
@@ -77,26 +77,29 @@ FORTE.Design.prototype.getData = function () {
 
     // log(bbox)
     var margin = 2;
-    bbox.xmin = Math.max(bbox.xmin - margin, 0);
-    bbox.xmax = Math.min(bbox.xmax + margin, this.width);
-    bbox.ymin = Math.max(bbox.ymin - margin, 0);
-    bbox.ymax = Math.min(bbox.ymax + margin, this.height);
+    var xminNew = Math.max(bbox.xmin - margin, 0);
+    var xmaxNew = Math.min(bbox.xmax + margin, this.width);
+    var yminNew = Math.max(bbox.ymin - margin, 0);
+    var ymaxNew = Math.min(bbox.ymax + margin, this.height);
 
-    var width = bbox.xmax - bbox.xmin;
-    var height = bbox.ymax - bbox.ymin;
+    var leftMargin = bbox.xmin - xminNew;
+    var topMargin = bbox.ymin - yminNew;
+
+    var width = xmaxNew - xminNew; // bbox.xmax - bbox.xmin;
+    var height = ymaxNew - yminNew; // bbox.ymax - bbox.ymin;
 
     var designPoints = [];
-    for (p of this.designPoints) designPoints.push(__updatePoint(p.clone(), bbox));
+    for (p of this.designPoints) designPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     var emptyPoints = [];
-    for (p of this.emptyPoints) emptyPoints.push(__updatePoint(p.clone(), bbox));
+    for (p of this.emptyPoints) emptyPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     var loadPoints = [];
     for (lps of this.loadPoints)
-        for (p of lps) loadPoints.push(__updatePoint(p.clone(), bbox));
+        for (p of lps) loadPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     var loadValues = [];
     for (lvs of this.loadValues)
         for (v of lvs) loadValues.push(v);
     var boundaryPoints = [];
-    for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox));
+    for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
 
     // [debug]
     // var arr = XAC.initMDArray([height, width], ' ');
