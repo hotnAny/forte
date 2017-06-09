@@ -82,7 +82,7 @@ FORTE.drawArrow = function (context, fromx, fromy, tox, toy) {
 //
 //  distribute loads along the specified path (points)
 //
-FORTE.distriute = function (points, vector, midPoint, normalizeFactor) {
+FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
     var distrVectors = [];
 
     // fit the load points on an arc
@@ -90,6 +90,9 @@ FORTE.distriute = function (points, vector, midPoint, normalizeFactor) {
     try {
         var circleInfo = XAC.fitCircle(points);
         ctr = new THREE.Vector3(circleInfo.x0, circleInfo.y0, 0);
+        // FORTE.loadLayer._context.rect(ctr.x * FORTE.loadLayer._cellSize, ctr.y * FORTE.loadLayer._cellSize,
+        //     FORTE.loadLayer._cellSize, FORTE.loadLayer._cellSize);
+        // FORTE.loadLayer._context.fill();
     } catch (e) {
         console.error(e);
         ctr = new THREE.Vector3();
@@ -108,20 +111,30 @@ FORTE.distriute = function (points, vector, midPoint, normalizeFactor) {
     var umid = midPoint.clone().sub(ctr).normalize();
     var len = vector.length() / points.length;
     for (var i = 0; i < points.length; i++) {
+        var varr;
         var point = new THREE.Vector3(points[i].x, points[i].y, 0);
-        var u = point.clone().sub(ctr).normalize();
-        var angle = umid.angleTo(u);
-        var axis = umid.clone().cross(u).normalize();
+        if (circleInfo.r > FORTE.loadLayer._context.lineWidth * 2) {
+            var u = point.clone().sub(ctr).normalize();
+            var angle = umid.angleTo(u);
+            var axis = umid.clone().cross(u).normalize();
 
-        var varr = vector.clone().applyAxisAngle(axis, angle).divideScalar(
-            points.length).divideScalar(normalizeFactor).toArray().trim(2);
+            varr = vector.clone().applyAxisAngle(axis, angle).divideScalar(points.length)
+                .divideScalar(normalizeFactor).toArray().trim(2);
+
+        } else {
+            varr = vector.clone().divideScalar(points.length)
+                .divideScalar(normalizeFactor).toArray().trim(2);
+        }
+
         distrVectors.push(varr);
 
         // [debug] to show the load direction at each point
-        // point.x *= cellSize;
-        // point.y *= cellSize;
+        // point.x *= FORTE.loadLayer._cellSize;
+        // point.y *= FORTE.loadLayer._cellSize;
+        // FORTE.loadLayer._context.lineWidth = 1;
         // FORTE.drawArrow(FORTE.loadLayer._context,
-        //     point.x, point.y, point.x + varr[0] * 30, point.y + varr[1] * 30);
+        //     point.x, point.y, point.x + varr[0] * 50, point.y + varr[1] * 50);
+        // FORTE.loadLayer._context.lineWidth = 8;
     }
 
     return distrVectors;
@@ -155,7 +168,7 @@ FORTE.customizeLoadLayer = function () {
                 arrStrokePoints.push([p.x, p.y]);
             }
             FORTE.design.loadPoints.push(arrStrokePoints);
-            FORTE.design.loadValues.push(FORTE.distriute(this.__strokePoints, vector, midPoint, 1));
+            FORTE.design.loadValues.push(FORTE.distribute(this.__strokePoints, vector, midPoint, 1));
 
             this._enabled = true;
         }
