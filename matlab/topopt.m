@@ -1,4 +1,5 @@
 function topopt(argsfile)
+    debugging = true;
     disp('topopt service started ...');
     prevtrial = '';
     while(true)
@@ -15,16 +16,21 @@ function topopt(argsfile)
             break;
         end
 
+        filestr = strcat(filestr, '&', string(debugging));
         args = strsplit(filestr, '&');
         trial = char(args(1));
         if strcmp(trial, prevtrial) continue; end
-        try
-            prevtrial = trial;
+        prevtrial = trial;
+        if debugging==true 
             top88(trial, args);
-        catch ME
-            disp(ME.message);
-            continue;
-        end
-%         break;
+            break; 
+        else
+            try
+                top88(trial, args);
+            catch ME
+                disp(ME.message);
+                continue;
+            end
+        end 
     end
 end
