@@ -3,7 +3,7 @@ function top88(trial, args)
     disp(args)
     nelx = str2double(args(2));
     nely = str2double(args(3));
-    volfrac = 0.3;%str2double(args(4));
+    volfrac = str2double(args(4));
     penal = str2double(args(5));
     rmin = str2double(args(6));
     ft = str2double(args(7));
@@ -49,6 +49,10 @@ function top88(trial, args)
     fixeddofs = union(fixeddofs, [2*(nelx+1)*(nely+1)]);
     alldofs = [1:2*(nely+1)*(nelx+1)];
     freedofs = setdiff(alldofs,fixeddofs);
+    % Setup Stress Analysis
+    L=1;
+    B = (1/2/L)*[-1 0 1 0 1 0 -1 0; 0 -1 0 -1 0 1 0 1; -1 -1 -1 1 1 1 1 -1];
+    DE = (1/(1-nu^2))*[1 nu 0; nu 1 0; 0 0 (1-nu)/2];
     %% PREPARE FILTER
     iH = ones(nelx*nely*(2*(ceil(rmin)-1)+1)^2,1);
     jH = ones(size(iH));
@@ -80,13 +84,22 @@ function top88(trial, args)
     loop = 0;
     change = 1;
     %% START ITERATION [xac] added maxloop
-    while change > 0.05 && (debugging || loop < maxloop)
+    while change > 0.05 && (loop < maxloop)
       tic
       loop = loop + 1;
       %% FE-ANALYSIS
       sK = reshape(KE(:)*(Emin+xPhys(:)'.^penal*(E0-Emin)),64*nelx*nely,1);
       K = sparse(iK,jK,sK); K = (K+K')/2;
       U(freedofs) = K(freedofs,freedofs)\F(freedofs);
+      
+      %% [xac] stress
+      E = Emin+x(:)'.^penal*(E0-Emin);
+      s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
+      vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
+      
+      % [xac] log the 'before' results
+      if loop==1 U0 = U; vms0 = vms; end
+      
       %% OBJECTIVE FUNCTION AND SENSITIVITY ANALYSIS
       ce = reshape(sum((U(edofMat)*KE).*U(edofMat),2),nely,nelx);
       c = sum(sum((Emin+xPhys.^penal*(E0-Emin)).*ce));
@@ -118,23 +131,7 @@ function top88(trial, args)
       xPhys(pasvelms) = 0;
       
 %       [xac] add structs
-       if isadding 
-%            xPhys(actvelms) = 1; 
-       end
-
-%       [xac] also naive approach
-%       xPhys = xPhys .* distfield;
-
-%       colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
-%       waitforbuttonpress;
-%       xPhys = masstransport(distfield, xPhys, lambda, niters, 7);
-      
-%       disp(lambda)
-%       xPhys = max(xPhys-massmove, min(xMoved, xPhys+massmove));
-%       massmove = minmove+(massmove-minmove) * decay;
-
-%       distfield = masstransport(xPhys, distfield, lambda, niters, 7);
-%         distfield = xPhys;
+       if isadding xPhys(actvelms) = 1; end
       
       %% PRINT RESULTS
       fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop,toc,c, ...
@@ -142,14 +139,17 @@ function top88(trial, args)
       
       %% PLOT DENSITIES
       if debugging
-        colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+%         colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+         colormap(flipud(gray));
+         subplot(2,1,1); imagesc(x); axis equal off; text(2,-2,'x');
+         subplot(2,1,2); imagesc(vms); axis equal off; text(2,-2,'vms'); drawnow;
       end
         
       try dlmwrite(strcat(trial, '_', num2str(loop), '.out'), xPhys); catch ; end
     end
-    
+
     try 
-        dlmwrite(strcat(trial, '_before.dsp'), U0); 
-        dlmwrite(strcat(trial, '_after.dsp'), U);
+        dlmwrite(strcat(trial, '_before.vms'), vms0); 
+        dlmwrite(strcat(trial, '_after.vms'), vms);
     catch; end        
 end

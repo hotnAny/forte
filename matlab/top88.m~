@@ -16,7 +16,7 @@ function top88(trial, args)
     pasvelms = str2num(char(args(14)));
     distfield = str2num(char(args(15)));
     isadding = size(distfield) == [0, 0];
-    debugging = str2num(char(args(16)))
+    debugging = str2num(char(args(16)));
     %% [xac] mass transport
     niters = 16;
     lambda = 0.5;
@@ -41,14 +41,18 @@ function top88(trial, args)
     iK = reshape(kron(edofMat,ones(8,1))',64*nelx*nely,1);
     jK = reshape(kron(edofMat,ones(1,8))',64*nelx*nely,1);
     % DEFINE LOADS AND SUPPORTS (HALF MBB-BEAM)
-    % F = sparse(2,1,-1,2*(nely+1)*(nelx+1),1) % ORIGINAL: 
+%     F = sparse(2*nelx*(nely+1)+1,1,-1,2*(nely+1)*(nelx+1),1); % ORIGINAL: 
     F = sparse(loadnodes, ones(size(loadnodes)), loadvalues, 2*(nely+1)*(nelx+1),1);
     U = zeros(2*(nely+1)*(nelx+1),1);
     U0 = U;
-    % fixeddofs = union([1:2:2*(nely+1)],[2*(nelx+1)*(nely+1)]) % ORIGINAL
+%     fixeddofs = union([1:1:2*(nely+1)],[2*(nelx+1)*(nely+1)]); % ORIGINAL
     fixeddofs = union(fixeddofs, [2*(nelx+1)*(nely+1)]);
     alldofs = [1:2*(nely+1)*(nelx+1)];
     freedofs = setdiff(alldofs,fixeddofs);
+    % Setup Stress Analysis
+    L=1;
+    B = (1/2/L)*[-1 0 1 0 1 0 -1 0; 0 -1 0 -1 0 1 0 1; -1 -1 -1 1 1 1 1 -1];
+    DE = (1/(1-nu^2))*[1 nu 0; nu 1 0; 0 0 (1-nu)/2];
     %% PREPARE FILTER
     iH = ones(nelx*nely*(2*(ceil(rmin)-1)+1)^2,1);
     jH = ones(size(iH));
@@ -80,14 +84,17 @@ function top88(trial, args)
     loop = 0;
     change = 1;
     %% START ITERATION [xac] added maxloop
-    while change > 0.05 && loop < maxloop
+    while change > 0.05 && (debugging || loop < maxloop)
       tic
       loop = loop + 1;
       %% FE-ANALYSIS
       sK = reshape(KE(:)*(Emin+xPhys(:)'.^penal*(E0-Emin)),64*nelx*nely,1);
       K = sparse(iK,jK,sK); K = (K+K')/2;
       U(freedofs) = K(freedofs,freedofs)\F(freedofs);
-      if loop == 1 U0 = U; end
+      %% [xac] stress
+      E = Emin+x(:)'.^penal*(E0-Emin);
+      s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
+      vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
       %% OBJECTIVE FUNCTION AND SENSITIVITY ANALYSIS
       ce = reshape(sum((U(edofMat)*KE).*U(edofMat),2),nely,nelx);
       c = sum(sum((Emin+xPhys.^penal*(E0-Emin)).*ce));
@@ -101,7 +108,7 @@ function top88(trial, args)
         dv(:) = H*(dv(:)./Hs);
       end
       %% OPTIMALITY CRITERIA UPDATE OF DESIGN VARIABLES AND PHYSICAL DENSITIES
-      l1 = 0; l2 = 1e9; move = optmove;
+      l1 = 0; l2 = 1e9; move = 0.2;
       while (l2-l1)/(l1+l2) > 1e-3
         lmid = 0.5*(l2+l1);
         xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
@@ -114,6 +121,7 @@ function top88(trial, args)
       end
       change = max(abs(xnew(:)-x(:)));
       x = xnew;
+      
       %% [xac] post-processing per iteration     
       xPhys(pasvelms) = 0;
       
@@ -121,7 +129,6 @@ function top88(trial, args)
        if isadding 
            xPhys(actvelms) = 1; 
        end
-
 
 %       [xac] also naive approach
 %       xPhys = xPhys .* distfield;
@@ -140,8 +147,15 @@ function top88(trial, args)
       %% PRINT RESULTS
       fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop,toc,c, ...
         mean(xPhys(:)),change);
-%       colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
-%       waitforbuttonpress;
+      
+      %% PLOT DENSITIES
+      if debugging
+%         colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
+        % Plot Results
+         colormap(flipud(gray));
+         subplot(2,1,1); imagesc(x); axis equal off; text(2,-2,'x');
+         subplot(2,1,2); imagesc(vms); axis equal off; text(2,-2,'vms'); drawnow;
+      end
         
       try dlmwrite(strcat(trial, '_', num2str(loop), '.out'), xPhys); catch ; end
     end
@@ -149,13 +163,5 @@ function top88(trial, args)
     try 
         dlmwrite(strcat(trial, '_before.dsp'), U0); 
         dlmwrite(strcat(trial, '_after.dsp'), U);
-    catch; 
-    end
-        
-    %% PLOT DENSITIES
-
-%     for i=1:100
-%         masstransport(xPhys, distfield, 0.01 * i, 128, 9);
-%     end
-
+    catch; end        
 end
