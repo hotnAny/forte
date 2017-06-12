@@ -111,7 +111,7 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
 FORTE.GridCanvas.prototype.drawMove = function (e) {
     if (!this._enabled) return;
     if (!this._isDown) return;
-    
+
     this._doDraw(e);
     // this._prevPoint = {
     //     x: xcenter,
@@ -128,7 +128,7 @@ FORTE.GridCanvas.prototype.drawUp = function (e) {
     this._context.closePath();
 };
 
-FORTE.GridCanvas.prototype._doDraw = function(e) {
+FORTE.GridCanvas.prototype._doDraw = function (e) {
     var canvasOffset = this._canvas.offset();
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
@@ -172,22 +172,14 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
 
     for (var j = 0; j < h; j++) {
         for (var i = 0; i < w; i++) {
-            // bitmap[j][i] = bitmap[j][i] > thres ? 1 : 0;
             var x = x0 + i;
             var y = y0 + j;
-            // if (bitmap[j][i] == 1 && this._bitmap[j + y0][i + x0] == 0) {
             if (bitmap[j][i] > thres && this._bitmap[y][x] <= thres) {
-                // this._context.globalAlpha = bitmap[j][i] + thres;
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
-                if (colorMap != undefined && colorMap[j][i] != undefined) {
-                    this._context.fillStyle = colorMap[j][i];
-                    // log(colorMap[j][i]);
-                }
                 this._context.fill();
                 this._context.closePath();
-                // } else if (bitmap[j][i] == 0 && this._bitmap[j + y0][i + x0] == 1) {
             } else if (bitmap[j][i] <= thres && this._bitmap[y][x] > thres) {
                 this._context.clearRect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
@@ -195,7 +187,6 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
             this._bitmap[j + y0][i + x0] = bitmap[j][i];
         }
     }
-    // this._context.globalAlpha = 1.0;
     this._context.fillStyle = originalStyle;
 }
 
@@ -209,13 +200,11 @@ FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
         for (var i = 0; i < this._gridWidth; i++) {
             var x = i,
                 y = j;
-            if (this._bitmap[j][i] > thres) {
+            if (colorMap != undefined && colorMap[j][i] != undefined) {
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
-                if (colorMap != undefined && colorMap[j][i] != undefined) {
-                    this._context.fillStyle = colorMap[j][i];
-                }
+                this._context.fillStyle = colorMap[j][i];
                 this._context.fill();
                 this._context.closePath();
             }
