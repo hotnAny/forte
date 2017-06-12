@@ -201,6 +201,7 @@ FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
             var x = i,
                 y = j;
             if (colorMap != undefined && colorMap[j][i] != undefined) {
+                this._context.globalAlpha = Math.pow(this._bitmap[j][i], 3);
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
@@ -210,6 +211,7 @@ FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
             }
         }
     }
+    this._context.globalAlpha = 1;
     this._context.fillStyle = originalStyle;
 }
 
