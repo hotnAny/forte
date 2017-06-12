@@ -221,7 +221,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         vsum = sqrt(v[0]**2+v[1]**2)
         for i in xrange(0, nnodes):
             tb_loadvalues.append(v[0]/vsum)
-            tb_loadvalues.append(-v[1]/vsum)
+            tb_loadvalues.append(v[1]/vsum)
     
     matinput['LOADNODES'] = tb_loadnodes
     # print len(matinput['LOADNODES'])
@@ -259,7 +259,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         matinput['DISTFIELD'] = ';'
 
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
-        matinput['VOLFRAC'], 3, 1.5, 1, 32, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
+        matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
         matinput['DISTFIELD']]
 
