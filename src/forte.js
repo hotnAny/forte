@@ -11,7 +11,7 @@ var FORTE = FORTE || {};
 FORTE.width = 240;
 FORTE.height = 160;
 FORTE.FETCHINTERVAL = 200;
-FORTE.RENDERINTERVAL = 40;
+FORTE.RENDERINTERVAL = 60;
 FORTE.MAXITERATIONS = 50;
 FORTE.MINMATERIALRATIO = 0.5;
 FORTE.MAXMATERIALRATIO = 2.5;
@@ -377,40 +377,57 @@ FORTE.fetchData = function () {
                         var tag = FORTE.optimizedLayerList.tagit('createTag', label);
                         FORTE.showOptimizedLayer(tag, label);
 
-                        var displacementFileLabels = ['before', 'after'];
-                        // var associatedLayers = [FORTE.designLayer, FORTE.optimizedLayer]
-                        FORTE.design.displacements = [];
-                        for (var i = 0; i < displacementFileLabels.length; i++) {
-                            // for (label of displacementFileLabels) {
-                            var label = displacementFileLabels[i];
-                            XAC.readTextFile(baseDir + '_' + label + '.dsp', function (text) {
-                                var displacements = text.split('\n');
-                                for (var i = 0; i < displacements.length; i++) {
-                                    var disp = parseFloat(displacements[i]);
-                                    if (!isNaN(disp)) displacements[i] = disp;
-                                }
-                                FORTE.design.displacements.push(displacements);
-                                var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
-                                var height = FORTE.resolution[1];
-                                var width = FORTE.resolution[0];
+                        //
+                        //  read displacements
+                        //  - deprecated, as stress can be computed in matlab
+                        //
+                        // var displacementFileLabels = ['before', 'after'];
+                        // FORTE.design.displacements = [];
+                        // for (var i = 0; i < displacementFileLabels.length; i++) {
+                        //     // for (label of displacementFileLabels) {
+                        //     var label = displacementFileLabels[i];
+                        //     XAC.readTextFile(baseDir + '_' + label + '.dsp', function (text) {
+                        //         var displacements = text.split('\n');
+                        //         for (var i = 0; i < displacements.length; i++) {
+                        //             var disp = parseFloat(displacements[i]);
+                        //             if (!isNaN(disp)) displacements[i] = disp;
+                        //         }
+                        //         FORTE.design.displacements.push(displacements);
+                        //         var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
+                        //         var height = FORTE.resolution[1];
+                        //         var width = FORTE.resolution[0];
 
-                                // need to fix the global value
-                                var maxStress = layer.updateStress(displacements, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin,
-                                    width, height, layer._bitmap, 0.1);
-                                if (label == 'after') {
-                                    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
-                                    var layers = [FORTE.designLayer];
-                                    var keys = Object.keys(FORTE.htOptimizedLayers);
-                                    for (key of keys) layers.push(FORTE.htOptimizedLayers[key]);
-                                    for (layer of layers) {
-                                        if(layer == undefined) continue;
-                                        layer.updateHeatmap(FORTE.design.maxStress);
-                                        layer.forceRedraw(0.1, layer._heatmap);
-                                    }
+                        //         // need to fix the global value
+                        //         var maxStress = layer.updateStress(displacements, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin,
+                        //             width, height, layer._bitmap, 0.1);
+                        //         if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
+                        //     });
+                        // }
+
+                        
+                        //  read stresses
+                        
+                        var stressFieldLabels = ['before', 'after'];
+                        for (var i = 0; i < stressFieldLabels.length; i++) {
+                            var label = stressFieldLabels[i];
+                            XAC.readTextFile(baseDir + '_' + label + '.vms', function (text) {
+                                var stresses = FORTE.getBitmap(text);
+                                var maxStress = 0;
+                                for (row of stresses)
+                                    for (value of row)
+                                        maxStress = Math.max(maxStress, value);
+
+                                var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
+                                layer._stressInfo = {
+                                    x0: FORTE.design.bbox.xmin,
+                                    y0: FORTE.design.bbox.ymin,
+                                    width: FORTE.resolution[0],
+                                    height: FORTE.resolution[1],
+                                    stresses: stresses,
+                                    maxStress: maxStress
                                 }
-                                // var bitmap = layer._bitmap.clone();
-                                // layer._bitmap = XAC.initMDArray([layer._gridHeight, layer._gridWidth], 0);
-                                // layer.drawFromBitmap(bitmap, 0, 0, 0.1, layer._heatmap);
+
+                                if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
                             });
                         }
 
@@ -525,8 +542,8 @@ FORTE.optimize = function () {
     FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
     var dataObject = FORTE.design.getData();
-    if(dataObject == undefined) return;
-    
+    if (dataObject == undefined) return;
+
     FORTE.resolution = dataObject.resolution;
 
     var data = JSON.stringify(dataObject);
@@ -538,5 +555,17 @@ FORTE.optimize = function () {
         FORTE.state = 'start';
         time();
         FORTE.fetchData();
+    }
+}
+
+FORTE.updateStressAcrossLayers = function (maxStress) {
+    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
+    var layers = [FORTE.designLayer];
+    var keys = Object.keys(FORTE.htOptimizedLayers);
+    for (key of keys) layers.push(FORTE.htOptimizedLayers[key]);
+    for (layer of layers) {
+        if (layer == undefined) continue;
+        layer.updateHeatmap(FORTE.design.maxStress);
+        layer.forceRedraw(0.1, layer._heatmap);
     }
 }
