@@ -49,10 +49,12 @@ function top88(trial, args)
     fixeddofs = union(fixeddofs, [2*(nelx+1)*(nely+1)]);
     alldofs = [1:2*(nely+1)*(nelx+1)];
     freedofs = setdiff(alldofs,fixeddofs);
-    % Setup Stress Analysis
+    %% [xac] setup Stress Analysis
     L=1;
     B = (1/2/L)*[-1 0 1 0 1 0 -1 0; 0 -1 0 -1 0 1 0 1; -1 -1 -1 1 1 1 1 -1];
     DE = (1/(1-nu^2))*[1 nu 0; nu 1 0; 0 0 (1-nu)/2];
+    kernel_size = floor(log(max(nelx, nely)/2)) * 2 + 1;
+    gaussian = fspecial('gaussian', [kernel_size,kernel_size]);
     %% PREPARE FILTER
     iH = ones(nelx*nely*(2*(ceil(rmin)-1)+1)^2,1);
     jH = ones(size(iH));
@@ -96,7 +98,7 @@ function top88(trial, args)
       E = Emin+x(:)'.^penal*(E0-Emin);
       s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
       vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
-      
+      vms = conv2(vms, gaussian, 'same');
       % [xac] log the 'before' results
       if loop==1 U0 = U; vms0 = vms; end
       
@@ -149,6 +151,8 @@ function top88(trial, args)
     end
 
     try 
+        dlmwrite(strcat(trial, '_before.dsp'), U0); 
+        dlmwrite(strcat(trial, '_after.dsp'), U);
         dlmwrite(strcat(trial, '_before.vms'), vms0); 
         dlmwrite(strcat(trial, '_after.vms'), vms);
     catch; end        
