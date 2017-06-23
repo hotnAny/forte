@@ -226,7 +226,7 @@ $(document).ready(function () {
             var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
             if (outDir != null && outDir != undefined) {
                 FORTE.outDir = outDir;
-                log('[log] server output directory: ' + FORTE.outDir);
+                log('server output directory: ' + FORTE.outDir);
             }
         }
     }
@@ -267,17 +267,6 @@ $(document).ready(function () {
                         Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
                 }
             }
-
-            FORTE.design.maxStress =
-                Math.max(FORTE.design.maxStress, FORTE.designLayer._stressInfo.maxStress);
-
-            // for (key of keys) {
-            //     var layer2 = FORTE.htOptimizedLayers[key];
-            //     if (layer2 != undefined && layer2 != layer) {
-            //         layer2.updateHeatmap(FORTE.design.maxStress);
-            //         layer2.forceRedraw(0.1, layer2._heatmap);
-            //     }
-            // }
 
             FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
         }
@@ -333,7 +322,7 @@ FORTE.resetRadioButtons = function (idx) {
 FORTE.fetchData = function () {
     if (FORTE.state == 'start') {
         FORTE.itrCounter = 0;
-        log('[log] data fetching started');
+        log('data fetching started');
         FORTE.state = 'ongoing';
         setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
         FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
@@ -363,7 +352,7 @@ FORTE.fetchData = function () {
                     time();
                 }
 
-                time('[log] fetched data for itr# ' + (FORTE.itrCounter + 1) +
+                time('fetched data for itr# ' + (FORTE.itrCounter + 1) +
                     ' after failing ' + FORTE.failureCounter + ' time(s)');
                 FORTE.itrCounter += 1;
                 setTimeout(FORTE.fetchData, FORTE.fetchInterval);
@@ -383,7 +372,7 @@ FORTE.fetchData = function () {
                     FORTE.failureCounter++;
                     if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
                         FORTE.state = 'finished';
-                        log('[log] data fetching finished');
+                        log('data fetching finished');
 
                         // update tags
                         var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
@@ -429,7 +418,7 @@ FORTE.fetchData = function () {
                             });
                         }
 
-                        log('[log] misses: ' + FORTE.__misses);
+                        log('misses: ' + FORTE.__misses);
 
                     } else {
                         setTimeout(FORTE.fetchData, FORTE.fetchInterval);
@@ -513,14 +502,14 @@ FORTE.render = function (pointer) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
         FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.1);
         XAC.stats.update();
-        // time('[log] redrew for itr# ' + (FORTE.pointer + 1) + ' with ' + FORTE.design.bitmaps.length + ' bitmaps stored.');
+        // time('redrew for itr# ' + (FORTE.pointer + 1) + ' with ' + FORTE.design.bitmaps.length + ' bitmaps stored.');
         FORTE.pointer++;
 
         setTimeout(function () {
             FORTE.render();
         }, FORTE.renderInterval);
     } else {
-        log('[log] rendering stopped.');
+        log('rendering stopped.');
     }
 }
 

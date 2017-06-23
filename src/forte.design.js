@@ -26,13 +26,14 @@ FORTE.Design.prototype.extrapolateBitmaps = function (step) {
     if (this.bitmaps.length < 2) return;
     var bmp0 = this.bitmaps.lastBut(1);
     var bmp1 = this.bitmaps.pop();
-    if(bmp0.length <= 0 || bmp1.length <= 0) return;
-    
+    if (bmp0.length <= 0 || bmp1.length <= 0) return;
+
     var height = bmp1.length;
     if (height > 0) {
         var width = bmp1[0].length;
         var bmp = XAC.initMDArray([height, width], 0);
         for (var j = 0; j < height; j++) {
+            if (bmp0[j].length <= 0 || bmp1[j].length <= 0) return;
             for (var i = 0; i < width; i++) {
                 bmp[j][i] = bmp0[j][i] * step + bmp1[j][i] * (1 - step);
             }

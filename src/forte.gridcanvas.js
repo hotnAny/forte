@@ -92,17 +92,6 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     this._context.beginPath();
     this._strokePoints = [];
     this._doDraw(e);
-    // var canvasOffset = this._canvas.offset();
-    // var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
-    // var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
-    // this._strokePoints = [{
-    //     x: xcenter,
-    //     y: ycenter
-    // }];
-    // this._prevPoint = {
-    //     x: 0,
-    //     y: 0
-    // };
 };
 
 //
@@ -113,10 +102,6 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
     if (!this._isDown) return;
 
     this._doDraw(e);
-    // this._prevPoint = {
-    //     x: xcenter,
-    //     y: ycenter
-    // };
 };
 
 //
@@ -175,18 +160,23 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
             var x = x0 + i;
             var y = y0 + j;
             if (bitmap[j][i] > thres && this._bitmap[y][x] <= thres) {
+                // this._context.globalAlpha = FORTE.MINALPHAFORANIMATION +
+                //     (1 - FORTE.MINALPHAFORANIMATION) * Math.pow(bitmap[j][i], 3);
+                this._context.globalAlpha = Math.pow(bitmap[j][i], FORTE.P) / FORTE.PSEUDOMAXALPHA;
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
                 this._context.fill();
                 this._context.closePath();
+                this._context.globalAlpha = 1;
             } else if (bitmap[j][i] <= thres && this._bitmap[y][x] > thres) {
                 this._context.clearRect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
-            } 
+            }
             this._bitmap[y][x] = bitmap[j][i];
         }
     }
+    this._context.globalAlpha = 1;
     this._context.fillStyle = originalStyle;
 }
 
@@ -201,7 +191,7 @@ FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
             var x = i,
                 y = j;
             if (colorMap != undefined && colorMap[j][i] != undefined) {
-                this._context.globalAlpha = Math.pow(this._bitmap[j][i], 3);
+                this._context.globalAlpha = Math.pow(this._bitmap[j][i], FORTE.P);
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
