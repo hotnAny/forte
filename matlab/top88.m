@@ -82,11 +82,13 @@ function top88(trial, args)
     else
         x = eps + max(0, distfield-eps);
     end
-    xPhys = x;
+%     xPhys = x;
+    xPhys = repmat(eps, nely,nelx);
+    xPhys(actvelms) = 1;
     loop = 0;
     change = 1;
     %% START ITERATION [xac] added maxloop
-    while change > 0.05 && (loop < maxloop)
+    while change > 0.05 && (loop <= maxloop)
       tic
       loop = loop + 1;
       %% FE-ANALYSIS
@@ -95,12 +97,14 @@ function top88(trial, args)
       U(freedofs) = K(freedofs,freedofs)\F(freedofs);
       
       %% [xac] stress
-      E = Emin+x(:)'.^penal*(E0-Emin);
+      E = Emin+xPhys(:)'.^penal*(E0-Emin);
       s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
       vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
-      vms = conv2(vms, gaussian, 'same');
-      % [xac] log the 'before' results
-      if loop==1 U0 = U; vms0 = vms; end
+%       vms = conv2(vms, gaussian, 'same');
+      
+      % [xac] log the 'before' results (i.e., skip optimization, just
+      % compute displacement and vms
+      if loop==1 U0 = U; vms0 = vms; xPhys = x; continue; end
       
       %% OBJECTIVE FUNCTION AND SENSITIVITY ANALYSIS
       ce = reshape(sum((U(edofMat)*KE).*U(edofMat),2),nely,nelx);
@@ -130,27 +134,28 @@ function top88(trial, args)
       x = xnew;
       
       %% [xac] post-processing per iteration     
-      xPhys(pasvelms) = 0;
+      x(pasvelms) = 0;
       
-%       [xac] add structs
-       if isadding xPhys(actvelms) = 1; end
+      %% [xac] add structs
+       if isadding x(actvelms) = 1; end
       
-      %% PRINT RESULTS
+      %% [xac] update xPhys
+      xPhys = x;
+      
+       %% PRINT RESULTS
       fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop,toc,c, ...
-        mean(xPhys(:)),change);
+        mean(x(:)),change);
       
       %% PLOT DENSITIES
       if debugging
-%         colormap(gray); imagesc(1-xPhys); caxis([0 1]); axis equal; axis off; drawnow;
          colormap(flipud(gray));
          subplot(2,1,1); imagesc(x); axis equal off; text(2,-2,'x');
          subplot(2,1,2); imagesc(vms); axis equal off; text(2,-2,'vms'); drawnow;
       end
         
-      try dlmwrite(strcat(trial, '_', num2str(loop), '.out'), xPhys); catch ; end
+      try dlmwrite(strcat(trial, '_', num2str(loop-1), '.out'), x); catch ; end
     end
     
-    xPhys(pasvelms) = 0;
     try 
         dlmwrite(strcat(trial, '_before.dsp'), U0); 
         dlmwrite(strcat(trial, '_after.dsp'), U);

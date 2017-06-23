@@ -392,7 +392,7 @@ FORTE.fetchData = function () {
                                 var allStresses = [];
                                 var eps = 1e-9;
                                 var minStress = Math.log(eps);
-                                var logBase = Math.log(1.1);
+                                var logBase = Math.log(1.01);
                                 for (row of stresses)
                                     for (value of row) {
                                         value = Math.log(Math.max(eps, value)) / logBase - minStress;
