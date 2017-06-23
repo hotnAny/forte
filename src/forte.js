@@ -49,6 +49,15 @@ $(document).ready(function () {
                     $(tbHeight).val(dataObject.height);
                     FORTE.changeResolution();
                     FORTE.btnClear.trigger('click');
+
+                    // for (row of dataObject.designBitmap) {
+                    //     var count = 0;
+                    //     for (value of row) {
+                    //         count++;
+                    //         if (count >= 160) log(value)
+                    //     }
+                    // }
+
                     FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
                     FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
                     FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, 0);
@@ -113,6 +122,7 @@ $(document).ready(function () {
     FORTE.btnClear.click(function (e) {
         for (layer of FORTE.layers) layer.clear();
         FORTE.design = new FORTE.Design(FORTE.width, FORTE.height);
+        FORTE.loadLayer._arrows = [];
     });
     $('#tdClear').append(FORTE.btnClear);
 

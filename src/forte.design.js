@@ -26,6 +26,8 @@ FORTE.Design.prototype.extrapolateBitmaps = function (step) {
     if (this.bitmaps.length < 2) return;
     var bmp0 = this.bitmaps.lastBut(1);
     var bmp1 = this.bitmaps.pop();
+    if(bmp0.length <= 0 || bmp1.length <= 0) return;
+    
     var height = bmp1.length;
     if (height > 0) {
         var width = bmp1[0].length;

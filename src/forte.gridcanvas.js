@@ -157,14 +157,14 @@ FORTE.GridCanvas.prototype._doDraw = function (e) {
 FORTE.GridCanvas.prototype.clear = function () {
     if (this._context != undefined) {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-        this._bitmap = XAC.initMDArray([this._gridWidth, this._gridHeight], 0);
+        this._bitmap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
     }
 }
 
 //
 //  draw on the canvas from an input bitmap, using (x0, y0) as the origin
 //
-FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, colorMap) {
+FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
     var h = bitmap.length;
     var w = h > 0 ? bitmap[0].length : 0;
     if (h <= 0 || w <= 0) return;
@@ -183,8 +183,8 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres, col
             } else if (bitmap[j][i] <= thres && this._bitmap[y][x] > thres) {
                 this._context.clearRect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
-            }
-            this._bitmap[j + y0][i + x0] = bitmap[j][i];
+            } 
+            this._bitmap[y][x] = bitmap[j][i];
         }
     }
     this._context.fillStyle = originalStyle;
