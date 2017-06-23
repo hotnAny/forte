@@ -395,14 +395,13 @@ FORTE.fetchData = function () {
                                 var logBase = Math.log(1.01);
                                 for (row of stresses)
                                     for (value of row) {
-                                        value = Math.log(Math.max(eps, value)) / logBase - minStress;
-                                        maxStress = Math.max(maxStress, value);
+                                        // value = Math.log(Math.max(eps, value)) / logBase - minStress;
+                                        // maxStress = Math.max(maxStress, value);
                                         allStresses.push(value);
                                     }
-                                // log(label)
-                                // log(allStresses)
-                                // log(allStresses.mean())
-                                // log(allStresses.std())
+
+                                var percentile = 0.99;
+                                maxStress = allStresses.median(percentile);
                                 log(maxStress);
 
                                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;

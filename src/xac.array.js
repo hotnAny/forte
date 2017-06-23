@@ -201,14 +201,19 @@ Array.prototype.std = function () {
 	return Math.sqrt(sqsum / (this.length - 1));
 }
 
-Array.prototype.median = function () {
+//
+//
+//
+Array.prototype.median = function (percentile) {
 	var array = this.clone();
 	array.sort(function (x, y) {
 		if (x < y) return -1
 		else if (x > y) return 1;
 		else return 0;
 	});
-	return array[((array.length / 2) | 0)];
+
+	var idx = (percentile == undefined ? 0.5 : percentile) * array.length;
+	return array[idx | 0];
 }
 
 //
