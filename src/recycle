@@ -1,0 +1,26 @@
+ //
+                        //  read displacements
+                        //  - deprecated, as stress can be computed in matlab
+                        //
+                        // var displacementFileLabels = ['before', 'after'];
+                        // FORTE.design.displacements = [];
+                        // for (var i = 0; i < displacementFileLabels.length; i++) {
+                        //     // for (label of displacementFileLabels) {
+                        //     var label = displacementFileLabels[i];
+                        //     XAC.readTextFile(baseDir + '_' + label + '.dsp', function (text) {
+                        //         var displacements = text.split('\n');
+                        //         for (var i = 0; i < displacements.length; i++) {
+                        //             var disp = parseFloat(displacements[i]);
+                        //             if (!isNaN(disp)) displacements[i] = disp;
+                        //         }
+                        //         FORTE.design.displacements.push(displacements);
+                        //         var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
+                        //         var height = FORTE.resolution[1];
+                        //         var width = FORTE.resolution[0];
+
+                        //         // need to fix the global value
+                        //         var maxStress = layer.updateStress(displacements, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin,
+                        //             width, height, layer._bitmap, 0.1);
+                        //         if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
+                        //     });
+                        // }

@@ -258,6 +258,9 @@ $(document).ready(function () {
                 }
             }
 
+            FORTE.design.maxStress =
+                Math.max(FORTE.design.maxStress, FORTE.designLayer._stressInfo.maxStress);
+
             // for (key of keys) {
             //     var layer2 = FORTE.htOptimizedLayers[key];
             //     if (layer2 != undefined && layer2 != layer) {
@@ -265,7 +268,7 @@ $(document).ready(function () {
             //         layer2.forceRedraw(0.1, layer2._heatmap);
             //     }
             // }
-            
+
             FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
         }
     });
@@ -379,36 +382,7 @@ FORTE.fetchData = function () {
                         var tag = FORTE.optimizedLayerList.tagit('createTag', label);
                         FORTE.showOptimizedLayer(tag, label);
 
-                        //
-                        //  read displacements
-                        //  - deprecated, as stress can be computed in matlab
-                        //
-                        // var displacementFileLabels = ['before', 'after'];
-                        // FORTE.design.displacements = [];
-                        // for (var i = 0; i < displacementFileLabels.length; i++) {
-                        //     // for (label of displacementFileLabels) {
-                        //     var label = displacementFileLabels[i];
-                        //     XAC.readTextFile(baseDir + '_' + label + '.dsp', function (text) {
-                        //         var displacements = text.split('\n');
-                        //         for (var i = 0; i < displacements.length; i++) {
-                        //             var disp = parseFloat(displacements[i]);
-                        //             if (!isNaN(disp)) displacements[i] = disp;
-                        //         }
-                        //         FORTE.design.displacements.push(displacements);
-                        //         var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
-                        //         var height = FORTE.resolution[1];
-                        //         var width = FORTE.resolution[0];
-
-                        //         // need to fix the global value
-                        //         var maxStress = layer.updateStress(displacements, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin,
-                        //             width, height, layer._bitmap, 0.1);
-                        //         if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
-                        //     });
-                        // }
-
-
                         //  read stresses
-
                         var stressFieldLabels = ['before', 'after'];
                         for (var i = 0; i < stressFieldLabels.length; i++) {
                             var label = stressFieldLabels[i];
@@ -416,19 +390,20 @@ FORTE.fetchData = function () {
                                 var stresses = FORTE.getBitmap(text);
                                 var maxStress = 0;
                                 var allStresses = [];
+                                var eps = 1e-9;
+                                var minStress = Math.log(eps);
+                                var logBase = Math.log(1.1);
                                 for (row of stresses)
                                     for (value of row) {
-                                        // maxStress = Math.max(maxStress, value);
+                                        value = Math.log(Math.max(eps, value)) / logBase - minStress;
+                                        maxStress = Math.max(maxStress, value);
                                         allStresses.push(value);
                                     }
-                                allStresses.sort(function (x, y) {
-                                    if (x < y) return -1
-                                    else if (x > y) return 1;
-                                    else return 0
-                                });
+                                // log(label)
                                 // log(allStresses)
-                                var percentile = 0.99;
-                                maxStress = allStresses[((allStresses.length * percentile) | 0)];
+                                // log(allStresses.mean())
+                                // log(allStresses.std())
+                                log(maxStress);
 
                                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
                                 layer._stressInfo = {
@@ -441,6 +416,7 @@ FORTE.fetchData = function () {
                                 }
 
                                 if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
+                                console.info(FORTE.design.maxStress);
                             });
                         }
 

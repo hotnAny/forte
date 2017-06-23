@@ -76,7 +76,7 @@ FORTE.Design.prototype.getData = function () {
     for (p of this.boundaryPoints) __updateBbox(p, bbox);
 
     // log(bbox)
-    var margin = 2;
+    var margin = 0;
     var xminNew = Math.max(bbox.xmin - margin, 0);
     var xmaxNew = Math.min(bbox.xmax + margin, this.width);
     var yminNew = Math.max(bbox.ymin - margin, 0);
