@@ -149,7 +149,8 @@ function top88(trial, args)
         
       try dlmwrite(strcat(trial, '_', num2str(loop), '.out'), xPhys); catch ; end
     end
-
+    
+    xPhys(pasvelms) = 0;
     try 
         dlmwrite(strcat(trial, '_before.dsp'), U0); 
         dlmwrite(strcat(trial, '_after.dsp'), U);

@@ -98,13 +98,6 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
         ctr.divideScalar(Math.max(points.length, 1));
     }
 
-    // [debug] to show the load direction at each point
-    // var offset = FORTE.loadLayer._canvas.offset();
-    // var cellSize = FORTE.loadLayer._cellSize;
-    // FORTE.loadLayer._context.lineWidth = 1;
-    // FORTE.loadLayer._context.rect(ctr.x - 5, ctr.y - 5, 10, 10);
-    // FORTE.loadLayer._context.fill()
-
     // distribute the loads cocentrically
     var umid = midPoint.clone().sub(ctr).normalize();
     var len = vector.length() / points.length;
@@ -124,6 +117,7 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
                 .divideScalar(normalizeFactor).toArray().trim(2);
         }
 
+        varr[2] *= -1;
         distrVectors.push(varr);
 
         // [debug] to show the load direction at each point

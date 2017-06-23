@@ -112,21 +112,26 @@ XAC.readTextFile = function (file, onSuccess, onFailure) {
 //	@param	score
 //	@param	maxScore
 //
-XAC.getHeatmapColor = function(score, maxScore) {
+XAC.getHeatmapColor = function (score, maxScore) {
 	// ceiling the score by maxScore
 	score = Math.min(score, maxScore);
+
+	// var __heatMapColorforValue = function (value) {
+	var h = (1.0 - score / maxScore) * 240;
+	return "hsl(" + h + ", 100%, 50%)";
+	// }
 
 	// var colorSchemes = [0xa50026, 0xd73027, 0xf46d43, 0xfdae61, 0xfee08b,
 	// 	0xffffbf, 0xd9ef8b, 0xa6d96a, 0x66bd63, 0x1a9850, 0x006837
 	// ]
-	var colorSchemes = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b',
-		'#ffffbf', '#d9ef8b', '#a6d96a', '#66bd63', '#1a9850', '#006837'
-	]
-	colorSchemes.reverse();
-	var color = new THREE.Color(0xffffff);
-	for (var k = 0; k < colorSchemes.length; k++) {
-		if (score <= maxScore * (k + 1) / colorSchemes.length) {
-			return colorSchemes[k];
-		}
-	}
+	// var colorSchemes = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b',
+	// 	'#ffffbf', '#d9ef8b', '#a6d96a', '#66bd63', '#1a9850', '#006837'
+	// ]
+	// colorSchemes.reverse();
+	// var color = new THREE.Color(0xffffff);
+	// for (var k = 0; k < colorSchemes.length; k++) {
+	// 	if (score <= maxScore * (k + 1) / colorSchemes.length) {
+	// 		return colorSchemes[k];
+	// 	}
+	// }
 }
