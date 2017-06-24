@@ -33,7 +33,8 @@ FORTE.Design.prototype.extrapolateBitmaps = function (step) {
         var width = bmp1[0].length;
         var bmp = XAC.initMDArray([height, width], 0);
         for (var j = 0; j < height; j++) {
-            if (bmp0[j].length <= 0 || bmp1[j].length <= 0) return;
+            if (bmp0[j] == undefined || bmp1[j] == undefined ||
+                bmp0[j].length <= 0 || bmp1[j].length <= 0) return;
             for (var i = 0; i < width; i++) {
                 bmp[j][i] = bmp0[j][i] * step + bmp1[j][i] * (1 - step);
             }

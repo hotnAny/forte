@@ -1,18 +1,21 @@
+body {
+    padding: 2px 0px 2px 8px;
+}
+
 .tbwidgets {
 	table-layout: fixed;
-	/*width: 100%;*/
-	padding: 5px;
-	border-spacing: 5px;
-	/*text-align: left;*/
-	/*border: 1px solid black;*/
 }
 
 th,
 td {
-	padding: 5px;
+	padding: 2px 2px 2px 0px;
 }
 
-img {
-	width: 15px;
-	height: 15px;
+.icon {
+	width: 16px;
+	height: 16px;
+}
+
+a {
+	text-decoration: none;
 }

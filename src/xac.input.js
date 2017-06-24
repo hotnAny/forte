@@ -214,7 +214,7 @@ XAC.enableDragDrop = function (filesHandler) {
 //
 XAC.makeSlider = function (id, label, min, max, value, parent) {
     var sldrRow = $('<tr></tr>');
-    var sldrCell = $('<td><label class="ui-widget">' + label + '</label></td><td width="200px"></td>');
+    var sldrCell = $('<td><label class="ui-widget">' + label + '&nbsp;&nbsp;' + '</label></td><td width="200px"></td>');
     var sldr = $('<div id="' + id + '"></div>');
     sldrCell.append(sldr);
     sldrRow.append(sldrCell);

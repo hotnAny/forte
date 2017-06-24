@@ -10,30 +10,15 @@ var FORTE = FORTE || {};
 
 FORTE.width = 240;
 FORTE.height = 160;
-FORTE.FETCHINTERVAL = 200;
-FORTE.RENDERINTERVAL = 60;
-FORTE.MAXITERATIONS = 50;
-FORTE.MINMATERIALRATIO = 0.5;
-FORTE.MAXMATERIALRATIO = 2.5;
-FORTE.MINSIMILARITYRATIO = 0;
-FORTE.MAXSIMILARITYRATIO = 10;
-FORTE.GIVEUPTHRESHOLD = 3;
-FORTE.DELAYEDSTART = 1;
 
 $(document).ready(function () {
     time();
-
-    // set font size
-    $('*').each(function () {
-        $(this).css('font-size', 'small');
-    });
 
     // stats window
     XAC.stats = new Stats();
     XAC.stats.domElement.style.position = 'absolute';
     XAC.stats.domElement.style.bottom = '0px';
     XAC.stats.domElement.style.left = '0px';
-    // $(document.body).append(XAC.stats.domElement);
 
     //
     // enable drag and drop
@@ -49,14 +34,6 @@ $(document).ready(function () {
                     $(tbHeight).val(dataObject.height);
                     FORTE.changeResolution();
                     FORTE.btnClear.trigger('click');
-
-                    // for (row of dataObject.designBitmap) {
-                    //     var count = 0;
-                    //     for (value of row) {
-                    //         count++;
-                    //         if (count >= 160) log(value)
-                    //     }
-                    // }
 
                     FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
                     FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
@@ -74,149 +51,189 @@ $(document).ready(function () {
         }
     });
 
-    //
-    // resolution
-    //
-    var tbWidth = $('<input id="tbWidth" type="text" value="' + FORTE.width + '" size="3">');
-    var tbHeight = $('<input id="tbHeight" type="text" value="' + FORTE.height + '" size="3">');
-    $('#tdResolution').append(tbWidth);
-    $('#tdResolution').append('&nbsp;×&nbsp;');
-    $('#tdResolution').append(tbHeight);
-    tbWidth.keydown(FORTE.keydown);
-    tbHeight.keydown(FORTE.keydown);
+    var mainTable = $('<table></table>');
+    $(document.body).append(mainTable);
+    mainTable.load(FORTE.MAINTABLETEMPLATE, function (e) {
+        // set font size
+        $('*').each(function () {
+            $(this).css('font-size', 'small');
+        });
 
-    //
-    // material amount slider
-    //
-    FORTE.materialRatio = 1.5;
-    var minSlider = 0,
-        maxSlider = 100;
-    var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
-    var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
-    $('#tdMaterial').width('180px');
-    // var lbMaterial = '<img src="assets/material.png"></img>';
-    var lbMaterial = 'material';
-    FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', lbMaterial,
-        minSlider, maxSlider, valueSlider, $('#tdMaterial'));
-    FORTE.sldrMaterial.slider({
-        change: function (event, ui) {
-            var max = $(event.target).slider("option", "max");
-            var min = $(event.target).slider("option", "min");
-            var value = (ui.value - min) * 1.0 / (max - min);
-            FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
-        }
-    })
+        //  new a design
+        $('#btnNew').button();
 
-    //
-    // brushes for design, load and boundary
-    //
-    FORTE.nameBrushButtons = 'brushButtons';
-    FORTE.resetRadioButtons(0);
+        // material amount slider
+        FORTE.materialRatio = 1.5;
+        var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
+        var valueSlider = FORTE._getSliderValue(ratio);
+        $('#tdMaterial').width(FORTE.WIDTHMATERIALSLIDER);
+        FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
+            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMaterial'));
+        FORTE.sldrMaterial.slider({
+            change: function (event, ui) {
+                var value = FORTE._normalizeSliderValue($(event.target), ui.value);
+                FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
+            }
+        })
 
-    //
-    // clear
-    //
-    FORTE.btnClear = $('<div></div>');
-    FORTE.btnClear.append($('<img src="assets/clear.png"></img>'));
-    FORTE.btnClear.button();
-    FORTE.btnClear.click(function (e) {
-        for (layer of FORTE.layers) layer.clear();
-        FORTE.design = new FORTE.Design(FORTE.width, FORTE.height);
-        FORTE.loadLayer._arrows = [];
+        // brushes for design, load and boundary
+        FORTE.nameBrushButtons = 'brushButtons';
+        FORTE.resetRadioButtons(0);
+
+        // clear
+        $('#btnErase').attr('src', FORTE.ICONERASER);
+        $('#btnErase').button();
+        $('#btnErase').click(function (e) {
+            for (layer of FORTE.layers) layer.clear();
+            FORTE.design = new FORTE.Design(FORTE.width, FORTE.height);
+            FORTE.loadLayer._arrows = [];
+        });
+
+        //  similarity slider
+        FORTE.similarityRatio = 4;
+        var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
+            (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
+        var valueSlider = FORTE._getSliderValue(ratio);
+        $('#tdSimilarity').width('180px');
+        FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', 'similarity',
+            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdSimilarity'));
+        FORTE.sldrSimilarity.slider({
+            change: function (event, ui) {
+                var value = FORTE._normalizeSliderValue($(event.target), ui.value);
+                FORTE.similarityRatio = FORTE.MINSIMILARITYRATIO * (1 - value) +
+                    FORTE.MAXSIMILARITYRATIO * value;
+            }
+        })
+
+        //
+        // suggest
+        //        
+        $('#btnGetVariation').button();
+        $('#btnGetVariation').click(function (e) {
+            FORTE.optimize();
+        });
+
+        //
+        // add structs
+        //
+        $('#btnAddStructs').button();
+        $('#btnAddStructs').click(function (e) {
+            var _similarity = FORTE.similarityRatio;
+            FORTE.similarityRatio = -1;
+            FORTE.optimize();
+            FORTE.similarityRatio = _similarity;
+        });
+
+        //
+        // save
+        //
+        $('#btnSave').attr('src', FORTE.ICONSAVE);
+        $('#btnSave').button();
+        $('#btnSave').click(function (e) {
+            var dataObject = {
+                width: FORTE.width,
+                height: FORTE.height,
+                designBitmap: FORTE.designLayer._bitmap,
+                emptinessBitmap: FORTE.emptinessLayer._bitmap,
+                loadBitmap: FORTE.loadLayer._bitmap,
+                loadArrows: FORTE.loadLayer._arrows,
+                loadPoints: FORTE.design.loadPoints,
+                loadValues: FORTE.design.loadValues,
+                boundaryBitmap: FORTE.boundaryLayer._bitmap
+            }
+            var data = JSON.stringify(dataObject);
+            if (data != undefined) {
+                var blob = new Blob([data], {
+                    type: 'text/plain'
+                });
+                saveAs(blob, 'design.forte');
+            }
+        });
+
+        // more controls
+        $('#btnMore').html(FORTE.HTMLCODETRIANGLEDOWN);
+        $('#btnMore').css('font-size', 'x-small');
+        $('#btnMore').click(function (e) {
+            e.preventDefault();
+            if ($('#trMoreCtrl').is(":visible")) {
+                $('#trMoreCtrl').hide();
+                $(this).html(FORTE.HTMLCODETRIANGLEDOWN);
+            } else {
+                $('#trMoreCtrl').show();
+                $(this).html(FORTE.HTMLCODETRIANGLEUP)
+            }
+        });
+
+        $('#trMoreCtrl').hide();
+
+         // resolution
+        $('#tbWidth').attr('value', FORTE.width);
+        $('#tbHeight').attr('value', FORTE.height);
+        $('#tbWidth').keydown(FORTE.keydown);
+        $('#tbHeight').keydown(FORTE.keydown);
+
+        //
+        // layers of editing
+        //
+        FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
+        FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
+        FORTE.emptinessLayer._strokeRadius = 3;
+        FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
+        FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#00afff');
+        $('#tdCanvas').css('background', '#f0f0f0');
+
+        FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
+        FORTE.layer = FORTE.designLayer;
+        FORTE.toggleLayerZindex(0);
+
+        FORTE.customizeLoadLayer();
+        FORTE.changeResolution();
+
+        //
+        // layers of optimization
+        //
+        FORTE.htOptimizedLayers = {};
+        var marginPanel = -5;
+        var parentOffset = $('#tdCanvas').offset();
+        FORTE.optimizedPanel = $('<div align="right"></div>');
+        FORTE.optimizedPanel.width(96);
+        FORTE.optimizedPanel.css('position', 'absolute');
+        var parentWidth = $('#tdCanvas').width();
+        FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth -
+            marginPanel - FORTE.optimizedPanel.width());
+        FORTE.optimizedPanel.css('top', parentOffset.top + marginPanel);
+        FORTE.optimizedPanel.css('z-index', 100);
+        $('#tdCanvas').append(FORTE.optimizedPanel);
+
+        FORTE.optimizedLayerList = $('<ul></ul>');
+        FORTE.optimizedLayerList.addClass('ui-widget');
+        FORTE.optimizedLayerList.tagit({
+            onTagClicked: function (event, ui) {
+                FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
+            },
+            beforeTagRemoved: function (event, ui) {
+                var layer = FORTE.htOptimizedLayers[ui.tagLabel];
+                if (layer != undefined) layer._canvas.remove();
+                FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
+                // FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
+
+                FORTE.design.maxStress = 0;
+                var keys = Object.keys(FORTE.htOptimizedLayers);
+                for (key of keys) {
+                    var layer2 = FORTE.htOptimizedLayers[key];
+                    if (layer2 != undefined && layer2 != layer) {
+                        FORTE.design.maxStress =
+                            Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
+                    }
+                }
+
+                FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
+            }
+        });
+        FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
     });
-    $('#tdClear').append(FORTE.btnClear);
-
-    //
-    //  similarity slider
-    //
-    FORTE.similarityRatio = 4;
-    var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
-        (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
-    var valueSlider = minSlider * (1 - ratio) + maxSlider * ratio;
-    $('#tdSimilarity').width('180px');
-    // var lbSimilarity = '<img src="assets/similarity.png"></img>';
-    var lbSimilarity = 'similarity';
-    FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', lbSimilarity,
-        minSlider, maxSlider, valueSlider, $('#tdSimilarity'));
-    FORTE.sldrSimilarity.slider({
-        change: function (event, ui) {
-            var max = $(event.target).slider("option", "max");
-            var min = $(event.target).slider("option", "min");
-            var value = (ui.value - min) * 1.0 / (max - min);
-            FORTE.similarityRatio = FORTE.MINSIMILARITYRATIO * (1 - value) +
-                FORTE.MAXSIMILARITYRATIO * value;
-            log(FORTE.similarityRatio);
-        }
-    })
-
-    //
-    // suggest
-    //
-    FORTE.btnSuggest = $('<div>get variation</div>');
-    FORTE.btnSuggest.button();
-    FORTE.btnSuggest.click(function (e) {
-        FORTE.optimize();
-    });
-    $('#tdSuggest').append(FORTE.btnSuggest);
-
-    //
-    // add
-    //
-    FORTE.btnAdd = $('<div>add structs</div>');
-    FORTE.btnAdd.button();
-    FORTE.btnAdd.click(function (e) {
-        var _similarity = FORTE.similarityRatio;
-        FORTE.similarityRatio = -1;
-        FORTE.optimize();
-        FORTE.similarityRatio = _similarity;
-    });
-    $('#tdAdd').append(FORTE.btnAdd);
 
 
-    //
-    // save
-    //
-    FORTE.btnSave = $('<div></div>');
-    FORTE.btnSave.append($('<img src="assets/save.png"></img>'));
-    FORTE.btnSave.button();
-    FORTE.btnSave.click(function (e) {
-        var dataObject = {
-            width: FORTE.width,
-            height: FORTE.height,
-            designBitmap: FORTE.designLayer._bitmap,
-            emptinessBitmap: FORTE.emptinessLayer._bitmap,
-            loadBitmap: FORTE.loadLayer._bitmap,
-            loadArrows: FORTE.loadLayer._arrows,
-            loadPoints: FORTE.design.loadPoints,
-            loadValues: FORTE.design.loadValues,
-            boundaryBitmap: FORTE.boundaryLayer._bitmap
-        }
-        var data = JSON.stringify(dataObject);
-        if (data != undefined) {
-            var blob = new Blob([data], {
-                type: 'text/plain'
-            });
-            saveAs(blob, 'design.forte');
-        }
-    });
-    $('#tdSave').append(FORTE.btnSave);
-
-    //
-    // layers of editing
-    //
-    FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
-    FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
-    FORTE.emptinessLayer._strokeRadius = 3;
-    FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
-    FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#00afff');
-    $('#tdCanvas').css('background', '#f0f0f0');
-
-    FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
-    FORTE.layer = FORTE.designLayer;
-    FORTE.toggleLayerZindex(0);
-
-    FORTE.customizeLoadLayer();
-    FORTE.changeResolution();
 
     FORTE.xmlhttp = new XMLHttpRequest();
     FORTE.xmlhttp.timeout = 1e9;
@@ -230,49 +247,6 @@ $(document).ready(function () {
             }
         }
     }
-
-    //
-    // layers of optimization
-    //
-    FORTE.htOptimizedLayers = {};
-    var marginPanel = -5;
-    var parentOffset = $('#tdCanvas').offset();
-    FORTE.optimizedPanel = $('<div align="right"></div>');
-    FORTE.optimizedPanel.width(96);
-    FORTE.optimizedPanel.css('position', 'absolute');
-    var parentWidth = $('#tdCanvas').width();
-    FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth -
-        marginPanel - FORTE.optimizedPanel.width());
-    FORTE.optimizedPanel.css('top', parentOffset.top + marginPanel);
-    FORTE.optimizedPanel.css('z-index', 100);
-    $('#tdCanvas').append(FORTE.optimizedPanel);
-
-    FORTE.optimizedLayerList = $('<ul></ul>');
-    FORTE.optimizedLayerList.tagit({
-        onTagClicked: function (event, ui) {
-            FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
-        },
-        beforeTagRemoved: function (event, ui) {
-            var layer = FORTE.htOptimizedLayers[ui.tagLabel];
-            if (layer != undefined) layer._canvas.remove();
-            FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
-            // FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
-
-            FORTE.design.maxStress = 0;
-            var keys = Object.keys(FORTE.htOptimizedLayers);
-            for (key of keys) {
-                var layer2 = FORTE.htOptimizedLayers[key];
-                if (layer2 != undefined && layer2 != layer) {
-                    FORTE.design.maxStress =
-                        Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
-                }
-            }
-
-            FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
-        }
-    });
-    FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
-
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
     time('ready.')
 });
@@ -293,9 +267,9 @@ FORTE.resetRadioButtons = function (idx) {
     $('[name="' + FORTE.nameBrushButtons + '"]').remove();
     $('[name="lb' + FORTE.nameBrushButtons + '"]').remove();
     // ['&#9998;', '&#8709;', '&#9750;', '&#11034;']
-    var imgSrcs = ['design.png', 'void.png', 'load.png', 'boundary.png'];
+    var imgSrcs = [FORTE.ICONDESIGN, FORTE.ICONVOID, FORTE.ICONLOAD, FORTE.ICONBOUNDARY];
     var labels = [];
-    for (src of imgSrcs) labels.push('<img src="assets/' + src + '"></img>');
+    for (src of imgSrcs) labels.push('<img class="icon" src="' + src + '"></img>');
     FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', labels, [0, 1, 2, 3],
         $('#tdBrushes'), idx);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
@@ -557,4 +531,14 @@ FORTE.updateStressAcrossLayers = function (maxStress) {
         });
         layer.forceRedraw(0.1, layer._heatmap);
     }
+}
+
+FORTE._getSliderValue = function (value) {
+    return FORTE.MINSLIDER * (1 - value) + FORTE.MAXSLIDER * value;
+}
+
+FORTE._normalizeSliderValue = function (slider, value) {
+    var max = slider.slider("option", "max");
+    var min = slider.slider("option", "min");
+    return (value - min) * 1.0 / (max - min);
 }
