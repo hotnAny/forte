@@ -19,3 +19,8 @@ td {
 a {
 	text-decoration: none;
 }
+
+#divOptimizedPanel {
+	position: relative;
+	z-index: 100;
+}

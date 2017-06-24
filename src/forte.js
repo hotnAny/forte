@@ -14,6 +14,21 @@ FORTE.height = 160;
 $(document).ready(function () {
     time();
 
+    // client-server setup
+    FORTE.xmlhttp = new XMLHttpRequest();
+    FORTE.xmlhttp.timeout = 1e9;
+    FORTE.xmlhttp.onreadystatechange = function () {
+        if (FORTE.xmlhttp.readyState == 4 && FORTE.xmlhttp.status == 200) {
+            log(FORTE.xmlhttp.responseText);
+            var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
+            if (outDir != null && outDir != undefined) {
+                FORTE.outDir = outDir;
+                log('server output directory: ' + FORTE.outDir);
+            }
+        }
+    }
+    XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
+
     // stats window
     XAC.stats = new Stats();
     XAC.stats.domElement.style.position = 'absolute';
@@ -166,7 +181,7 @@ $(document).ready(function () {
 
         $('#trMoreCtrl').hide();
 
-         // resolution
+        // resolution
         $('#tbWidth').attr('value', FORTE.width);
         $('#tbHeight').attr('value', FORTE.height);
         $('#tbWidth').keydown(FORTE.keydown);
@@ -193,16 +208,14 @@ $(document).ready(function () {
         // layers of optimization
         //
         FORTE.htOptimizedLayers = {};
-        var marginPanel = -5;
-        var parentOffset = $('#tdCanvas').offset();
-        FORTE.optimizedPanel = $('<div align="right"></div>');
-        FORTE.optimizedPanel.width(96);
-        FORTE.optimizedPanel.css('position', 'absolute');
+        FORTE.optimizedPanel = $('#divOptimizedPanel');
+        var topMarginPanel = 16;
+        var rightMarginPanel = FORTE.WIDTHOPTIMIZEDPANEL;
+        FORTE.optimizedPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
         var parentWidth = $('#tdCanvas').width();
-        FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth -
-            marginPanel - FORTE.optimizedPanel.width());
-        FORTE.optimizedPanel.css('top', parentOffset.top + marginPanel);
-        FORTE.optimizedPanel.css('z-index', 100);
+        var parentHeight = $('#tdCanvas').height();
+        FORTE.optimizedPanel.css('top', -parentHeight/2 + topMarginPanel);
+        FORTE.optimizedPanel.css('left', parentWidth-rightMarginPanel);
         $('#tdCanvas').append(FORTE.optimizedPanel);
 
         FORTE.optimizedLayerList = $('<ul></ul>');
@@ -215,7 +228,6 @@ $(document).ready(function () {
                 var layer = FORTE.htOptimizedLayers[ui.tagLabel];
                 if (layer != undefined) layer._canvas.remove();
                 FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
-                // FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
 
                 FORTE.design.maxStress = 0;
                 var keys = Object.keys(FORTE.htOptimizedLayers);
@@ -231,24 +243,11 @@ $(document).ready(function () {
             }
         });
         FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
+
+        // FORTE.optimizedLayerList.tagit('createTag', 'test');
+
+        time('ready');
     });
-
-
-
-    FORTE.xmlhttp = new XMLHttpRequest();
-    FORTE.xmlhttp.timeout = 1e9;
-    FORTE.xmlhttp.onreadystatechange = function () {
-        if (FORTE.xmlhttp.readyState == 4 && FORTE.xmlhttp.status == 200) {
-            log(FORTE.xmlhttp.responseText);
-            var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
-            if (outDir != null && outDir != undefined) {
-                FORTE.outDir = outDir;
-                log('server output directory: ' + FORTE.outDir);
-            }
-        }
-    }
-    XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
-    time('ready.')
 });
 
 //
