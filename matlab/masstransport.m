@@ -2,8 +2,8 @@ function geommean = masstransport(pdf1, pdf2, lambda, niters, kernelsize)
     b1 = ones(size(pdf1));
     b2 = ones(size(pdf1));
     
-%     gaussian = fspecial('gaussian', [kernelsize, kernelsize]);
-    gaussian = fspecial('gaussian', size(pdf1));
+    gaussian = fspecial('gaussian', [kernelsize, kernelsize]);
+%     gaussian = fspecial('gaussian', size(pdf1));
     eps = 1e-12;
    
     for iter = 1:niters

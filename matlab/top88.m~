@@ -53,8 +53,9 @@ function top88(trial, args)
     L=1;
     B = (1/2/L)*[-1 0 1 0 1 0 -1 0; 0 -1 0 -1 0 1 0 1; -1 -1 -1 1 1 1 1 -1];
     DE = (1/(1-nu^2))*[1 nu 0; nu 1 0; 0 0 (1-nu)/2];
-    kernel_size = floor(log(max(nelx, nely)/2)) * 2 + 1;
-    gaussian = fspecial('gaussian', [kernel_size,kernel_size]);
+    kernelsize = floor(log(max(nelx, nely)/2)) * 2 + 1;
+%     gaussian = fspecial('gaussian', [kernelsize,kernelsize]);
+
     %% PREPARE FILTER
     iH = ones(nelx*nely*(2*(ceil(rmin)-1)+1)^2,1);
     jH = ones(size(iH));
@@ -77,14 +78,16 @@ function top88(trial, args)
     H = sparse(iH,jH,sH);
     Hs = sum(H,2);
     %% INITIALIZE ITERATION
-    if isadding
-        x = repmat(volfrac,nely,nelx);
-    else
-        x = eps + max(0, distfield-eps);
-    end
-%     xPhys = x;
-    xPhys = repmat(eps, nely,nelx);
-    xPhys(actvelms) = 1;
+    x = repmat(volfrac,nely,nelx);
+%     if isadding
+%         x = repmat(volfrac,nely,nelx);
+%     else
+%         x = eps + max(0, distfield-eps);
+%     end
+
+     xPhys = x;
+%     xPhys = repmat(eps, nely,nelx);
+%     xPhys(actvelms) = 1;
     loop = 0;
     change = 1;
     %% START ITERATION [xac] added maxloop
@@ -100,7 +103,7 @@ function top88(trial, args)
       E = Emin+xPhys(:)'.^penal*(E0-Emin);
       s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
       vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
-      vms = conv2(vms, gaussian, 'same');
+%       vms = conv2(vms, gaussian, 'same');
       
       % [xac] log the 'before' results (i.e., skip optimization, just
       % compute displacement and vms
@@ -139,6 +142,9 @@ function top88(trial, args)
       %% [xac] add structs
        if isadding x(actvelms) = 1; end
       
+       %% [xac] [exp] mass transport
+        x = masstransport(max(0, distfield-eps), x,lambda, niters, kernelsize);
+       
       %% [xac] update xPhys
       xPhys = x;
       
