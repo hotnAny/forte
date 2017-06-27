@@ -87,7 +87,7 @@ FORTE.GridCanvas.prototype.setResolution = function (w, h) {
 //  mousedown for drawing
 //
 FORTE.GridCanvas.prototype.drawDown = function (e) {
-    if (!this._enabled) return;
+    if (!this._enabled || e.button == XAC.RIGHTMOUSE) return;
     this._isDown = true;
 
     this._strokePoints = [];
@@ -99,7 +99,7 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
 //
 FORTE.GridCanvas.prototype.drawMove = function (e) {
     if (!this._enabled) return;
-    if (!this._isDown) return;
+    if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
 
     this._doDraw(e);
 };
@@ -113,7 +113,7 @@ FORTE.GridCanvas.prototype.drawUp = function (e) {
 };
 
 //
-//
+//  actually perform the drawing based on a mouse event
 //
 FORTE.GridCanvas.prototype._doDraw = function (e) {
     var canvasOffset = this._canvas.offset();
