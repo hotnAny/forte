@@ -1,8 +1,8 @@
 // ......................................................................................................
 //
-//  a class of forte design
+//  a class of forte design, v0.1
 //
-//  by xiangchen@acm.org, v0.0, 05/2017
+//  by xiangchen@acm.org, 06/2017
 //
 // ......................................................................................................
 
@@ -22,19 +22,23 @@ FORTE.Design.prototype = {
     constructor: FORTE.Design
 }
 
+//
+//  extrapolate (or interpolate) based on the most recent two updated bitmaps
+//  (treating the most recent one as in the far future and extrapolate to it)
+//  -   step: parameter to control the extrapolation
+//
 FORTE.Design.prototype.extrapolateBitmaps = function (step) {
     if (this.bitmaps.length < 2) return;
     var bmp0 = this.bitmaps.lastBut(1);
     var bmp1 = this.bitmaps.pop();
-    if (bmp0.length <= 0 || bmp1.length <= 0) return;
 
-    var height = bmp1.length;
-    if (height > 0) {
+    if (bmp0.length > 0 && bmp1.length > 0) {
+        var height = bmp1.length;
         var width = bmp1[0].length;
         var bmp = XAC.initMDArray([height, width], 0);
         for (var j = 0; j < height; j++) {
             if (bmp0[j] == undefined || bmp1[j] == undefined ||
-                bmp0[j].length <= 0 || bmp1[j].length <= 0) return;
+                bmp0[j].length <= 0 || bmp1[j].length <= 0) continue;
             for (var i = 0; i < width; i++) {
                 bmp[j][i] = bmp0[j][i] * step + bmp1[j][i] * (1 - step);
             }
@@ -132,3 +136,27 @@ FORTE.Design.prototype.getData = function () {
         boundaries: boundaryPoints
     };
 }
+
+//
+//
+//
+FORTE.Design.prototype.saveAs = function(filename) {
+    var dataObject = {
+        width: FORTE.width,
+        height: FORTE.height,
+        designBitmap: FORTE.designLayer._bitmap,
+        emptinessBitmap: FORTE.emptinessLayer._bitmap,
+        loadBitmap: FORTE.loadLayer._bitmap,
+        loadArrows: FORTE.loadLayer._arrows,
+        loadPoints: FORTE.design.loadPoints,
+        loadValues: FORTE.design.loadValues,
+        boundaryBitmap: FORTE.boundaryLayer._bitmap
+    }
+    var data = JSON.stringify(dataObject);
+    if (data != undefined) {
+        var blob = new Blob([data], {
+            type: 'text/plain'
+        });
+        saveAs(blob, filename);
+    }
+};

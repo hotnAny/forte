@@ -39,31 +39,28 @@ $(document).ready(function () {
     // enable drag and drop
     //
     XAC.enableDragDrop(function (files) {
-        for (var i = files.length - 1; i >= 0; i--) {
-            var reader = new FileReader();
-            if (files[i].name.endsWith('forte')) {
-                reader.onload = (function (e) {
-                    // for (layer of FORTE.layers) layer._canvas.css('opacity', 1);
-                    var dataObject = JSON.parse(e.target.result);
-                    $(tbWidth).val(dataObject.width);
-                    $(tbHeight).val(dataObject.height);
-                    FORTE.changeResolution();
-                    FORTE.btnClear.trigger('click');
+        if (files.length <= 0) return;
+        var reader = new FileReader();
+        if (files[0].name.endsWith('forte')) {
+            reader.onload = (function (e) {
+                var dataObject = JSON.parse(e.target.result);
+                $(tbWidth).val(dataObject.width);
+                $(tbHeight).val(dataObject.height);
+                FORTE.changeResolution();
+                FORTE.btnNew.trigger('click');
 
-                    FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
-                    FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
-                    FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, 0);
-                    for (arrow of dataObject.loadArrows) {
-                        FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
-                    }
-                    FORTE.design.loadPoints = dataObject.loadPoints;
-                    FORTE.design.loadValues = dataObject.loadValues;
-                    FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
-                    // FORTE.toggleLayerZindex(FORTE.layers.indexOf(FORTE.loadLayer));
-                });
-            }
-            reader.readAsBinaryString(files[i]);
+                FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
+                FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
+                FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, 0);
+                for (arrow of dataObject.loadArrows) {
+                    FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
+                }
+                FORTE.design.loadPoints = dataObject.loadPoints;
+                FORTE.design.loadValues = dataObject.loadValues;
+                FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
+            });
         }
+        reader.readAsBinaryString(files[0]);
     });
 
     var mainTable = $('<table></table>');
@@ -75,7 +72,13 @@ $(document).ready(function () {
         });
 
         //  new a design
-        $('#btnNew').button();
+        FORTE.btnNew = $('#btnNew');
+        FORTE.btnNew.button();
+        FORTE.btnNew.click(function (e) {
+            for (layer of FORTE.layers) layer.clear();
+            FORTE.design = new FORTE.Design(FORTE.width, FORTE.height);
+            FORTE.loadLayer._arrows = [];
+        });
 
         // material amount slider
         FORTE.materialRatio = 1.5;
@@ -85,7 +88,7 @@ $(document).ready(function () {
         FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMaterial'));
         FORTE.sldrMaterial.slider({
-            change: function (event, ui) {
+            change: function (e, ui) {
                 var value = FORTE._normalizeSliderValue($(event.target), ui.value);
                 FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
             }
@@ -99,9 +102,7 @@ $(document).ready(function () {
         $('#btnErase').attr('src', FORTE.ICONERASER);
         $('#btnErase').button();
         $('#btnErase').click(function (e) {
-            for (layer of FORTE.layers) layer.clear();
-            FORTE.design = new FORTE.Design(FORTE.width, FORTE.height);
-            FORTE.loadLayer._arrows = [];
+
         });
 
         //  similarity slider
@@ -113,24 +114,20 @@ $(document).ready(function () {
         FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', 'similarity',
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdSimilarity'));
         FORTE.sldrSimilarity.slider({
-            change: function (event, ui) {
+            change: function (e, ui) {
                 var value = FORTE._normalizeSliderValue($(event.target), ui.value);
                 FORTE.similarityRatio = FORTE.MINSIMILARITYRATIO * (1 - value) +
                     FORTE.MAXSIMILARITYRATIO * value;
             }
         })
 
-        //
-        // suggest
-        //        
+        // get variations
         $('#btnGetVariation').button();
         $('#btnGetVariation').click(function (e) {
             FORTE.optimize();
         });
 
-        //
         // add structs
-        //
         $('#btnAddStructs').button();
         $('#btnAddStructs').click(function (e) {
             var _similarity = FORTE.similarityRatio;
@@ -139,30 +136,11 @@ $(document).ready(function () {
             FORTE.similarityRatio = _similarity;
         });
 
-        //
         // save
-        //
         $('#btnSave').attr('src', FORTE.ICONSAVE);
         $('#btnSave').button();
         $('#btnSave').click(function (e) {
-            var dataObject = {
-                width: FORTE.width,
-                height: FORTE.height,
-                designBitmap: FORTE.designLayer._bitmap,
-                emptinessBitmap: FORTE.emptinessLayer._bitmap,
-                loadBitmap: FORTE.loadLayer._bitmap,
-                loadArrows: FORTE.loadLayer._arrows,
-                loadPoints: FORTE.design.loadPoints,
-                loadValues: FORTE.design.loadValues,
-                boundaryBitmap: FORTE.boundaryLayer._bitmap
-            }
-            var data = JSON.stringify(dataObject);
-            if (data != undefined) {
-                var blob = new Blob([data], {
-                    type: 'text/plain'
-                });
-                saveAs(blob, 'design.forte');
-            }
+            FORTE.design.saveAs('design.forte');
         });
 
         // more controls
@@ -175,8 +153,14 @@ $(document).ready(function () {
                 $(this).html(FORTE.HTMLCODETRIANGLEDOWN);
             } else {
                 $('#trMoreCtrl').show();
-                $(this).html(FORTE.HTMLCODETRIANGLEUP)
+                $(this).html(FORTE.HTMLCODETRIANGLEUP);
             }
+
+            for (layer of FORTE.layers) layer.updateCanvasPosition();
+            for (layer of FORTE.optimizedLayers) layer.updateCanvasPosition();
+            var parentOffset = $('#tdCanvas').offset();
+            FORTE.optimizedPanel.css('top', parentOffset.top);
+
         });
 
         $('#trMoreCtrl').hide();
@@ -184,8 +168,13 @@ $(document).ready(function () {
         // resolution
         $('#tbWidth').attr('value', FORTE.width);
         $('#tbHeight').attr('value', FORTE.height);
-        $('#tbWidth').keydown(FORTE.keydown);
-        $('#tbHeight').keydown(FORTE.keydown);
+        var _keydown = function (e) {
+            if (e.keyCode == XAC.ENTER) {
+                FORTE.changeResolution();
+            }
+        }
+        $('#tbWidth').keydown(_keydown);
+        $('#tbHeight').keydown(_keydown);
 
         //
         // layers of editing
@@ -204,27 +193,30 @@ $(document).ready(function () {
         FORTE.customizeLoadLayer();
         FORTE.changeResolution();
 
+        FORTE.optimizedLayers = [];
+
         //
         // layers of optimization
         //
         FORTE.htOptimizedLayers = {};
         FORTE.optimizedPanel = $('#divOptimizedPanel');
-        var topMarginPanel = 16;
-        var rightMarginPanel = FORTE.WIDTHOPTIMIZEDPANEL;
+        var topMarginPanel = 5;
+        var rightMarginPanel = 5;
         FORTE.optimizedPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
         var parentWidth = $('#tdCanvas').width();
-        var parentHeight = $('#tdCanvas').height();
-        FORTE.optimizedPanel.css('top', -parentHeight/2 + topMarginPanel);
-        FORTE.optimizedPanel.css('left', parentWidth-rightMarginPanel);
+        var parentOffset = $('#tdCanvas').offset();
+        FORTE.optimizedPanel.css('position', 'absolute');
+        FORTE.optimizedPanel.css('top', parentOffset.top);
+        FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
         $('#tdCanvas').append(FORTE.optimizedPanel);
 
         FORTE.optimizedLayerList = $('<ul></ul>');
         FORTE.optimizedLayerList.addClass('ui-widget');
         FORTE.optimizedLayerList.tagit({
-            onTagClicked: function (event, ui) {
+            onTagClicked: function (e, ui) {
                 FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
             },
-            beforeTagRemoved: function (event, ui) {
+            beforeTagRemoved: function (e, ui) {
                 var layer = FORTE.htOptimizedLayers[ui.tagLabel];
                 if (layer != undefined) layer._canvas.remove();
                 FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
@@ -244,20 +236,15 @@ $(document).ready(function () {
         });
         FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
 
-        // FORTE.optimizedLayerList.tagit('createTag', 'test');
+        // FORTE.optimizedLayerList.tagit('createTag', 'test1');
+        // FORTE.optimizedLayerList.tagit('createTag', 'test2');
+        // FORTE.optimizedLayerList.tagit('createTag', 'test3');
+        // FORTE.optimizedLayerList.tagit('createTag', 'test4');
+        // FORTE.optimizedLayerList.tagit('createTag', 'test5');
 
         time('ready');
     });
 });
-
-//
-//  global keydown handler
-//
-FORTE.keydown = function (e) {
-    if (e.keyCode == XAC.ENTER) {
-        FORTE.changeResolution();
-    }
-}
 
 //
 //
@@ -265,14 +252,12 @@ FORTE.keydown = function (e) {
 FORTE.resetRadioButtons = function (idx) {
     $('[name="' + FORTE.nameBrushButtons + '"]').remove();
     $('[name="lb' + FORTE.nameBrushButtons + '"]').remove();
-    // ['&#9998;', '&#8709;', '&#9750;', '&#11034;']
     var imgSrcs = [FORTE.ICONDESIGN, FORTE.ICONVOID, FORTE.ICONLOAD, FORTE.ICONBOUNDARY];
     var labels = [];
     for (src of imgSrcs) labels.push('<img class="icon" src="' + src + '"></img>');
     FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', labels, [0, 1, 2, 3],
         $('#tdBrushes'), idx);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
-        // $('[name="' + FORTE.nameBrushButtons + '"]').attr('checked', false);
         var checked = $(e.target).attr('checked');
         if (checked == 'checked') {
             FORTE.switchLayer(-1);

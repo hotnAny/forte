@@ -219,3 +219,11 @@ FORTE.GridCanvas.prototype.package = function () {
     }
     return points;
 }
+
+
+FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
+    var parentOffset = this._parent.offset();
+    this._canvas.css('position', 'absolute');
+    this._canvas.css('left', parentOffset.left);
+    this._canvas.css('top', parentOffset.top);
+}
