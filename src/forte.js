@@ -8,8 +8,7 @@
 
 var FORTE = FORTE || {};
 
-FORTE.width = 240;
-FORTE.height = 160;
+
 
 $(document).ready(function () {
     time();
@@ -71,6 +70,9 @@ $(document).ready(function () {
             $(this).css('font-size', 'small');
         });
 
+        FORTE.width = FORTE.WIDTHDEFAULT;
+        FORTE.height = FORTE.HEIGHTDEFAULT;
+
         //  new a design
         FORTE.btnNew = $('#btnNew');
         FORTE.btnNew.button();
@@ -78,6 +80,7 @@ $(document).ready(function () {
             for (layer of FORTE.layers) layer.clear();
             FORTE.design = new FORTE.Design(FORTE.width, FORTE.height);
             FORTE.loadLayer._arrows = [];
+            FORTE.optimizedLayerList.tagit('removeAll');
         });
 
         // material amount slider
@@ -122,18 +125,36 @@ $(document).ready(function () {
         })
 
         // get variations
+        $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
         $('#btnGetVariation').button();
+        $('#btnGetVariation').css('min-width', $('#btnGetVariation').width());
         $('#btnGetVariation').click(function (e) {
-            FORTE.optimize();
+            if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
+                FORTE.doCancel();
+            } else {
+                if (FORTE.optimize()) {
+                    $(this).html('cancel');
+                    $('#btnAddStructs').prop('disabled', true).css('opacity', 0.5);
+                }
+            }
         });
 
         // add structs
+        $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
         $('#btnAddStructs').button();
+        $('#btnAddStructs').css('min-width', $('#btnAddStructs').width());
         $('#btnAddStructs').click(function (e) {
-            var _similarity = FORTE.similarityRatio;
-            FORTE.similarityRatio = -1;
-            FORTE.optimize();
-            FORTE.similarityRatio = _similarity;
+            if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
+                FORTE.doCancel();
+            } else {
+                var _similarity = FORTE.similarityRatio;
+                FORTE.similarityRatio = -1;
+                if (FORTE.optimize()) {
+                    $(this).html('cancel');
+                    $('#btnGetVariation').prop('disabled', true).css('opacity', 0.5);
+                }
+                FORTE.similarityRatio = _similarity;
+            }
         });
 
         // save
@@ -295,7 +316,7 @@ FORTE.resetRadioButtons = function (idx) {
 //  routine to fetch data from matlab output
 //
 FORTE.fetchData = function () {
-    if (FORTE.state == 'start') {
+    if (FORTE.state == 'started') {
         FORTE.itrCounter = 0;
         log('data fetching started');
         FORTE.state = 'ongoing';
@@ -309,6 +330,8 @@ FORTE.fetchData = function () {
         FORTE.renderStarted = false;
         FORTE.pointer = 0;
     } else if (FORTE.state == 'finished') {
+        return;
+    } else if (FORTE.state == 'cancelled') {
         return;
     } else {
         if (FORTE.outDir == undefined || FORTE.outDir == null)
@@ -395,6 +418,11 @@ FORTE.fetchData = function () {
 
                         log('misses: ' + FORTE.__misses);
 
+                        $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
+                        $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);
+                        $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
+                        $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
+
                     } else {
                         setTimeout(FORTE.fetchData, FORTE.fetchInterval);
                     }
@@ -466,6 +494,11 @@ FORTE.showOptimizedLayer = function (tag, label) {
 FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
 
+    if (FORTE.state == 'cancelled') {
+        log('optimization cancelled.');
+        return;
+    }
+
     // if fetching data is not finished, add extrapolated bitmaps
     if (FORTE.state != 'finished' &&
         FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
@@ -477,7 +510,6 @@ FORTE.render = function (pointer) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
         FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.1);
         XAC.stats.update();
-        // time('redrew for itr# ' + (FORTE.pointer + 1) + ' with ' + FORTE.design.bitmaps.length + ' bitmaps stored.');
         FORTE.pointer++;
 
         setTimeout(function () {
@@ -514,10 +546,12 @@ FORTE.optimize = function () {
         FORTE.trial = 'forte_' + Date.now();
         var values = [FORTE.trial, data, FORTE.materialRatio, Math.pow(2, FORTE.similarityRatio)];
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
-        FORTE.state = 'start';
+        FORTE.state = 'started';
         time();
         FORTE.fetchData();
+        return true;
     }
+    return false;
 }
 
 FORTE.updateStressAcrossLayers = function (maxStress) {
@@ -542,4 +576,16 @@ FORTE._normalizeSliderValue = function (slider, value) {
     var max = slider.slider("option", "max");
     var min = slider.slider("option", "min");
     return (value - min) * 1.0 / (max - min);
+}
+
+FORTE.doCancel = function () {
+    XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
+    FORTE.state = 'cancelled';
+    $(this).html(FORTE.LABELADDSTRUCTS);
+    FORTE.optimizedLayer.clear();
+
+    $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
+    $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);
+    $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
+    $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
 }

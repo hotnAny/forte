@@ -162,6 +162,11 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     
     str_result = '?'
 
+    if 'stop' in post_data:
+        subprocess.call('chmod 444 ' + session_dir, shell=True)
+        return str_result
+
+    subprocess.call('chmod 777 ' + session_dir, shell=True)
     if 'trial' not in post_data:
         str_result += 'outdir=' + sdir + '&'
         return str_result
@@ -330,6 +335,7 @@ if __name__ == "__main__":
     global session_dir
     session_dir = 'server_session_' + str(long(time.time()))
     subprocess.call('mkdir ' + session_dir, shell=True)
+    subprocess.call('chmod 777 ' + session_dir, shell=True)
 
     run(port=int(argv[1]))
     

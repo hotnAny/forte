@@ -9,12 +9,11 @@ $(document).ready(function () {
         FORTE.m /= 2;
         log(FORTE.m);
     });
-    XAC.on('B', function (e) {
-        log('before')
+    XAC.on(XAC.ESC, function (e) {
+        XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
+        FORTE.state = 'finished';
     });
-    XAC.on('A', function (e) {
-        log('after')
-    });
+
 });
 
 //
@@ -89,3 +88,15 @@ FORTE.GridCanvas.prototype.showDisplacements = function (displacements, width, h
 //         FORTE.designLayer.drawFromBitmap(FORTE.bitmap, 50, 50, 0.5, heatmap);
 //     });
 // }
+
+jQuery.fn.extend({
+    disable: function(state) {
+        return this.each(function() {
+            var $this = $(this);
+            if($this.is('input, button, textarea, select'))
+              this.disabled = state;
+            else
+              $this.toggleClass('disabled', state);
+        });
+    }
+});

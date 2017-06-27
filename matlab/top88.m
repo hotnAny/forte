@@ -12,7 +12,7 @@ fixeddofs = str2num(char(args(9)));
 loadnodes = str2num(char(args(10)));
 loadvalues = str2num(char(args(11)));
 actvelms = str2num(char(args(12)));
-favelms = str2num(char(args(13)));
+% favelms = str2num(char(args(13)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
 isadding = size(distfield) == [0, 0];
@@ -180,9 +180,16 @@ while change > 0.05 && (loop <= maxloop)
         drawnow;
     end
     
-    try dlmwrite(strcat(trial, '_', num2str(loop-1), '.out'), x); catch ; end
+    try dlmwrite(strcat(trial, '_', num2str(loop-1), '.out'), x);
+    catch ME
+        if debugging == true
+            continue;
+        else
+            disp('received indication to quit');
+            return;
+        end
+    end
 end
-
 try
     dlmwrite(strcat(trial, '_before.dsp'), U0);
     dlmwrite(strcat(trial, '_after.dsp'), U);

@@ -24,3 +24,7 @@ a {
 	position: relative;
 	z-index: 100;
 }
+
+.disabled {
+    color: #999;
+}

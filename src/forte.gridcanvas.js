@@ -166,8 +166,6 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
             var x = x0 + i;
             var y = y0 + j;
             if (bitmap[j][i] > thres && this._bitmap[y][x] <= thres) {
-                // this._context.globalAlpha = FORTE.MINALPHAFORANIMATION +
-                //     (1 - FORTE.MINALPHAFORANIMATION) * Math.pow(bitmap[j][i], 3);
                 this._context.globalAlpha = Math.pow(bitmap[j][i], FORTE.P) / FORTE.PSEUDOMAXALPHA;
                 this._context.beginPath();
                 this._context.rect(x * this._cellSize, y * this._cellSize,
@@ -226,7 +224,9 @@ FORTE.GridCanvas.prototype.package = function () {
     return points;
 }
 
-
+//
+//  when global ui layout changes, manually update canvas position so it stays with the parent
+//
 FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
     var parentOffset = this._parent.offset();
     this._canvas.css('position', 'absolute');
