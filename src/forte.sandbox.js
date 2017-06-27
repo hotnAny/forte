@@ -13,6 +13,11 @@ $(document).ready(function () {
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
         FORTE.state = 'finished';
     });
+    FORTE.toShowStress = false;
+    XAC.on('S', function (e) {
+        FORTE.toShowStress = !FORTE.toShowStress;
+        FORTE.updateStressAcrossLayers(FORTE.toShowStress);
+    });
 
 });
 

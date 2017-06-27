@@ -101,12 +101,6 @@ xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
 
-minweight = eps;
-weightmap = repmat(1,nely,nelx);
-weightmap(1:64, 1:64) = 10;
-weightmap = weightmap * nely * nelx / sum(weightmap(:));
-weightmap = minweight + max(0, weightmap-minweight);
-x = x .* weightmap;
 telapsed = 0;
 %% START ITERATION [xac] added maxloop
 while change > 0.05 && (loop <= maxloop)

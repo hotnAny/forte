@@ -34,9 +34,9 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
 
     this._enabled = true;
 
-    var kernelSize = 1;
-    var sigma = 0.5;
-    this._gaussian = generateGaussianKernel(2 * kernelSize + 1, sigma);
+    // var kernelSize = 1;
+    // var sigma = 0.5;
+    // this._gaussian = generateGaussianKernel(2 * kernelSize + 1, sigma);
 
 };
 
@@ -159,7 +159,7 @@ FORTE.GridCanvas.prototype.clear = function () {
 //
 //  draw on the canvas from an input bitmap, using (x0, y0) as the origin
 //
-FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
+FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0) {
     var h = bitmap.length;
     var w = h > 0 ? bitmap[0].length : 0;
     if (h <= 0 || w <= 0) return;
@@ -185,11 +185,12 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
 //
 //  force to redraw everything
 //
-FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
+FORTE.GridCanvas.prototype.forceRedraw = function (colorMap) {
     var originalStyle = this._context.fillStyle;
     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     for (var j = 0; j < this._gridHeight; j++) {
         for (var i = 0; i < this._gridWidth; i++) {
+            this._context.globalAlpha = Math.min(1, this._bitmap[j][i] / FORTE.PSEUDOMAXALPHA);
             this._context.beginPath();
             this._context.rect((i * this._cellSize) | 0, (j * this._cellSize) | 0,
                 (this._cellSize + 1) | 0, (this._cellSize + 1) | 0);

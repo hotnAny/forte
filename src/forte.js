@@ -48,15 +48,15 @@ $(document).ready(function () {
                 FORTE.changeResolution();
                 FORTE.btnNew.trigger('click');
 
-                FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, FORTE.THRESBINARIZATION);
-                FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, FORTE.THRESBINARIZATION);
-                FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, FORTE.THRESBINARIZATION);
+                FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0);
+                FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0);
+                FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
                 for (arrow of dataObject.loadArrows) {
                     FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
                 }
                 FORTE.design.loadPoints = dataObject.loadPoints;
                 FORTE.design.loadValues = dataObject.loadValues;
-                FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, FORTE.THRESBINARIZATION);
+                FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0);
             });
         }
         reader.readAsBinaryString(files[0]);
@@ -157,6 +157,15 @@ $(document).ready(function () {
             }
         });
 
+        // show stress
+        $('#btnShow').attr('src', FORTE.ICONEYE);
+        $('#btnShow').button();
+        $('#btnShow').click(function (e) {
+            FORTE.toShowStress = !FORTE.toShowStress;
+            $(this).toggleClass('ui-state-active');
+            FORTE.updateStressAcrossLayers(FORTE.toShowStress);
+        });
+
         // save
         $('#btnSave').attr('src', FORTE.ICONSAVE);
         $('#btnSave').button();
@@ -198,6 +207,7 @@ $(document).ready(function () {
             for (layer of FORTE.optimizedLayers) layer.updateCanvasPosition();
             var parentOffset = $('#tdCanvas').offset();
             FORTE.optimizedPanel.css('top', parentOffset.top);
+            FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
 
         });
 
@@ -269,7 +279,8 @@ $(document).ready(function () {
                     }
                 }
 
-                FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
+                // FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
+                FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
             }
         });
         FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
@@ -378,45 +389,43 @@ FORTE.fetchData = function () {
                         var label = 'layer ' + (numLayers + 1);
                         FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
                         var tag = FORTE.optimizedLayerList.tagit('createTag', label);
-                        // FORTE.optimizedLayer.forceRedraw(FORTE.THRESBINARIZATION);
                         FORTE.showOptimizedLayer(tag, label);
 
                         //  read stresses
-                        // var stressFieldLabels = ['before', 'after'];
-                        // for (var i = 0; i < stressFieldLabels.length; i++) {
-                        //     var label = stressFieldLabels[i];
-                        //     XAC.readTextFile(baseDir + '_' + label + '.vms', function (text) {
-                        //         var stresses = FORTE.getBitmap(text);
-                        //         var maxStress = 0;
-                        //         var allStresses = [];
-                        //         var eps = 1e-9;
-                        //         var minStress = Math.log(eps);
-                        //         var logBase = Math.log(1.01);
-                        //         for (row of stresses)
-                        //             for (value of row) {
-                        //                 // value = Math.log(Math.max(eps, value)) / logBase - minStress;
-                        //                 // maxStress = Math.max(maxStress, value);
-                        //                 allStresses.push(value);
-                        //             }
+                        var stressFieldLabels = ['before', 'after'];
+                        for (var i = 0; i < stressFieldLabels.length; i++) {
+                            var label = stressFieldLabels[i];
+                            XAC.readTextFile(baseDir + '_' + label + '.vms', function (text) {
+                                var stresses = FORTE.getBitmap(text);
+                                var maxStress = 0;
+                                var allStresses = [];
+                                var eps = 1e-9;
+                                var minStress = Math.log(eps);
+                                var logBase = Math.log(1.01);
+                                for (row of stresses)
+                                    for (value of row) {
+                                        allStresses.push(value);
+                                    }
 
-                        //         var percentile = 0.99;
-                        //         maxStress = allStresses.median(percentile);
-                        //         log(maxStress);
+                                var percentile = 0.99;
+                                maxStress = allStresses.median(percentile);
 
-                        //         var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
-                        //         layer._stressInfo = {
-                        //             x0: FORTE.design.bbox.xmin,
-                        //             y0: FORTE.design.bbox.ymin,
-                        //             width: FORTE.resolution[0],
-                        //             height: FORTE.resolution[1],
-                        //             stresses: stresses,
-                        //             maxStress: maxStress
-                        //         }
+                                var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
+                                layer._stressInfo = {
+                                    x0: FORTE.design.bbox.xmin,
+                                    y0: FORTE.design.bbox.ymin,
+                                    width: FORTE.resolution[0],
+                                    height: FORTE.resolution[1],
+                                    stresses: stresses,
+                                    maxStress: maxStress
+                                }
 
-                        //         if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
-                        //         console.info(FORTE.design.maxStress);
-                        //     });
-                        // }
+                                if (label == 'after') {
+                                    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
+                                    // FORTE.updateStressAcrossLayers(FORTE.toShowStress);
+                                }
+                            });
+                        }
 
                         log('misses: ' + FORTE.__misses);
 
@@ -510,7 +519,7 @@ FORTE.render = function (pointer) {
     // render the next availale bitmap
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
-        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, FORTE.THRESBINARIZATION);
+        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
         XAC.stats.update();
         FORTE.pointer++;
 
@@ -518,6 +527,7 @@ FORTE.render = function (pointer) {
             FORTE.render();
         }, FORTE.renderInterval);
     } else {
+        FORTE.updateStressAcrossLayers(FORTE.toShowStress);
         log('rendering stopped.');
     }
 }
@@ -556,17 +566,21 @@ FORTE.optimize = function () {
     return false;
 }
 
-FORTE.updateStressAcrossLayers = function (maxStress) {
-    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
+//
+//
+//
+FORTE.updateStressAcrossLayers = function (toShow) {
     var layers = [FORTE.designLayer];
     var keys = Object.keys(FORTE.htOptimizedLayers);
     for (key of keys) layers.push(FORTE.htOptimizedLayers[key]);
     for (layer of layers) {
         if (layer == undefined) continue;
-        layer.updateHeatmap(FORTE.design.maxStress, function (x) {
-            return x;
-        });
-        layer.forceRedraw(0.1, layer._heatmap);
+        if (toShow) {
+            layer.updateHeatmap(FORTE.design.maxStress);
+            layer.forceRedraw(layer._heatmap);
+        } else {
+            layer.forceRedraw();
+        }
     }
 }
 
