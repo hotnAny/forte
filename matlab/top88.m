@@ -18,19 +18,20 @@ distfield = str2num(char(args(15)));
 isadding = size(distfield) == [0, 0];
 debugging = str2num(char(args(16)));
 
-try 
+try
     lambda = str2num(char(args(17)));
-catch ME 
-    disp('no lambda specified'); lambda = 0; 
+catch ME
+    disp('no lambda specified'); lambda = 0;
 end
 
 %% [xac] mass transport
 niters = 16;
 decay = 0.95;
-optmove = 0.2;
-massmove = optmove + 0.1;
-minmove = optmove - 0.1;
+% optmove = 0.2;
+% massmove = optmove + 0.1;
+% minmove = optmove - 0.1;
 eps = 0.001;
+
 %% MATERIAL PROPERTIES
 E0 = 1;
 Emin = 1e-9;
@@ -98,6 +99,14 @@ xPhys = repmat(eps, nely,nelx);
 xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
+
+minweight = eps;
+weightmap = repmat(1,nely,nelx);
+weightmap(1:64, 1:64) = 10;
+weightmap = weightmap * nely * nelx / sum(weightmap(:));
+weightmap = minweight + max(0, weightmap-minweight);
+x = x .* weightmap;
+
 %% START ITERATION [xac] added maxloop
 while change > 0.05 && (loop <= maxloop)
     tic
@@ -153,8 +162,9 @@ while change > 0.05 && (loop <= maxloop)
     %% [xac] [exp] mass transport
     if lambda > 0
         x = masstransport(x, max(0, distfield-eps), lambda, niters, kernelsize);
+        lambda = lambda * decay;
     end
-    lambda = lambda * decay;
+    
     %% [xac] update xPhys
     xPhys = x;
     
