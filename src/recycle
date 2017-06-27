@@ -24,3 +24,35 @@
                         //         if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
                         //     });
                         // }
+
+//
+//
+//
+// FORTE.GridCanvas.prototype._computeAlphaMap = function (kernelSize) {
+//     var sigma = 0.5;
+//     var gaussian = generateGaussianKernel(2 * kernelSize + 1, sigma);
+//     var rawAlphaMap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
+//     for (var j = 0; j < this._gridHeight; j++) {
+//         for (var i = 0; i < this._gridWidth; i++) {
+//             rawAlphaMap[j][i] = Math.pow(this._bitmap[j][i], FORTE.P);
+//         }
+//     }
+
+//     var alphaMap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
+//     for (var j = 0; j < this._gridHeight; j++) {
+//         for (var i = 0; i < this._gridWidth; i++) {
+//             // var ncount = 0;
+//             for (var rj = -kernelSize; rj <= kernelSize; rj++) {
+//                 for (var ri = -kernelSize; ri <= kernelSize; ri++) {
+//                     var jj = Math.min(Math.max(j + rj, 0), this._gridHeight - 1);
+//                     var ii = Math.min(Math.max(i + ri, 0), this._gridWidth - 1);
+//                     var idxGaussian = (rj + kernelSize) * (2 * kernelSize + 1) + ri + kernelSize;
+//                     alphaMap[j][i] += gaussian[idxGaussian] * rawAlphaMap[jj][ii];
+//                     // ncount++;
+//                 }
+//             }
+//             // if (ncount > 0) alphaMap[j][i] /= ncount;
+//         }
+//     }
+//     return alphaMap;
+// }

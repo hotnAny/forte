@@ -48,15 +48,15 @@ $(document).ready(function () {
                 FORTE.changeResolution();
                 FORTE.btnNew.trigger('click');
 
-                FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, 0);
-                FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, 0);
-                FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, 0);
+                FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0, FORTE.THRESBINARIZATION);
+                FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0, FORTE.THRESBINARIZATION);
+                FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0, FORTE.THRESBINARIZATION);
                 for (arrow of dataObject.loadArrows) {
                     FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
                 }
                 FORTE.design.loadPoints = dataObject.loadPoints;
                 FORTE.design.loadValues = dataObject.loadValues;
-                FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, 0);
+                FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0, FORTE.THRESBINARIZATION);
             });
         }
         reader.readAsBinaryString(files[0]);
@@ -337,6 +337,7 @@ FORTE.fetchData = function () {
         if (FORTE.outDir == undefined || FORTE.outDir == null)
             console.error('output directory unavailable');
         var baseDir = FORTE.outDir + '/' + FORTE.trial;
+        // FORTE.readOutput(baseDir + '_' + (FORTE.itrCounter + 1) + '.out');
         XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out',
             // on successfully reading results
             function (text) {
@@ -377,7 +378,7 @@ FORTE.fetchData = function () {
                         var label = 'layer ' + (numLayers + 1);
                         FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
                         var tag = FORTE.optimizedLayerList.tagit('createTag', label);
-                        FORTE.optimizedLayer.forceRedraw(FORTE.THRESBINARIZATION);
+                        // FORTE.optimizedLayer.forceRedraw(FORTE.THRESBINARIZATION);
                         FORTE.showOptimizedLayer(tag, label);
 
                         //  read stresses
@@ -509,7 +510,7 @@ FORTE.render = function (pointer) {
     // render the next availale bitmap
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
-        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, 0.1);
+        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin, FORTE.THRESBINARIZATION);
         XAC.stats.update();
         FORTE.pointer++;
 

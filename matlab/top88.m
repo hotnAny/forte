@@ -60,8 +60,9 @@ freedofs = setdiff(alldofs,fixeddofs);
 L=1;
 B = (1/2/L)*[-1 0 1 0 1 0 -1 0; 0 -1 0 -1 0 1 0 1; -1 -1 -1 1 1 1 1 -1];
 DE = (1/(1-nu^2))*[1 nu 0; nu 1 0; 0 0 (1-nu)/2];
-kernelsize = floor(log(max(nelx, nely)/2)) * 2 + 1;
-%     gaussian = fspecial('gaussian', [kernelsize,kernelsize]);
+kernelsize = floor(min(nelx, nely));% floor(log(max(nelx, nely))) * 2 + 1;
+sigma=1;
+gaussian = fspecial('gaussian', [kernelsize,kernelsize], sigma);
 
 %% PREPARE FILTER
 iH = ones(nelx*nely*(2*(ceil(rmin)-1)+1)^2,1);
@@ -106,7 +107,7 @@ weightmap(1:64, 1:64) = 10;
 weightmap = weightmap * nely * nelx / sum(weightmap(:));
 weightmap = minweight + max(0, weightmap-minweight);
 x = x .* weightmap;
-
+telapsed = 0;
 %% START ITERATION [xac] added maxloop
 while change > 0.05 && (loop <= maxloop)
     tic
@@ -120,7 +121,6 @@ while change > 0.05 && (loop <= maxloop)
     E = Emin+xPhys(:)'.^penal*(E0-Emin);
     s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
     vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
-    %       vms = conv2(vms, gaussian, 'same');
     
     %% [xac] log the 'before' results (i.e., skip optimization, just
     % compute displacement and vms
@@ -167,20 +167,25 @@ while change > 0.05 && (loop <= maxloop)
     
     %% [xac] update xPhys
     xPhys = x;
+    %     xPhys = conv2(x, gaussian, 'same');
     
     %% PRINT RESULTS
-    fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop,toc,c, ...
+    t = toc;
+    telapsed = telapsed + t;
+    fprintf(' It.:%3i t:%1.3f Obj.:%11.4f Vol.:%7.3f ch.:%7.3f\n',loop-1,t,c, ...
         mean(x(:)),change);
     
     %% PLOT DENSITIES
+    smoothed = conv2(xPhys, gaussian, 'same');
+    
     if debugging
         colormap(flipud(gray));
-        subplot(2,1,1); imagesc(x); axis equal off; text(2,-2,'x');
-        subplot(2,1,2); imagesc(vms); axis equal off; text(2,-2,'vms');
+        subplot(2,1,1); imagesc(smoothed); axis equal off; text(2,-2,'x');
+        subplot(2,1,2); imagesc(x); axis equal off; text(2,-2,'vms');
         drawnow;
     end
     
-    try dlmwrite(strcat(trial, '_', num2str(loop-1), '.out'), x);
+    try dlmwrite(strcat(trial, '_', num2str(loop-1), '.out'), smoothed);
     catch ME
         if debugging == true
             continue;
@@ -190,6 +195,8 @@ while change > 0.05 && (loop <= maxloop)
         end
     end
 end
+disp('avg time per itr:');
+disp(telapsed/(loop-1));
 try
     dlmwrite(strcat(trial, '_before.dsp'), U0);
     dlmwrite(strcat(trial, '_after.dsp'), U);
