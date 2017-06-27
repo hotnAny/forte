@@ -136,27 +136,3 @@ FORTE.Design.prototype.getData = function () {
         boundaries: boundaryPoints
     };
 }
-
-//
-//
-//
-FORTE.Design.prototype.saveAs = function(filename) {
-    var dataObject = {
-        width: FORTE.width,
-        height: FORTE.height,
-        designBitmap: FORTE.designLayer._bitmap,
-        emptinessBitmap: FORTE.emptinessLayer._bitmap,
-        loadBitmap: FORTE.loadLayer._bitmap,
-        loadArrows: FORTE.loadLayer._arrows,
-        loadPoints: FORTE.design.loadPoints,
-        loadValues: FORTE.design.loadValues,
-        boundaryBitmap: FORTE.boundaryLayer._bitmap
-    }
-    var data = JSON.stringify(dataObject);
-    if (data != undefined) {
-        var blob = new Blob([data], {
-            type: 'text/plain'
-        });
-        saveAs(blob, filename);
-    }
-};

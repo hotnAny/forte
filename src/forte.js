@@ -89,7 +89,7 @@ $(document).ready(function () {
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMaterial'));
         FORTE.sldrMaterial.slider({
             change: function (e, ui) {
-                var value = FORTE._normalizeSliderValue($(event.target), ui.value);
+                var value = FORTE._normalizeSliderValue($(e.target), ui.value);
                 FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
             }
         })
@@ -115,7 +115,7 @@ $(document).ready(function () {
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdSimilarity'));
         FORTE.sldrSimilarity.slider({
             change: function (e, ui) {
-                var value = FORTE._normalizeSliderValue($(event.target), ui.value);
+                var value = FORTE._normalizeSliderValue($(e.target), ui.value);
                 FORTE.similarityRatio = FORTE.MINSIMILARITYRATIO * (1 - value) +
                     FORTE.MAXSIMILARITYRATIO * value;
             }
@@ -140,7 +140,24 @@ $(document).ready(function () {
         $('#btnSave').attr('src', FORTE.ICONSAVE);
         $('#btnSave').button();
         $('#btnSave').click(function (e) {
-            FORTE.design.saveAs('design.forte');
+            var dataObject = {
+                width: FORTE.width,
+                height: FORTE.height,
+                designBitmap: FORTE.designLayer._bitmap,
+                emptinessBitmap: FORTE.emptinessLayer._bitmap,
+                loadBitmap: FORTE.loadLayer._bitmap,
+                loadArrows: FORTE.loadLayer._arrows,
+                loadPoints: FORTE.design.loadPoints,
+                loadValues: FORTE.design.loadValues,
+                boundaryBitmap: FORTE.boundaryLayer._bitmap
+            }
+            var data = JSON.stringify(dataObject);
+            if (data != undefined) {
+                var blob = new Blob([data], {
+                    type: 'text/plain'
+                });
+                saveAs(blob, 'design.forte');
+            }
         });
 
         // more controls
@@ -184,7 +201,7 @@ $(document).ready(function () {
         FORTE.emptinessLayer._strokeRadius = 3;
         FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
         FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#00afff');
-        $('#tdCanvas').css('background', '#f0f0f0');
+        $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
         FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
         FORTE.layer = FORTE.designLayer;

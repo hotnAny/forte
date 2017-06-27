@@ -89,7 +89,7 @@ FORTE.GridCanvas.prototype.setResolution = function (w, h) {
 FORTE.GridCanvas.prototype.drawDown = function (e) {
     if (!this._enabled) return;
     this._isDown = true;
-    this._context.beginPath();
+
     this._strokePoints = [];
     this._doDraw(e);
 };
@@ -110,30 +110,36 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
 FORTE.GridCanvas.prototype.drawUp = function (e) {
     if (!this._enabled) return;
     this._isDown = false;
-    this._context.closePath();
 };
 
+//
+//
+//
 FORTE.GridCanvas.prototype._doDraw = function (e) {
     var canvasOffset = this._canvas.offset();
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
 
+    var alphaDescent = 0.5 / this._strokeRadius;
     for (var dx = -this._strokeRadius; dx <= this._strokeRadius; dx += 1) {
+        var alphas = [];
         for (var dy = -this._strokeRadius; dy <= this._strokeRadius; dy += 1) {
             var x = Math.max(0, Math.min(this._gridWidth - 1, xcenter + dx));
             var y = Math.max(0, Math.min(this._gridHeight - 1, ycenter + dy));
-            if (this._bitmap[y][x] != 1) {
-                this._context.rect(x * this._cellSize, y * this._cellSize,
-                    this._cellSize, this._cellSize);
-                this._context.fill();
-                this._bitmap[y][x] = 1;
-                this._strokePoints.push({
-                    x: x,
-                    y: y
-                });
-            }
+            this._context.globalAlpha = 1 - (Math.abs(dx) + Math.abs(dy)) * alphaDescent;
+            this._context.beginPath();
+            this._context.rect(x * this._cellSize, y * this._cellSize,
+                this._cellSize, this._cellSize);
+            this._context.fill();
+            this._bitmap[y][x] = 1;
+            this._strokePoints.push({
+                x: x,
+                y: y
+            });
+            this._context.closePath();
         }
     }
+    this._context.globalAlpha = 1;
 }
 
 //
