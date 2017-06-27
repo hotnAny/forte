@@ -66,37 +66,3 @@ FORTE.GridCanvas.prototype.showDisplacements = function (displacements, width, h
 
     return heatmap;
 }
-
-// //  [debug]
-// else if (files[i].name.endsWith('out')) {
-//     reader.onload = (function (e) {
-//         FORTE.bitmap = FORTE.getBitmap(e.target.result);
-//     });
-// }
-// //  [debug]
-// else if (files[i].name.endsWith('dsp')) {
-//     reader.onload = (function (e) {
-//         var displacements = e.target.result.split('\n');
-//         for (var i = 0; i < displacements.length; i++) {
-//             var disp = parseFloat(displacements[i]);
-//             if (!isNaN(disp)) displacements[i] = disp;
-//         }
-//         var height = FORTE.bitmap.length;
-//         var width = FORTE.bitmap[0].length;
-//         log([width, height])
-//         var heatmap = FORTE.designLayer.showStress(displacements, width, height, FORTE.bitmap);
-//         FORTE.designLayer.drawFromBitmap(FORTE.bitmap, 50, 50, 0.5, heatmap);
-//     });
-// }
-
-jQuery.fn.extend({
-    disable: function(state) {
-        return this.each(function() {
-            var $this = $(this);
-            if($this.is('input, button, textarea, select'))
-              this.disabled = state;
-            else
-              $this.toggleClass('disabled', state);
-        });
-    }
-});

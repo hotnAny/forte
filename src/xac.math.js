@@ -16,7 +16,7 @@
 //
 
 // compute the Frobenius norm of a matrix
-numeric.fnorm = function(matrix) {
+numeric.fnorm = function (matrix) {
     var sum = 0;
     for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[i].length; j++) {
@@ -27,20 +27,20 @@ numeric.fnorm = function(matrix) {
 }
 
 // print a matrix
-numeric.print = function(matrix) {
+numeric.print = function (matrix) {
     var strMatrix = ""
     for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[i].length; j++) {
             strMatrix += parseFloat(matrix[i][j]).toFixed(4) + ' ';
         }
         strMatrix += '\n'
-            // strMatrix += matrix[i] + '\n';
+        // strMatrix += matrix[i] + '\n';
     }
     console.log(strMatrix);
 }
 
 // times a matrix (including vector) by a scalar
-numeric.times = function(matrix, scalar) {
+numeric.times = function (matrix, scalar) {
     for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[i].length; j++) {
             matrix[i][j] *= scalar;
@@ -52,7 +52,7 @@ numeric.times = function(matrix, scalar) {
 //
 // TODO comment
 //
-numeric.fromBlocks = function(blocks) {
+numeric.fromBlocks = function (blocks) {
     var dim = numeric.dim(blocks).slice(0, 2);
     var dimBlock = numeric.dim(blocks[0][0]).slice(0, 2);
     var x = XAC.initMDArray([dim[0] * dimBlock[0], dim[1] * dimBlock[1]], 0);
@@ -70,7 +70,7 @@ numeric.fromBlocks = function(blocks) {
 //
 //  other math-related useful functions
 //
-XAC.getRangeOfPointsOnAxis = function(points, axis) {
+XAC.getRangeOfPointsOnAxis = function (points, axis) {
     var min = 1000;
     var max = -1000;
 
@@ -86,7 +86,7 @@ XAC.getRangeOfPointsOnAxis = function(points, axis) {
 //
 //	get the projection coordinates of a point on a given plane parameterized by ax+by+cz+d=0
 //
-XAC.getPointProjectionOnPlane = function(v, a, b, c, d) {
+XAC.getPointProjectionOnPlane = function (v, a, b, c, d) {
     var t = -(a * v.x + b * v.y + c * v.z + d) / (a * a + b * b + c * c);
     return new THREE.Vector3(v.x + a * t, v.y + b * t, v.z + c * t);
 }
@@ -97,7 +97,7 @@ XAC.getPointProjectionOnPlane = function(v, a, b, c, d) {
 //	based on saparating axis theorem
 //	ref: http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/pubs/tribox.pdf
 //
-XAC.testTriBoxIntersection = function(va, vb, vc, nml, bbox) {
+XAC.testTriBoxIntersection = function (va, vb, vc, nml, bbox) {
     var minmax;
 
     /* test the 3 box normals */
@@ -157,7 +157,7 @@ XAC.testTriBoxIntersection = function(va, vb, vc, nml, bbox) {
 //
 //  get the max amongst all the input vars
 //
-XAC.max = function() {
+XAC.max = function () {
     var maxVal = Number.MIN_VALUE;
     for (var i = 0; i < arguments.length; i++) {
         maxVal = Math.max(maxVal, arguments[i]);
@@ -165,7 +165,7 @@ XAC.max = function() {
     return maxVal;
 }
 
-XAC.min = function() {
+XAC.min = function () {
     var minVal = Number.MAX_VALUE;
     for (var i = 0; i < arguments.length; i++) {
         minVal = Math.min(minVal, arguments[i]);
@@ -176,7 +176,7 @@ XAC.min = function() {
 //
 //  whether p1 and p2 are on the same side of the segment ab
 //
-XAC.onSameSide = function(p1, p2, a, b) {
+XAC.onSameSide = function (p1, p2, a, b) {
     var ab = b.clone().sub(a);
     var cp1 = ab.clone().cross(p1.clone().sub(a));
     var cp2 = ab.cross(p2.clone().sub(a));
@@ -195,7 +195,7 @@ XAC.onSameSide = function(p1, p2, a, b) {
 //
 //  whether v is in a triangle defined by va, vb and vc
 //
-XAC.isInTriangle = function(v, va, vb, vc) {
+XAC.isInTriangle = function (v, va, vb, vc) {
     return XAC.onSameSide(v, va, vb, vc) &&
         XAC.onSameSide(v, vb, va, vc) &&
         XAC.onSameSide(v, vc, va, vb);
@@ -204,7 +204,7 @@ XAC.isInTriangle = function(v, va, vb, vc) {
 //
 //  force an input val to be between vmin and vmax
 //
-XAC.clamp = function(val, vmin, vmax) {
+XAC.clamp = function (val, vmin, vmax) {
     if (vmin > vmax) {
         var vtmp = vmin;
         vmin = vmax;
@@ -218,7 +218,7 @@ XAC.clamp = function(val, vmin, vmax) {
 //
 // get triangle area
 //
-XAC.triangleArea = function(va, vb, vc) {
+XAC.triangleArea = function (va, vb, vc) {
     var ab = vb.clone().sub(va);
     var ac = vc.clone().sub(va);
 
@@ -241,7 +241,7 @@ XAC.triangleArea = function(va, vb, vc) {
 	ref: http://stackoverflow.com/questions/10900141/fast-plane-fitting-to-many-points
 	svd related: http://www.mathworks.com/help/matlab/ref/svd.html
 */
-XAC.findPlaneToFitPoints = function(points) {
+XAC.findPlaneToFitPoints = function (points) {
     var G = [];
 
     for (var i = 0; i < points.length; i++) {
@@ -271,7 +271,7 @@ XAC.findPlaneToFitPoints = function(points) {
 //  - nml: normal of the cylinder (normalized vector of the axis)
 //  - h, r: height and radius of the cylinder
 //
-XAC.testTriCylIntersection = function(va, vb, vc, c, nml, h, r) {
+XAC.testTriCylIntersection = function (va, vb, vc, c, nml, h, r) {
     nml = nml.normalize();
     var vertices = [va, vb, vc];
 
@@ -317,7 +317,7 @@ XAC.testTriCylIntersection = function(va, vb, vc, c, nml, h, r) {
 //  - if isSegment==true, do not consider points outside of segment p0p1
 //  ref: http://geomalgorithms.com/a05-_intersect-1.html
 //
-XAC.findLinePlaneIntersection = function(p0, p1, a, b, c, d, isSegment) {
+XAC.findLinePlaneIntersection = function (p0, p1, a, b, c, d, isSegment) {
     var pointNormal = XAC.pointNormalOfPlane(a, b, c, d);
     var eps = 10e-3;
 
@@ -345,7 +345,7 @@ XAC.findLinePlaneIntersection = function(p0, p1, a, b, c, d, isSegment) {
 //
 //  get the point-normal representation of a plane (a, b, c, d)
 //
-XAC.pointNormalOfPlane = function(a, b, c, d) {
+XAC.pointNormalOfPlane = function (a, b, c, d) {
     var x, y, z;
     if (a != 0) {
         y = a * (Math.random() + 0.5);
@@ -373,7 +373,7 @@ XAC.pointNormalOfPlane = function(a, b, c, d) {
 //
 //	get a plance from a point and two vectors
 //
-XAC.getPlaneFromPointVectors = function(pt, v1, v2) {
+XAC.getPlaneFromPointVectors = function (pt, v1, v2) {
     var cp = new THREE.Vector3().crossVectors(v1, v2);
 
     var a = cp.x;
@@ -389,7 +389,7 @@ XAC.getPlaneFromPointVectors = function(pt, v1, v2) {
     };
 }
 
-XAC.getPlaneFromPointNormal = function(p, nml) {
+XAC.getPlaneFromPointNormal = function (p, nml) {
     return {
         A: nml.x,
         B: nml.y,
@@ -401,7 +401,7 @@ XAC.getPlaneFromPointNormal = function(p, nml) {
 //
 //  get distance between two line segments u1u2 and v1v2
 //
-XAC.distanceBetweenLineSegments = function(u1, u2, v1, v2) {
+XAC.distanceBetweenLineSegments = function (u1, u2, v1, v2) {
     var u1u2 = u2.clone().sub(u1);
     var paramsu = XAC.getPlaneFromPointNormal(u1, u1u2);
     var projv1 = XAC.getPointProjectionOnPlane(v1, paramsu.A, paramsu.B, paramsu.C, paramsu.D);
@@ -420,7 +420,7 @@ XAC.distanceBetweenLineSegments = function(u1, u2, v1, v2) {
 //
 //  get distance between a point p and a line segment v1v2
 //
-XAC.distanceBetweenPointLineSegment = function(p, v1, v2) {
+XAC.distanceBetweenPointLineSegment = function (p, v1, v2) {
     var axis = v2.clone().sub(v1).normalize();
     var projections = [axis.dot(v1), axis.dot(p), axis.dot(v2)];
     if ((projections[0] - projections[1]) * (projections[1] - projections[2]) >= 0) {
@@ -434,7 +434,7 @@ XAC.distanceBetweenPointLineSegment = function(p, v1, v2) {
 //
 //  in 2d (xy space): whether a point p is inside a polygon that consists of an array of points
 //
-XAC.testPointInPolygon = function(p, poly) {
+XAC.testPointInPolygon = function (p, poly) {
     var cnt = 0;
     // var cnts = [0, 0, 0, 0];
     var eps = 1e-6
@@ -455,14 +455,14 @@ XAC.testPointInPolygon = function(p, poly) {
 //
 //  in 2d (xy space): return 1, 0 or -1 indicating which side a point is on (including on the line)
 //
-XAC.pointOnLineSide = function(p, p1, p2) {
+XAC.pointOnLineSide = function (p, p1, p2) {
     return Math.sign((p2.x - p1.x) * (p.y - p1.y) - (p2.y - p1.y) * (p.x - p1.x));
 }
 
 //
 //
 //
-XAC.find2DLineTriangleIntersections = function(p1, p2, v1, v2, v3) {
+XAC.find2DLineTriangleIntersections = function (p1, p2, v1, v2, v3) {
     var vertices = [v1, v2, v3];
     var intersections = [];
     for (var i = 0; i < vertices.length; i++) {
@@ -488,7 +488,7 @@ XAC.find2DLineTriangleIntersections = function(p1, p2, v1, v2, v3) {
 //
 //
 //
-XAC.find2DLineLineIntersection = function(u1, u2, v1, v2) {
+XAC.find2DLineLineIntersection = function (u1, u2, v1, v2) {
     var denom = (v2.y - v1.y) * (u2.x -
         u1.x) - (v2.x - v1.x) * (u2.y - u1.y);
     if (denom == 0) {
@@ -520,7 +520,7 @@ XAC.find2DLineLineIntersection = function(u1, u2, v1, v2) {
 //  return the topology of the triangulation, e.g., [1,0,3, 3,2,1],
 //      where each is an index to a vertex, three make a triangle
 //
-XAC.triangulatePolygon = function(polygon, normal) {
+XAC.triangulatePolygon = function (polygon, normal) {
     // var polygonXY = polygon.clone();
     var vertices = [];
     var zAxis = new THREE.Vector3(0, 0, -1);
@@ -542,13 +542,13 @@ XAC.triangulatePolygon = function(polygon, normal) {
 //
 //  fit an array of points in p to a circle
 //
-XAC.fitCircle = function(points) {
+XAC.fitCircle = function (points) {
     var p = [];
     for (point of points) {
         p.push([point.x, point.y]);
     }
 
-    var __dist = function(x0, y0, x1, y1) {
+    var __dist = function (x0, y0, x1, y1) {
         return Math.sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1));
     };
 
@@ -612,7 +612,7 @@ XAC.fitCircle = function(points) {
 //
 //  fit an array of THREE.Vector3 points in p to a circle
 //
-XAC.fitSphere = function(points) {
+XAC.fitSphere = function (points) {
     var p = [];
     for (point of points) {
         p.push([point.x, point.y, point.z]);
@@ -647,4 +647,48 @@ XAC.fitSphere = function(points) {
         z0: zm,
         r: r
     };
+}
+
+//
+// https://github.com/sidorares/gaussian-convolution-kernel/blob/master/index.js
+//
+function generateGaussianKernel(dimension, sigma) {
+    if (!(dimension % 2) || Math.floor(dimension) !== dimension || dimension < 3) {
+        throw new Error(
+            'The dimension must be an odd integer greater than or equal to 3'
+        );
+    }
+    var kernel = [];
+
+    var twoSigmaSquare = 2 * sigma * sigma;
+    var centre = (dimension - 1) / 2;
+
+    for (var i = 0; i < dimension; i++) {
+        for (var j = 0; j < dimension; j++) {
+            var distance = hypotenuse(i, j, centre, centre);
+
+            // The following is an algorithm that came from the gaussian blur
+            // wikipedia page [1].
+            //
+            // http://en.wikipedia.org/w/index.php?title=Gaussian_blur&oldid=608793634#Mechanics
+            var gaussian = (1 / Math.sqrt(
+                Math.PI * twoSigmaSquare
+            )) * Math.exp((-1) * (Math.pow(distance, 2) / twoSigmaSquare));
+
+            kernel.push(gaussian);
+        }
+    }
+    // Returns the unit vector of the kernel array.
+    var sum = kernel.reduce(function (c, p) {
+        return c + p;
+    });
+    return kernel.map(function (e) {
+        return e / sum;
+    });
+}
+
+function hypotenuse(x1, y1, x2, y2) {
+    var xSquare = Math.pow(x1 - x2, 2);
+    var ySquare = Math.pow(y1 - y2, 2);
+    return Math.sqrt(xSquare + ySquare);
 }

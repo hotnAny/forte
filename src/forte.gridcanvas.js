@@ -188,25 +188,56 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0, thres) {
 //  force to redraw everything
 //
 FORTE.GridCanvas.prototype.forceRedraw = function (thres, colorMap) {
+    var alphaMap = this._computeAlphaMap(1);
     var originalStyle = this._context.fillStyle;
     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     for (var j = 0; j < this._gridHeight; j++) {
         for (var i = 0; i < this._gridWidth; i++) {
-            var x = i,
-                y = j;
-            if (colorMap != undefined && colorMap[j][i] != undefined) {
-                this._context.globalAlpha = Math.pow(this._bitmap[j][i], FORTE.P);
-                this._context.beginPath();
-                this._context.rect(x * this._cellSize, y * this._cellSize,
-                    this._cellSize, this._cellSize);
+            this._context.globalAlpha = alphaMap[j][i]; //Math.pow(this._bitmap[j][i], FORTE.P);
+            this._context.beginPath();
+            this._context.rect(i * this._cellSize, j * this._cellSize,
+                this._cellSize, this._cellSize);
+            if (colorMap != undefined && colorMap[j][i] != undefined)
                 this._context.fillStyle = colorMap[j][i];
-                this._context.fill();
-                this._context.closePath();
-            }
+            this._context.fill();
+            this._context.closePath();
         }
     }
     this._context.globalAlpha = 1;
     this._context.fillStyle = originalStyle;
+}
+
+//
+//
+//
+FORTE.GridCanvas.prototype._computeAlphaMap = function (kernelSize) {
+    var sigma = 0.5;
+    var gaussian = generateGaussianKernel(2 * kernelSize + 1, sigma);
+    log(gaussian)
+    var rawAlphaMap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
+    for (var j = 0; j < this._gridHeight; j++) {
+        for (var i = 0; i < this._gridWidth; i++) {
+            rawAlphaMap[j][i] = Math.pow(this._bitmap[j][i], FORTE.P);
+        }
+    }
+
+    var alphaMap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
+    for (var j = 0; j < this._gridHeight; j++) {
+        for (var i = 0; i < this._gridWidth; i++) {
+            // var ncount = 0;
+            for (var rj = -kernelSize; rj <= kernelSize; rj++) {
+                for (var ri = -kernelSize; ri <= kernelSize; ri++) {
+                    var jj = Math.min(Math.max(j + rj, 0), this._gridHeight - 1);
+                    var ii = Math.min(Math.max(i + ri, 0), this._gridWidth - 1);
+                    var idxGaussian = (rj + kernelSize) * (2 * kernelSize + 1) + ri + kernelSize;
+                    alphaMap[j][i] += gaussian[idxGaussian] * rawAlphaMap[jj][ii];
+                    // ncount++;
+                }
+            }
+            // if (ncount > 0) alphaMap[j][i] /= ncount;
+        }
+    }
+    return alphaMap;
 }
 
 //

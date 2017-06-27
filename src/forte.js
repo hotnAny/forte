@@ -377,44 +377,45 @@ FORTE.fetchData = function () {
                         var label = 'layer ' + (numLayers + 1);
                         FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
                         var tag = FORTE.optimizedLayerList.tagit('createTag', label);
+                        FORTE.optimizedLayer.forceRedraw(FORTE.THRESBINARIZATION);
                         FORTE.showOptimizedLayer(tag, label);
 
                         //  read stresses
-                        var stressFieldLabels = ['before', 'after'];
-                        for (var i = 0; i < stressFieldLabels.length; i++) {
-                            var label = stressFieldLabels[i];
-                            XAC.readTextFile(baseDir + '_' + label + '.vms', function (text) {
-                                var stresses = FORTE.getBitmap(text);
-                                var maxStress = 0;
-                                var allStresses = [];
-                                var eps = 1e-9;
-                                var minStress = Math.log(eps);
-                                var logBase = Math.log(1.01);
-                                for (row of stresses)
-                                    for (value of row) {
-                                        // value = Math.log(Math.max(eps, value)) / logBase - minStress;
-                                        // maxStress = Math.max(maxStress, value);
-                                        allStresses.push(value);
-                                    }
+                        // var stressFieldLabels = ['before', 'after'];
+                        // for (var i = 0; i < stressFieldLabels.length; i++) {
+                        //     var label = stressFieldLabels[i];
+                        //     XAC.readTextFile(baseDir + '_' + label + '.vms', function (text) {
+                        //         var stresses = FORTE.getBitmap(text);
+                        //         var maxStress = 0;
+                        //         var allStresses = [];
+                        //         var eps = 1e-9;
+                        //         var minStress = Math.log(eps);
+                        //         var logBase = Math.log(1.01);
+                        //         for (row of stresses)
+                        //             for (value of row) {
+                        //                 // value = Math.log(Math.max(eps, value)) / logBase - minStress;
+                        //                 // maxStress = Math.max(maxStress, value);
+                        //                 allStresses.push(value);
+                        //             }
 
-                                var percentile = 0.99;
-                                maxStress = allStresses.median(percentile);
-                                log(maxStress);
+                        //         var percentile = 0.99;
+                        //         maxStress = allStresses.median(percentile);
+                        //         log(maxStress);
 
-                                var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
-                                layer._stressInfo = {
-                                    x0: FORTE.design.bbox.xmin,
-                                    y0: FORTE.design.bbox.ymin,
-                                    width: FORTE.resolution[0],
-                                    height: FORTE.resolution[1],
-                                    stresses: stresses,
-                                    maxStress: maxStress
-                                }
+                        //         var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
+                        //         layer._stressInfo = {
+                        //             x0: FORTE.design.bbox.xmin,
+                        //             y0: FORTE.design.bbox.ymin,
+                        //             width: FORTE.resolution[0],
+                        //             height: FORTE.resolution[1],
+                        //             stresses: stresses,
+                        //             maxStress: maxStress
+                        //         }
 
-                                if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
-                                console.info(FORTE.design.maxStress);
-                            });
-                        }
+                        //         if (label == 'after') FORTE.updateStressAcrossLayers(maxStress);
+                        //         console.info(FORTE.design.maxStress);
+                        //     });
+                        // }
 
                         log('misses: ' + FORTE.__misses);
 
