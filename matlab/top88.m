@@ -138,7 +138,10 @@ while change > 0.05 && (loop <= maxloop)
     end
     %% OPTIMALITY CRITERIA UPDATE OF DESIGN VARIABLES AND PHYSICAL DENSITIES
     l1 = 0; l2 = 1e9; move = 0.2;
+    maxinnerloop = 1e4; innerloop = 0;
     while (l2-l1)/(l1+l2) > 1e-3
+        innerloop = innerloop + 1;
+        if(innerloop > maxinnerloop) break; end
         lmid = 0.5*(l2+l1);
         xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
         if ft == 1
@@ -178,7 +181,7 @@ while change > 0.05 && (loop <= maxloop)
     
     %% PLOT DENSITIES
     smoothed = xPhys;
-    %     smoothed = conv2(smoothed, gaussian, 'same');
+    smoothed = conv2(smoothed, gaussian, 'same');
     
     if debugging
         colormap(flipud(gray));
