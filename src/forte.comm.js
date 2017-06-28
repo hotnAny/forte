@@ -1,3 +1,113 @@
+// .....................................................................................................
+//
+//  routines for communication, e..g, r/w design files, communicate with topopt server
+//
+//  by xiangchen@acm.org, v0.0, 06/2017
+//
+// .....................................................................................................
+
+var FORTE = FORTE || {};
+
+//
+//
+//
+FORTE.loadForteFile = function (e) {
+    var dataObject = JSON.parse(e.target.result);
+    $(tbWidth).val(dataObject.width);
+    $(tbHeight).val(dataObject.height);
+    FORTE.changeResolution();
+    FORTE.btnNew.trigger('click');
+
+    FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0);
+    FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0);
+    FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
+    for (arrow of dataObject.loadArrows) {
+        FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
+    }
+    FORTE.design.loadPoints = dataObject.loadPoints;
+    FORTE.design.loadValues = dataObject.loadValues;
+    FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0);
+}
+
+//
+//
+//
+FORTE.saveForteToFile = function () {
+    var dataObject = {
+        width: FORTE.width,
+        height: FORTE.height,
+        designBitmap: FORTE.designLayer._bitmap,
+        emptinessBitmap: FORTE.emptinessLayer._bitmap,
+        loadBitmap: FORTE.loadLayer._bitmap,
+        loadArrows: FORTE.loadLayer._arrows,
+        loadPoints: FORTE.design.loadPoints,
+        loadValues: FORTE.design.loadValues,
+        boundaryBitmap: FORTE.boundaryLayer._bitmap
+    }
+    var data = JSON.stringify(dataObject);
+    if (data != undefined) {
+        var blob = new Blob([data], {
+            type: 'text/plain'
+        });
+        saveAs(blob, 'design.forte');
+    }
+}
+
+//
+//  routine to fetch data from matlab output
+//
+FORTE.fetchData = function () {
+    if (FORTE.state == 'started') {
+        FORTE.itrCounter = 0;
+        log('data fetching started');
+        FORTE.state = 'ongoing';
+        setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
+        FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
+        FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
+        FORTE.fetchInterval = FORTE.FETCHINTERVAL;
+        FORTE.failureCounter = 0;
+        FORTE.__misses = 0;
+        FORTE.design.bitmaps = [];
+        FORTE.renderStarted = false;
+        FORTE.pointer = 0;
+    } else if (FORTE.state == 'finished') {
+        return;
+    } else {
+        if (FORTE.outDir == undefined || FORTE.outDir == null)
+            console.error('output directory unavailable');
+        FORTE.readOptimizationOutput();
+    }
+}
+
+//
+//  parse matlab output text as a bitmap
+//
+FORTE.getBitmap = function (text) {
+    var rowsep = '\n';
+    var colsep = ',';
+
+    if (text.charAt(text.length - 1) == rowsep)
+        text = text.substring(0, text.length - 1);
+
+    var rows = text.split(rowsep);
+
+    var nrows = rows.length;
+    var ncols = nrows > 0 ? rows[0].split(colsep).length : 0;
+
+    if (nrows <= 0 || ncols <= 0) return;
+
+    bitmap = [];
+    for (row of rows) {
+        var arrRowStr = row.split(colsep);
+        var arrRow = [];
+        for (str of arrRowStr) arrRow.push(parseFloat(str));
+        bitmap.push(arrRow);
+    }
+
+    return bitmap;
+}
+
+
 //
 //
 //
