@@ -9,7 +9,7 @@
 var FORTE = FORTE || {};
 
 //
-//
+//  the ready function
 //
 $(document).ready(function () {
     time();
@@ -30,10 +30,10 @@ $(document).ready(function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
 
     // stats window
-    XAC.stats = new Stats();
-    XAC.stats.domElement.style.position = 'absolute';
-    XAC.stats.domElement.style.bottom = '0px';
-    XAC.stats.domElement.style.left = '0px';
+    // XAC.stats = new Stats();
+    // XAC.stats.domElement.style.position = 'absolute';
+    // XAC.stats.domElement.style.bottom = '0px';
+    // XAC.stats.domElement.style.left = '0px';
 
     // enable drag and drop
     XAC.enableDragDrop(function (files) {
@@ -251,7 +251,7 @@ $(document).ready(function () {
 });
 
 //
-//
+//  routine to reset radio button for each selection/deselection
 //
 FORTE.resetRadioButtons = function (idx) {
     $('[name="' + FORTE.nameBrushButtons + '"]').remove();
@@ -278,7 +278,7 @@ FORTE.resetRadioButtons = function (idx) {
 }
 
 //
-//  only show selected optimized layer, given its label
+//  routine to only show selected optimized layer, given its label
 //
 FORTE.showOptimizedLayer = function (tag, label) {
     if (FORTE.selectedTag != undefined) {
@@ -298,6 +298,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
 
     var layer = FORTE.htOptimizedLayers[label];
     if (layer != undefined) {
+        if (layer._needsUpdate) layer.forceRedraw(layer._heatmap);
         layer._parent.append(layer._canvas);
         FORTE.selectedTag = tag;
         $(FORTE.selectedTag).addClass('ui-state-highlight');
@@ -307,7 +308,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
 }
 
 //
-//
+//  render intermediate results
 //
 FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
@@ -322,7 +323,7 @@ FORTE.render = function (pointer) {
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
         FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
-        XAC.stats.update();
+        // XAC.stats.update();
         FORTE.pointer++;
 
         setTimeout(function () {
@@ -335,7 +336,7 @@ FORTE.render = function (pointer) {
 }
 
 //
-//
+//  start the optimization
 //
 FORTE.startOtimization = function (mode) {
     FORTE.resetRadioButtons();
@@ -369,21 +370,35 @@ FORTE.startOtimization = function (mode) {
 }
 
 //
+//  finish the optimization
+//
+FORTE.finishOptimization = function () {
+    XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
+    FORTE.failureCounter = FORTE.GIVEUPTHRESHOLD + 1;
+
+    FORTE.resetButtonFromOptimization($('#btnGetVariation'), FORTE.LABELGETVARIATION);
+    FORTE.resetButtonFromOptimization($('#btnAddStructs'), FORTE.LABELADDSTRUCTS);
+}
+
+//
 //
 //
 FORTE.updateStressAcrossLayers = function (toShow) {
     var layers = [FORTE.designLayer];
     var keys = Object.keys(FORTE.htOptimizedLayers);
     for (key of keys) layers.push(FORTE.htOptimizedLayers[key]);
+    var layerCurrent = FORTE.htOptimizedLayers[FORTE.selectedTag[0].innerText];
     for (layer of layers) {
         if (layer == undefined) continue;
         if (toShow) {
             layer.updateHeatmap(FORTE.design.maxStress);
-            layer.forceRedraw(layer._heatmap);
+            if (layer == layerCurrent) layer.forceRedraw(layer._heatmap);
+            layer._needsUpdate = true;
         } else {
             layer.forceRedraw();
         }
     }
+
 }
 
 FORTE._getSliderValue = function (value) {
@@ -396,13 +411,6 @@ FORTE._normalizeSliderValue = function (slider, value) {
     return (value - min) * 1.0 / (max - min);
 }
 
-FORTE.finishOptimization = function () {
-    XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
-    FORTE.failureCounter = FORTE.GIVEUPTHRESHOLD + 1;
-
-    FORTE.resetButtonFromOptimization($('#btnGetVariation'), FORTE.LABELGETVARIATION);
-    FORTE.resetButtonFromOptimization($('#btnAddStructs'), FORTE.LABELADDSTRUCTS);
-}
 
 jQuery.fn.extend({
     pulse: function (color0, color1, period) {

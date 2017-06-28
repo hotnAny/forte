@@ -202,6 +202,7 @@ FORTE.GridCanvas.prototype.forceRedraw = function (colorMap) {
     }
     this._context.globalAlpha = 1;
     this._context.fillStyle = originalStyle;
+    this._needsUpdate = false;
 }
 
 //
