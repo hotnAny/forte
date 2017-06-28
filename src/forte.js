@@ -84,7 +84,7 @@ $(document).ready(function () {
         });
 
         // material amount slider
-        FORTE.materialRatio = 1.5;
+        FORTE.materialRatio = 0.3;
         var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
         $('#tdMaterial').width(FORTE.WIDTHMATERIALSLIDER);
@@ -109,7 +109,7 @@ $(document).ready(function () {
         });
 
         //  similarity slider
-        FORTE.similarityRatio = 4;
+        FORTE.similarityRatio = 5;
         var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
             (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
@@ -136,7 +136,7 @@ $(document).ready(function () {
                     $(this).html('finish');
                     $('#btnAddStructs').prop('disabled', true).css('opacity', 0.5);
                     $(this).attr('pulsing', true);
-                    $(this).pulse($(this).css('background-color'), '#00afff', 1000);
+                    $(this).pulse($(this).css('background-color'), FORTE.COLORBLUE, 1000);
                 }
             }
         });
@@ -153,7 +153,7 @@ $(document).ready(function () {
                     $(this).html('finish');
                     $('#btnGetVariation').prop('disabled', true).css('opacity', 0.5);
                     $(this).attr('pulsing', true);
-                    $(this).pulse($(this).css('background-color'), '#00afff', 1000);
+                    $(this).pulse($(this).css('background-color'), FORTE.COLORBLUE, 1000);
                 }
             }
         });
@@ -229,11 +229,11 @@ $(document).ready(function () {
             //
             // layers of editing
             //
-            FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
-            FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
+            FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLACK);
+            FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
             FORTE.emptinessLayer._strokeRadius = 3;
-            FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
-            FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#00afff');
+            FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
+            FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
             FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
@@ -396,12 +396,10 @@ FORTE.fetchData = function () {
 
                         $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
                         $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);
-                        $('#btnGetVariation').stop();
                         $('#btnGetVariation').attr('pulsing', false);
                         $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
                         $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
                         $('#btnAddStructs').attr('pulsing', false);
-                        $('#btnAddStructs').stop();
 
                         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
                     } else {
@@ -577,9 +575,12 @@ jQuery.fn.extend({
         $(this).animate({
             backgroundColor: color1
         }, period, function () {
-            log($(this).attr('pulsing'))
+            // log($(this).attr('pulsing'))
             if ($(this).attr('pulsing') == 'true') $(this).pulse(color0, color1, period);
-            else $(this).css('background-color', color0);
+            else {
+                $(this).stop();
+                $(this).css('background-color', color0);
+            }
         });
     }
 });

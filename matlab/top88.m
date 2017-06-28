@@ -159,6 +159,7 @@ while change > 0.05 && (loop <= maxloop)
     
     %% [xac] set void element to 'zero'
     x(pasvelms) = eps;
+    x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
     
     %% [xac] [exp] mass transport
     if lambda > 0
@@ -203,7 +204,7 @@ end
 disp('avg time per itr:');
 disp(telapsed/(loop-1));
 xPhys = smoothed;
-while(true)
+while(debugging==false)
     try
         dlmwrite(strcat(trial, '_before.dsp'), U0);
         dlmwrite(strcat(trial, '_after.dsp'), U);

@@ -1,5 +1,5 @@
 function topopt(argsfile)
-debugging = false;
+debugging = true;
 disp('topopt service started ...');
 prevtrial = '';
 while(true)
