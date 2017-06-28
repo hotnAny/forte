@@ -130,10 +130,10 @@ $(document).ready(function () {
         $('#btnGetVariation').css('min-width', $('#btnGetVariation').width());
         $('#btnGetVariation').click(function (e) {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
-                FORTE.doCancel();
+                FORTE.finishOptimization();
             } else {
-                if (FORTE.optimize(FORTE.GETVARIATION)) {
-                    $(this).html('stop');
+                if (FORTE.startOtimization(FORTE.GETVARIATION)) {
+                    $(this).html('finish');
                     $('#btnAddStructs').prop('disabled', true).css('opacity', 0.5);
                     $(this).attr('pulsing', true);
                     $(this).pulse($(this).css('background-color'), '#00afff', 1000);
@@ -147,10 +147,10 @@ $(document).ready(function () {
         $('#btnAddStructs').css('min-width', $('#btnAddStructs').width());
         $('#btnAddStructs').click(function (e) {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
-                FORTE.doCancel();
+                FORTE.finishOptimization();
             } else {
-                if (FORTE.optimize(FORTE.ADDSTRUCTS)) {
-                    $(this).html('stop');
+                if (FORTE.startOtimization(FORTE.ADDSTRUCTS)) {
+                    $(this).html('finish');
                     $('#btnGetVariation').prop('disabled', true).css('opacity', 0.5);
                     $(this).attr('pulsing', true);
                     $(this).pulse($(this).css('background-color'), '#00afff', 1000);
@@ -207,8 +207,8 @@ $(document).ready(function () {
             for (layer of FORTE.layers) layer.updateCanvasPosition();
             for (layer of FORTE.optimizedLayers) layer.updateCanvasPosition();
             var parentOffset = $('#tdCanvas').offset();
-            FORTE.optimizedPanel.css('top', parentOffset.top);
-            FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
+            FORTE.startOtimizationdPanel.css('top', parentOffset.top);
+            FORTE.startOtimizationdPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
 
         });
 
@@ -227,73 +227,73 @@ $(document).ready(function () {
 
         setTimeout(function () {
             //
-        // layers of editing
-        //
-        FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
-        FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
-        FORTE.emptinessLayer._strokeRadius = 3;
-        FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
-        FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#00afff');
-        $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
+            // layers of editing
+            //
+            FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
+            FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#fffa90');
+            FORTE.emptinessLayer._strokeRadius = 3;
+            FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#cc0000');
+            FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#00afff');
+            $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
-        FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
-        FORTE.layer = FORTE.designLayer;
-        FORTE.toggleLayerZindex(0);
+            FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
+            FORTE.layer = FORTE.designLayer;
+            FORTE.toggleLayerZindex(0);
 
-        FORTE.customizeLoadLayer();
-        FORTE.changeResolution();
+            FORTE.customizeLoadLayer();
+            FORTE.changeResolution();
 
-        FORTE.optimizedLayers = [];
+            FORTE.optimizedLayers = [];
 
-        //
-        // layers of optimization
-        //
-        FORTE.htOptimizedLayers = {};
-        FORTE.optimizedPanel = $('#divOptimizedPanel');
-        var topMarginPanel = 5;
-        var rightMarginPanel = 5;
-        FORTE.optimizedPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
-        var parentWidth = $('#tdCanvas').width();
-        var parentOffset = $('#tdCanvas').offset();
-        FORTE.optimizedPanel.css('position', 'absolute');
-        FORTE.optimizedPanel.css('top', parentOffset.top);
-        FORTE.optimizedPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
-        $('#tdCanvas').append(FORTE.optimizedPanel);
+            //
+            // layers of optimization
+            //
+            FORTE.htOptimizedLayers = {};
+            FORTE.startOtimizationdPanel = $('#divOptimizedPanel');
+            var topMarginPanel = 5;
+            var rightMarginPanel = 5;
+            FORTE.startOtimizationdPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
+            var parentWidth = $('#tdCanvas').width();
+            var parentOffset = $('#tdCanvas').offset();
+            FORTE.startOtimizationdPanel.css('position', 'absolute');
+            FORTE.startOtimizationdPanel.css('top', parentOffset.top);
+            FORTE.startOtimizationdPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
+            $('#tdCanvas').append(FORTE.startOtimizationdPanel);
 
-        FORTE.optimizedLayerList = $('<ul></ul>');
-        FORTE.optimizedLayerList.addClass('ui-widget');
-        FORTE.optimizedLayerList.tagit({
-            onTagClicked: function (e, ui) {
-                FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
-            },
-            beforeTagRemoved: function (e, ui) {
-                var layer = FORTE.htOptimizedLayers[ui.tagLabel];
-                if (layer != undefined) layer._canvas.remove();
-                FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
+            FORTE.optimizedLayerList = $('<ul></ul>');
+            FORTE.optimizedLayerList.addClass('ui-widget');
+            FORTE.optimizedLayerList.tagit({
+                onTagClicked: function (e, ui) {
+                    FORTE.showOptimizedLayer(ui.tag, ui.tagLabel);
+                },
+                beforeTagRemoved: function (e, ui) {
+                    var layer = FORTE.htOptimizedLayers[ui.tagLabel];
+                    if (layer != undefined) layer._canvas.remove();
+                    FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
 
-                FORTE.design.maxStress = 0;
-                var keys = Object.keys(FORTE.htOptimizedLayers);
-                for (key of keys) {
-                    var layer2 = FORTE.htOptimizedLayers[key];
-                    if (layer2 != undefined && layer2 != layer) {
-                        FORTE.design.maxStress =
-                            Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
+                    FORTE.design.maxStress = 0;
+                    var keys = Object.keys(FORTE.htOptimizedLayers);
+                    for (key of keys) {
+                        var layer2 = FORTE.htOptimizedLayers[key];
+                        if (layer2 != undefined && layer2 != layer) {
+                            FORTE.design.maxStress =
+                                Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
+                        }
                     }
+
+                    // FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
+                    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
                 }
+            });
+            FORTE.startOtimizationdPanel.append(FORTE.optimizedLayerList);
 
-                // FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
-                FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
-            }
-        });
-        FORTE.optimizedPanel.append(FORTE.optimizedLayerList);
+            // FORTE.optimizedLayerList.tagit('createTag', 'test1');
+            // FORTE.optimizedLayerList.tagit('createTag', 'test2');
+            // FORTE.optimizedLayerList.tagit('createTag', 'test3');
+            // FORTE.optimizedLayerList.tagit('createTag', 'test4');
+            // FORTE.optimizedLayerList.tagit('createTag', 'test5');
 
-        // FORTE.optimizedLayerList.tagit('createTag', 'test1');
-        // FORTE.optimizedLayerList.tagit('createTag', 'test2');
-        // FORTE.optimizedLayerList.tagit('createTag', 'test3');
-        // FORTE.optimizedLayerList.tagit('createTag', 'test4');
-        // FORTE.optimizedLayerList.tagit('createTag', 'test5');
-
-        time('ready');
+            time('ready');
         }, 100);
     });
 });
@@ -345,8 +345,6 @@ FORTE.fetchData = function () {
         FORTE.pointer = 0;
     } else if (FORTE.state == 'finished') {
         return;
-    } else if (FORTE.state == 'cancelled') {
-        return;
     } else {
         if (FORTE.outDir == undefined || FORTE.outDir == null)
             console.error('output directory unavailable');
@@ -392,50 +390,20 @@ FORTE.fetchData = function () {
                         FORTE.showOptimizedLayer(tag, label);
 
                         //  read stresses
-                        var stressFieldLabels = ['before', 'after'];
-                        for (var i = 0; i < stressFieldLabels.length; i++) {
-                            var label = stressFieldLabels[i];
-                            XAC.readTextFile(baseDir + '_' + label + '.vms', function (text) {
-                                var stresses = FORTE.getBitmap(text);
-                                var maxStress = 0;
-                                var allStresses = [];
-                                var eps = 1e-9;
-                                var minStress = Math.log(eps);
-                                var logBase = Math.log(1.01);
-                                for (row of stresses)
-                                    for (value of row) {
-                                        allStresses.push(value);
-                                    }
-
-                                var percentile = 0.99;
-                                maxStress = allStresses.median(percentile);
-
-                                var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
-                                layer._stressInfo = {
-                                    x0: FORTE.design.bbox.xmin,
-                                    y0: FORTE.design.bbox.ymin,
-                                    width: FORTE.resolution[0],
-                                    height: FORTE.resolution[1],
-                                    stresses: stresses,
-                                    maxStress: maxStress
-                                }
-
-                                if (label == 'after') {
-                                    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
-                                    // FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-                                }
-                            });
-                        }
+                        FORTE.readStressData();
 
                         log('misses: ' + FORTE.__misses);
 
                         $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
                         $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);
+                        $('#btnGetVariation').stop();
                         $('#btnGetVariation').attr('pulsing', false);
                         $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
                         $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
                         $('#btnAddStructs').attr('pulsing', false);
+                        $('#btnAddStructs').stop();
 
+                        XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
                     } else {
                         setTimeout(FORTE.fetchData, FORTE.fetchInterval);
                     }
@@ -507,11 +475,6 @@ FORTE.showOptimizedLayer = function (tag, label) {
 FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
 
-    if (FORTE.state == 'cancelled') {
-        log('optimization cancelled.');
-        return;
-    }
-
     // if fetching data is not finished, add extrapolated bitmaps
     if (FORTE.state != 'finished' &&
         FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
@@ -537,7 +500,7 @@ FORTE.render = function (pointer) {
 //
 //
 //
-FORTE.optimize = function (mode) {
+FORTE.startOtimization = function (mode) {
     FORTE.resetRadioButtons();
 
     var keys = Object.keys(FORTE.htOptimizedLayers);
@@ -596,11 +559,9 @@ FORTE._normalizeSliderValue = function (slider, value) {
     return (value - min) * 1.0 / (max - min);
 }
 
-FORTE.doCancel = function () {
+FORTE.finishOptimization = function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
-    FORTE.state = 'cancelled';
-    $(this).html(FORTE.LABELADDSTRUCTS);
-    FORTE.optimizedLayer.clear();
+    FORTE.failureCounter = FORTE.GIVEUPTHRESHOLD + 1;
 
     $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
     $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);

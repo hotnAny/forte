@@ -203,11 +203,15 @@ end
 disp('avg time per itr:');
 disp(telapsed/(loop-1));
 xPhys = smoothed;
-try
-    dlmwrite(strcat(trial, '_before.dsp'), U0);
-    dlmwrite(strcat(trial, '_after.dsp'), U);
-    dlmwrite(strcat(trial, '_before.vms'), vms0);
-    dlmwrite(strcat(trial, '_after.vms'), vms);
-catch;
+while(true)
+    try
+        dlmwrite(strcat(trial, '_before.dsp'), U0);
+        dlmwrite(strcat(trial, '_after.dsp'), U);
+        dlmwrite(strcat(trial, '_before.vms'), vms0);
+        dlmwrite(strcat(trial, '_after.vms'), vms);
+        break;
+    catch
+        continue;
+    end
 end
 end
