@@ -135,6 +135,8 @@ $(document).ready(function () {
                 if (FORTE.optimize(FORTE.GETVARIATION)) {
                     $(this).html('cancel');
                     $('#btnAddStructs').prop('disabled', true).css('opacity', 0.5);
+                    $(this).attr('pulsing', true);
+                    $(this).pulse($(this).css('background-color'), '#00afff', 1000);
                 }
             }
         });
@@ -147,13 +149,12 @@ $(document).ready(function () {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.doCancel();
             } else {
-                // var _similarity = FORTE.similarityRatio;
-                // FORTE.similarityRatio = -1;
                 if (FORTE.optimize(FORTE.ADDSTRUCTS)) {
                     $(this).html('cancel');
                     $('#btnGetVariation').prop('disabled', true).css('opacity', 0.5);
+                    $(this).attr('pulsing', true);
+                    $(this).pulse($(this).css('background-color'), '#00afff', 1000);
                 }
-                // FORTE.similarityRatio = _similarity;
             }
         });
 
@@ -366,9 +367,6 @@ FORTE.fetchData = function () {
                     ' after failing ' + FORTE.failureCounter + ' time(s)');
                 FORTE.itrCounter += 1;
                 setTimeout(FORTE.fetchData, FORTE.fetchInterval);
-                // }
-
-                // FORTE.fetchInterval = FORTE.FETCHINTERVAL;
                 FORTE.failureCounter = 0;
             },
             // on unsuccessfully reading results
@@ -431,8 +429,10 @@ FORTE.fetchData = function () {
 
                         $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
                         $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);
+                        $('#btnGetVariation').attr('pulsing', false);
                         $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
                         $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
+                        $('#btnAddStructs').attr('pulsing', false);
 
                     } else {
                         setTimeout(FORTE.fetchData, FORTE.fetchInterval);
@@ -605,3 +605,18 @@ FORTE.doCancel = function () {
     $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
     $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
 }
+
+jQuery.fn.extend({
+    pulse: function (color0, color1, period) {
+        $(this).animate({
+            backgroundColor: color0
+        }, period);
+        $(this).animate({
+            backgroundColor: color1
+        }, period, function () {
+            log($(this).attr('pulsing'))
+            if ($(this).attr('pulsing') == true) $(this).pulse(color0, color1, period);
+            else $(this).css('background-color', color0);
+        });
+    }
+});
