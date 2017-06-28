@@ -182,7 +182,7 @@ while change > 0.05 && (loop <= maxloop)
     
     %% PLOT DENSITIES
     smoothed = xPhys;
-    smoothed = conv2(smoothed, gaussian, 'same');
+%     smoothed = conv2(smoothed, gaussian, 'same');
     
     if debugging
         colormap(flipud(gray));

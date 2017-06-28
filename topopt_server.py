@@ -24,7 +24,7 @@ from math import sqrt, floor, cos, pi, exp
 INPUTFILE = '~matinput'
 MAXSIMILARITY = 10
 DEFAULTLAMBDA = 0.1
-MINLAMBDA = 0
+MINLAMBDA = 0.01
 MAXLAMBDA = 0.79
 DEFAULTMODE = 0
 

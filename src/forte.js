@@ -8,8 +8,6 @@
 
 var FORTE = FORTE || {};
 
-
-
 $(document).ready(function () {
     time();
 
@@ -84,7 +82,7 @@ $(document).ready(function () {
         });
 
         // material amount slider
-        FORTE.materialRatio = 0.3;
+        FORTE.materialRatio = FORTE.INITMATERIALRATIO;
         var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
         $('#tdMaterial').width(FORTE.WIDTHMATERIALSLIDER);
@@ -281,8 +279,8 @@ $(document).ready(function () {
                         }
                     }
 
-                    // FORTE.updateStressAcrossLayers(FORTE.design.maxStress);
-                    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
+                    FORTE.updateStressAcrossLayers(FORTE.toShowStress);
+                    // FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
                 }
             });
             FORTE.startOtimizationdPanel.append(FORTE.optimizedLayerList);
