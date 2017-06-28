@@ -132,7 +132,7 @@ $(document).ready(function () {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.doCancel();
             } else {
-                if (FORTE.optimize()) {
+                if (FORTE.optimize(FORTE.GETVARIATION)) {
                     $(this).html('cancel');
                     $('#btnAddStructs').prop('disabled', true).css('opacity', 0.5);
                 }
@@ -147,13 +147,13 @@ $(document).ready(function () {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.doCancel();
             } else {
-                var _similarity = FORTE.similarityRatio;
-                FORTE.similarityRatio = -1;
-                if (FORTE.optimize()) {
+                // var _similarity = FORTE.similarityRatio;
+                // FORTE.similarityRatio = -1;
+                if (FORTE.optimize(FORTE.ADDSTRUCTS)) {
                     $(this).html('cancel');
                     $('#btnGetVariation').prop('disabled', true).css('opacity', 0.5);
                 }
-                FORTE.similarityRatio = _similarity;
+                // FORTE.similarityRatio = _similarity;
             }
         });
 
@@ -535,7 +535,7 @@ FORTE.render = function (pointer) {
 //
 //
 //
-FORTE.optimize = function () {
+FORTE.optimize = function (mode) {
     FORTE.resetRadioButtons();
 
     var keys = Object.keys(FORTE.htOptimizedLayers);
@@ -554,9 +554,9 @@ FORTE.optimize = function () {
 
     var data = JSON.stringify(dataObject);
     if (data != undefined) {
-        var fields = ['trial', 'forte', 'material', 'm'];
+        var fields = ['trial', 'forte', 'material', 'similarity', 'mode'];
         FORTE.trial = 'forte_' + Date.now();
-        var values = [FORTE.trial, data, FORTE.materialRatio, Math.pow(2, FORTE.similarityRatio)];
+        var values = [FORTE.trial, data, FORTE.materialRatio, FORTE.similarityRatio, mode];
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'started';
         time();

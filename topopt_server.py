@@ -22,6 +22,11 @@ from math import sqrt, floor, cos, pi, exp
 
 # default input file path/name
 INPUTFILE = '~matinput'
+MAXSIMILARITY = 10
+DEFAULTLAMBDA = 0.1
+MINLAMBDA = 0
+MAXLAMBDA = 0.79
+DEFAULTMODE = 0
 
 #
 #   for execution time measurement
@@ -182,7 +187,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _emptiness = safe_retrieve_all(_designobj, 'emptiness', None)
     _boundaries = safe_retrieve_all(_designobj, 'boundaries', None)
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
-    _m = float(safe_retrieve_one(post_data, 'm', 1))
+    _similarity = float(safe_retrieve_one(post_data, 'similarity', 1))
+    _mode = float(safe_retrieve_one(post_data, 'mode', DEFAULTMODE))
 
     #
     #   convert to matlab input
@@ -210,7 +216,6 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     for idx in xrange(0, len(tb_boundary)):
         if tb_boundary[idx] == 1:
             matinput['FIXEDDOFS'].append(idx+1)
-    # print matinput['FIXEDDOFS']
 
     # load
     tb_loadnodes = []
@@ -229,9 +234,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
             tb_loadvalues.append(v[1]/vsum)
     
     matinput['LOADNODES'] = tb_loadnodes
-    # print len(matinput['LOADNODES'])
     matinput['LOADVALUES'] = tb_loadvalues
-    # print len(matinput['LOADVALUES'])
 
     # [debug]
     # vis_str = ''
@@ -253,20 +256,23 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # print matinput['PASVELMS']
     matinput['FAVELMS'] = matinput['ACTVELMS']
 
-    if _m >= 1:
-        df = get_distance_field(matinput['FAVELMS'], nelx, nely, _m, 1)
-        s = material * nelx * nely / sum([sum(x) for x in df])    
-        print 's = ', s
-        matinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
-        # for j in xrange(0, nely):
-        #     print ' '.join([(format(x*s, '1.1f') if x > 0.9 else '   ') for x in df[j]])
+    if _mode == 1:
+        # use similarity to set lambda for mass transport
+        matinput['LAMBDA'] = MINLAMBDA + (MAXLAMBDA-MINLAMBDA) * _similarity / MAXSIMILARITY
+        # then set it to max so to use a constant max distance field
+        _similarity = MAXSIMILARITY
     else:
-        matinput['DISTFIELD'] = ';'
+        matinput['LAMBDA'] = 0
+
+    df = get_distance_field(matinput['FAVELMS'], nelx, nely, 2**_similarity, 1)
+    s = material * nelx * nely / sum([sum(x) for x in df])    
+    print 's = ', s
+    matinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
 
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
-        matinput['DISTFIELD']]
+        matinput['DISTFIELD'], matinput['LAMBDA']]
 
     input_file = open(INPUTFILE, 'w')
     input_file.write('&'.join([str(x) for x in matargs]))

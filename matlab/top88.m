@@ -15,22 +15,25 @@ actvelms = str2num(char(args(12)));
 % favelms = str2num(char(args(13)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
-isadding = size(distfield) == [0, 0];
-debugging = str2num(char(args(16)));
-
-try
-    lambda = str2num(char(args(17)));
-catch ME
-    disp('no lambda specified'); lambda = 0;
-end
+% isadding = size(distfield) == [0, 0];
+% isadding = true; % debug
+lambda = str2num(char(args(16)));
+debugging = str2num(char(args(17)));
 
 %% [xac] mass transport
-niters = 16;
+if lambda > 0
+    isadding = true;
+    disp('adding structs ...');
+else
+    isadding = false;
+    disp('getting variation ...');
+end
+niters = 64;
 decay = 0.95;
-% optmove = 0.2;
-% massmove = optmove + 0.1;
-% minmove = optmove - 0.1;
 eps = 0.001;
+kernelsize = floor(log(max(nelx, nely))) * 2 + 1; %floor(min(nelx, nely)/2);%
+sigma=1;
+gaussian = fspecial('gaussian', [kernelsize,kernelsize], sigma);
 
 %% MATERIAL PROPERTIES
 E0 = 1;
@@ -60,10 +63,6 @@ freedofs = setdiff(alldofs,fixeddofs);
 L=1;
 B = (1/2/L)*[-1 0 1 0 1 0 -1 0; 0 -1 0 -1 0 1 0 1; -1 -1 -1 1 1 1 1 -1];
 DE = (1/(1-nu^2))*[1 nu 0; nu 1 0; 0 0 (1-nu)/2];
-kernelsize = floor(min(nelx, nely));% floor(log(max(nelx, nely))) * 2 + 1;
-sigma=1;
-gaussian = fspecial('gaussian', [kernelsize,kernelsize], sigma);
-
 %% PREPARE FILTER
 iH = ones(nelx*nely*(2*(ceil(rmin)-1)+1)^2,1);
 jH = ones(size(iH));
@@ -95,11 +94,23 @@ end
 % [xac] eliminate boundary effect
 x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
 
-% xPhys = x;
+% set xPhys to be the original design
 xPhys = repmat(eps, nely,nelx);
 xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
+
+% [xac] [exp]
+% xOriginal = repmat(eps, nely,nelx);
+% xOriginal(actvelms) = 1;
+% xOriginal(1,:) = eps; xOriginal(end,:) = eps; xOriginal(:,1) = eps; xOriginal(:,end) = eps;
+
+% minweight = eps;
+% weightmap = repmat(1,nely,nelx);
+% weightmap(1:64, 1:64) = 10;
+% weightmap = weightmap * nely * nelx / sum(weightmap(:));
+% weightmap = minweight + max(0, weightmap-minweight);
+% x = x .* (1+weightmap);
 
 telapsed = 0;
 %% START ITERATION [xac] added maxloop
@@ -116,8 +127,7 @@ while change > 0.05 && (loop <= maxloop)
     s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
     vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
     
-    %% [xac] log the 'before' results (i.e., skip optimization, just
-    % compute displacement and vms
+    %% [xac] log the 'before' results (i.e., skip optimization, just compute displacement and vms
     if loop==1 U0 = U; vms0 = vms; xPhys = x; continue; end
     
     %% OBJECTIVE FUNCTION AND SENSITIVITY ANALYSIS
@@ -147,17 +157,17 @@ while change > 0.05 && (loop <= maxloop)
     change = max(abs(xnew(:)-x(:)));
     x = xnew;
     
-    %% [xac] post-processing per iteration
-    x(pasvelms) = 0;
-    
-    %% [xac] add structs
-    if isadding x(actvelms) = 1; end
+    %% [xac] set void element to 'zero'
+    x(pasvelms) = eps;
     
     %% [xac] [exp] mass transport
     if lambda > 0
         x = masstransport(x, max(0, distfield-eps), lambda, niters, kernelsize);
         lambda = lambda * decay;
     end
+    
+    %% [xac] add structs
+    if isadding x(actvelms) = 1; end
     
     %% [xac] update xPhys
     xPhys = x;
@@ -170,12 +180,13 @@ while change > 0.05 && (loop <= maxloop)
         mean(x(:)),change);
     
     %% PLOT DENSITIES
-    smoothed = conv2(xPhys, gaussian, 'same');
+    smoothed = xPhys;
+    smoothed = conv2(smoothed, gaussian, 'same');
     
     if debugging
         colormap(flipud(gray));
         subplot(2,1,1); imagesc(smoothed); axis equal off; text(2,-2,'x');
-        subplot(2,1,2); imagesc(x); axis equal off; text(2,-2,'vms');
+        subplot(2,1,2); imagesc(vms); axis equal off; text(2,-2,'vms');
         drawnow;
     end
     
@@ -191,6 +202,7 @@ while change > 0.05 && (loop <= maxloop)
 end
 disp('avg time per itr:');
 disp(telapsed/(loop-1));
+xPhys = smoothed;
 try
     dlmwrite(strcat(trial, '_before.dsp'), U0);
     dlmwrite(strcat(trial, '_after.dsp'), U);
