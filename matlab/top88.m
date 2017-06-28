@@ -196,7 +196,7 @@ while change > 0.05 && (loop <= maxloop)
             continue;
         else
             disp('received indication to quit');
-            return;
+            break;
         end
     end
 end
@@ -208,5 +208,6 @@ try
     dlmwrite(strcat(trial, '_after.dsp'), U);
     dlmwrite(strcat(trial, '_before.vms'), vms0);
     dlmwrite(strcat(trial, '_after.vms'), vms);
-catch; end
+catch;
+end
 end

@@ -133,7 +133,7 @@ $(document).ready(function () {
                 FORTE.doCancel();
             } else {
                 if (FORTE.optimize(FORTE.GETVARIATION)) {
-                    $(this).html('cancel');
+                    $(this).html('stop');
                     $('#btnAddStructs').prop('disabled', true).css('opacity', 0.5);
                     $(this).attr('pulsing', true);
                     $(this).pulse($(this).css('background-color'), '#00afff', 1000);
@@ -150,7 +150,7 @@ $(document).ready(function () {
                 FORTE.doCancel();
             } else {
                 if (FORTE.optimize(FORTE.ADDSTRUCTS)) {
-                    $(this).html('cancel');
+                    $(this).html('stop');
                     $('#btnGetVariation').prop('disabled', true).css('opacity', 0.5);
                     $(this).attr('pulsing', true);
                     $(this).pulse($(this).css('background-color'), '#00afff', 1000);
@@ -225,7 +225,8 @@ $(document).ready(function () {
         $('#tbWidth').keydown(_keydown);
         $('#tbHeight').keydown(_keydown);
 
-        //
+        setTimeout(function () {
+            //
         // layers of editing
         //
         FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#000000');
@@ -293,6 +294,7 @@ $(document).ready(function () {
         // FORTE.optimizedLayerList.tagit('createTag', 'test5');
 
         time('ready');
+        }, 100);
     });
 });
 
@@ -615,7 +617,7 @@ jQuery.fn.extend({
             backgroundColor: color1
         }, period, function () {
             log($(this).attr('pulsing'))
-            if ($(this).attr('pulsing') == true) $(this).pulse(color0, color1, period);
+            if ($(this).attr('pulsing') == 'true') $(this).pulse(color0, color1, period);
             else $(this).css('background-color', color0);
         });
     }
