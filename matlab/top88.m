@@ -50,12 +50,10 @@ edofVec = reshape(2*nodenrs(1:end-1,1:end-1)+1,nelx*nely,1);
 edofMat = repmat(edofVec,1,8)+repmat([0 1 2*nely+[2 3 0 1] -2 -1],nelx*nely,1);
 iK = reshape(kron(edofMat,ones(8,1))',64*nelx*nely,1);
 jK = reshape(kron(edofMat,ones(1,8))',64*nelx*nely,1);
-% DEFINE LOADS AND SUPPORTS (HALF MBB-BEAM)
-%     F = sparse(2*nelx*(nely+1)+1,1,-1,2*(nely+1)*(nelx+1),1); % ORIGINAL:
+%% DEFINE LOADS AND SUPPORTS
 F = sparse(loadnodes, ones(size(loadnodes)), loadvalues, 2*(nely+1)*(nelx+1),1);
 U = zeros(2*(nely+1)*(nelx+1),1);
 U0 = U;
-%     fixeddofs = union([1:1:2*(nely+1)],[2*(nelx+1)*(nely+1)]); % ORIGINAL
 fixeddofs = union(fixeddofs, [2*(nelx+1)*(nely+1)]);
 alldofs = [1:2*(nely+1)*(nelx+1)];
 freedofs = setdiff(alldofs,fixeddofs);
@@ -92,18 +90,14 @@ else
 end
 
 % [xac] eliminate boundary effect
-x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
+% x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
+margindecay = 0.5;
 
-% set xPhys to be the original design
+% [xac] set xPhys to be the original design
 xPhys = repmat(eps, nely,nelx);
 xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
-
-% [xac] [exp]
-% xOriginal = repmat(eps, nely,nelx);
-% xOriginal(actvelms) = 1;
-% xOriginal(1,:) = eps; xOriginal(end,:) = eps; xOriginal(:,1) = eps; xOriginal(:,end) = eps;
 
 % minweight = eps;
 % weightmap = repmat(1,nely,nelx);
@@ -159,7 +153,9 @@ while change > 0.05 && (loop <= maxloop)
     
     %% [xac] set void element to 'zero'
     x(pasvelms) = eps;
-    x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
+    %     x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
+    x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
+    x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;
     
     %% [xac] [exp] mass transport
     if lambda > 0
@@ -182,7 +178,7 @@ while change > 0.05 && (loop <= maxloop)
     
     %% PLOT DENSITIES
     smoothed = xPhys;
-%     smoothed = conv2(smoothed, gaussian, 'same');
+    %     smoothed = conv2(smoothed, gaussian, 'same');
     
     if debugging
         colormap(flipud(gray));
