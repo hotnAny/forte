@@ -65,7 +65,6 @@ FORTE.WIDTHOPTIMIZEDPANEL = 96;
 FORTE.LABELGETVARIATION = 'get variation';
 FORTE.LABELADDSTRUCTS = 'add structs';
 
-//
-// canvas ui related
-//
 FORTE.BGCOLORCANVAS = '#f0f0f0';
+
+FORTE.MAXZINDEX = 100;

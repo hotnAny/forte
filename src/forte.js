@@ -8,6 +8,9 @@
 
 var FORTE = FORTE || {};
 
+//
+//
+//
 $(document).ready(function () {
     time();
 
@@ -32,9 +35,7 @@ $(document).ready(function () {
     XAC.stats.domElement.style.bottom = '0px';
     XAC.stats.domElement.style.left = '0px';
 
-    //
     // enable drag and drop
-    //
     XAC.enableDragDrop(function (files) {
         if (files.length <= 0) return;
         var reader = new FileReader();
@@ -44,6 +45,7 @@ $(document).ready(function () {
         reader.readAsBinaryString(files[0]);
     });
 
+    // loading main table
     var mainTable = $('<table></table>');
     $(document.body).append(mainTable);
     mainTable.load(FORTE.MAINTABLETEMPLATE, function (e) {
@@ -155,21 +157,28 @@ $(document).ready(function () {
         $('#btnMore').css('font-size', 'x-small');
         $('#btnMore').click(function (e) {
             e.preventDefault();
-            if ($('#trMoreCtrl').is(":visible")) {
-                $('#trMoreCtrl').hide();
+            if ($('#tblMoreCtrl').is(":visible")) {
+                $('#tblMoreCtrl').hide();
                 $(this).html(FORTE.HTMLCODETRIANGLEDOWN);
             } else {
-                $('#trMoreCtrl').show();
+                $('#tblMoreCtrl').show();
                 $(this).html(FORTE.HTMLCODETRIANGLEUP);
             }
 
-            for (layer of FORTE.layers) layer.updateCanvasPosition();
-            for (layer of FORTE.optimizedLayers) layer.updateCanvasPosition();
-            FORTE.adjustOptimizationPanel();
+            // for (layer of FORTE.layers) layer.updateCanvasPosition();
+            // for (layer of FORTE.optimizedLayers) layer.updateCanvasPosition();
+            // FORTE.adjustOptimizationPanel();
 
         });
 
-        $('#trMoreCtrl').hide();
+        $('#tblMoreCtrl').css('background-color', 'rgba(255, 255, 255, 0.5)');
+        $('#tblMoreCtrl').width($('#tdCanvas').width());
+        $('#tblMoreCtrl').css('z-index', ++FORTE.MAXZINDEX);
+        $('#tblMoreCtrl').css('position', 'absolute');
+        var _parentOffset = $('#tdCanvas').offset();
+        $('#tblMoreCtrl').css('left', _parentOffset.left);
+        $('#tblMoreCtrl').css('top', _parentOffset.top);
+        $('#tblMoreCtrl').hide();
 
         // resolution
         $('#tbWidth').attr('value', FORTE.width);
@@ -232,7 +241,6 @@ $(document).ready(function () {
                     }
 
                     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-                    // FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
                 }
             });
             FORTE.startOtimizationdPanel.append(FORTE.optimizedLayerList);
