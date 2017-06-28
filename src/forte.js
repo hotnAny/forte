@@ -131,10 +131,7 @@ $(document).ready(function () {
                 FORTE.finishOptimization();
             } else {
                 if (FORTE.startOtimization(FORTE.GETVARIATION)) {
-                    $(this).html('finish');
-                    $('#btnAddStructs').prop('disabled', true).css('opacity', 0.5);
-                    $(this).attr('pulsing', true);
-                    $(this).pulse($(this).css('background-color'), FORTE.COLORBLUE, 1000);
+                    FORTE.setButtonForOptimization($(this));
                 }
             }
         });
@@ -148,10 +145,7 @@ $(document).ready(function () {
                 FORTE.finishOptimization();
             } else {
                 if (FORTE.startOtimization(FORTE.ADDSTRUCTS)) {
-                    $(this).html('finish');
-                    $('#btnGetVariation').prop('disabled', true).css('opacity', 0.5);
-                    $(this).attr('pulsing', true);
-                    $(this).pulse($(this).css('background-color'), FORTE.COLORBLUE, 1000);
+                    FORTE.setButtonForOptimization($(this));
                 }
             }
         });
@@ -205,6 +199,7 @@ $(document).ready(function () {
             for (layer of FORTE.layers) layer.updateCanvasPosition();
             for (layer of FORTE.optimizedLayers) layer.updateCanvasPosition();
             var parentOffset = $('#tdCanvas').offset();
+            var parentWidth = $('#tdCanvas').width();
             FORTE.startOtimizationdPanel.css('top', parentOffset.top);
             FORTE.startOtimizationdPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
 
@@ -252,6 +247,7 @@ $(document).ready(function () {
             var rightMarginPanel = 5;
             FORTE.startOtimizationdPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
             var parentWidth = $('#tdCanvas').width();
+            var parentWidth = $('#tdCanvas').width();
             var parentOffset = $('#tdCanvas').offset();
             FORTE.startOtimizationdPanel.css('position', 'absolute');
             FORTE.startOtimizationdPanel.css('top', parentOffset.top);
@@ -284,12 +280,6 @@ $(document).ready(function () {
                 }
             });
             FORTE.startOtimizationdPanel.append(FORTE.optimizedLayerList);
-
-            // FORTE.optimizedLayerList.tagit('createTag', 'test1');
-            // FORTE.optimizedLayerList.tagit('createTag', 'test2');
-            // FORTE.optimizedLayerList.tagit('createTag', 'test3');
-            // FORTE.optimizedLayerList.tagit('createTag', 'test4');
-            // FORTE.optimizedLayerList.tagit('createTag', 'test5');
 
             time('ready');
         }, 100);
@@ -392,12 +382,8 @@ FORTE.fetchData = function () {
 
                         log('misses: ' + FORTE.__misses);
 
-                        $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
-                        $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);
-                        $('#btnGetVariation').attr('pulsing', false);
-                        $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
-                        $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
-                        $('#btnAddStructs').attr('pulsing', false);
+                        FORTE.resetButtonFromOptimization($('#btnGetVariation'), FORTE.LABELGETVARIATION);
+                        FORTE.resetButtonFromOptimization($('#btnAddStructs'), FORTE.LABELADDSTRUCTS);
 
                         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
                     } else {
@@ -559,10 +545,8 @@ FORTE.finishOptimization = function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
     FORTE.failureCounter = FORTE.GIVEUPTHRESHOLD + 1;
 
-    $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
-    $('#btnGetVariation').prop('disabled', false).css('opacity', 1.0);
-    $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
-    $('#btnAddStructs').prop('disabled', false).css('opacity', 1.0);
+    FORTE.resetButtonFromOptimization($('#btnGetVariation'), FORTE.LABELGETVARIATION);
+    FORTE.resetButtonFromOptimization($('#btnAddStructs'), FORTE.LABELADDSTRUCTS);
 }
 
 jQuery.fn.extend({
@@ -582,3 +566,25 @@ jQuery.fn.extend({
         });
     }
 });
+
+//
+//  set button for optimization (changes to 'finish', pulses, disables others, etc.)
+//
+FORTE.setButtonForOptimization = function (button) {
+    button.html('finish');
+    button.prop('disabled', true).css('opacity', 0.5);
+    button.attr('pulsing', true);
+    button.pulse(button.css('background-color'), FORTE.COLORBLUE, 1000);
+    button.attr('bg-original', button.css('background-color'));
+}
+
+//
+//  reset button from optimization (reset to original state)
+//
+FORTE.resetButtonFromOptimization = function (button, label) {
+    button.html(label);
+    button.prop('disabled', false).css('opacity', 1.0);
+    // button.stop();
+    button.attr('pulsing', false);
+    button.css('background-color', button.attr('bg-original'));
+}
