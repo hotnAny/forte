@@ -15,10 +15,12 @@ actvelms = str2num(char(args(12)));
 % favelms = str2num(char(args(13)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
-% isadding = size(distfield) == [0, 0];
-% isadding = true; % debug
-lambda = str2num(char(args(16)));
+lambda = str2double(args(16));
 debugging = str2num(char(args(17)));
+
+% [exp]
+try weight = str2double(args(18)); catch weight=-10; end
+
 
 %% [xac] mass transport
 if lambda > 0
@@ -106,6 +108,16 @@ change = 1;
 % weightmap = minweight + max(0, weightmap-minweight);
 % x = x .* (1+weightmap);
 
+%% [xac] [exp]
+matweight = weight
+matmask = repmat(1,nely,nelx);
+matmask(pasvelms) = matweight;
+gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
+matmask = conv2(matmask, gaussianmask, 'same');
+matmask = matmask * nely * nelx / sum(matmask(:));
+
+% disp(sum(matmask(:))/nely/nelx);
+
 telapsed = 0;
 %% START ITERATION [xac] added maxloop
 while change > 0.05 && (loop <= maxloop)
@@ -143,19 +155,29 @@ while change > 0.05 && (loop <= maxloop)
         innerloop = innerloop + 1;
         if(innerloop > maxinnerloop) break; end
         lmid = 0.5*(l2+l1);
-        xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
+%         xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
+xnew = max(0,max(x-move,min(1,min(x+move,x.*matmask.*sqrt(-dc./dv/lmid)))));
         if ft == 1
             xPhys = xnew;
         elseif ft == 2
             xPhys(:) = (H*xnew(:))./Hs;
         end
+        % ORIGINAL
         if sum(xPhys(:)) > volfrac*nelx*nely, l1 = lmid; else l2 = lmid; end
+%         xPhysWeighted = xPhys .* matmask;
+%         xPhys = xPhysWeighted * sum(xPhys(:)) / sum(xPhysWeighted(:));
+%         if sum(xPhysWeighted(:)) > volfrac*nelx*nely, l1 = lmid; else l2 = lmid; end
+%         sum(xPhysWeighted(:)) - sum(xPhys(:))
     end
     change = max(abs(xnew(:)-x(:)));
     x = xnew;
     
+%     matmask(pasvelms) = matmask(pasvelms) * 0.99;
+%     matmask = conv2(matmask, gaussian, 'same');
+%     matmask = matmask * nely * nelx / sum(matmask(:));
+    
     %% [xac] set void element to 'zero'
-    x(pasvelms) = eps;
+    %     x(pasvelms) = eps;
     %     x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
     x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
     x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;
@@ -202,6 +224,8 @@ while change > 0.05 && (loop <= maxloop)
 end
 disp('avg time per itr:');
 disp(telapsed/(loop-1));
+disp('sum of material:');
+disp(sum(xPhys(:))/(nely*nelx));
 xPhys = smoothed;
 while(debugging==false)
     try

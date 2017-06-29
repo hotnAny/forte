@@ -423,7 +423,7 @@ jQuery.fn.extend({
             // log($(this).attr('pulsing'))
             if ($(this).attr('pulsing') == 'true') $(this).pulse(color0, color1, period);
             else {
-                $(this).stop();
+                // $(this).stop();
                 $(this).css('background-color', color0);
             }
         });
@@ -447,7 +447,7 @@ FORTE.setButtonForOptimization = function (button) {
 FORTE.resetButtonFromOptimization = function (button, label) {
     button.html(label);
     button.prop('disabled', false).css('opacity', 1.0);
-    // button.stop();
+    button.stop();
     button.attr('pulsing', false);
     button.css('background-color', button.attr('bg-original'));
 }
