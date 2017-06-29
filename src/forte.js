@@ -245,6 +245,8 @@ $(document).ready(function () {
             });
             FORTE.startOtimizationdPanel.append(FORTE.optimizedLayerList);
 
+            FORTE.sandbox();
+
             time('ready');
         }, 100);
     });
