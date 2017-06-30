@@ -9,7 +9,7 @@
 var FORTE = FORTE || {};
 
 //
-//
+//  routine to load forte design file
 //
 FORTE.loadForteFile = function (e) {
     var dataObject = JSON.parse(e.target.result);
@@ -30,7 +30,7 @@ FORTE.loadForteFile = function (e) {
 }
 
 //
-//
+//  routine to save forte design file
 //
 FORTE.saveForteToFile = function () {
     var dataObject = {
@@ -109,7 +109,7 @@ FORTE.getBitmap = function (text) {
 
 
 //
-//
+//  routine to read stress output from optimization
 //
 FORTE.readStressData = function () {
     var baseDir = FORTE.outDir + '/' + FORTE.trial;
@@ -157,7 +157,7 @@ FORTE.readStressData = function () {
 }
 
 //
-//
+//  routine to read optimization output
 //
 FORTE.readOptimizationOutput = function () {
     var baseDir = FORTE.outDir + '/' + FORTE.trial;
@@ -186,7 +186,6 @@ FORTE.readOptimizationOutput = function () {
             FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 2.5, FORTE.fetchInterval * 1.1);
             if (FORTE.itrCounter == 0) {
                 setTimeout(FORTE.fetchData, FORTE.fetchInterval);
-                // FORTE.fetchInterval *= 1.1;
             } else {
                 FORTE.failureCounter++;
                 if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {

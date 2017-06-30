@@ -3,10 +3,10 @@ var FORTE = FORTE || {};
 FORTE.MaskCanvas = function (parent, width, height) {
     FORTE.GridCanvas.call(this, parent, width, height, FORTE.COLORMASKSTROKE);
     this._canvas.css('background-color', FORTE.COLORMASKBACKGROUND);
-    // this._canvas.mousewheel(this._adjustAlpha);
     this._canvas.bind('mousewheel', this._adjustAlpha.bind(this));
     this._nregions = 0;
     this._regions = {};
+    this._context.globalAlpha = 0.5;
 };
 
 FORTE.MaskCanvas.prototype = Object.create(FORTE.GridCanvas.prototype);
@@ -51,8 +51,6 @@ FORTE.MaskCanvas.prototype.drawMove = function (e) {
     });
     this._context.lineTo(x, y);
     this._context.fill();
-
-
 };
 
 //
@@ -72,9 +70,11 @@ FORTE.MaskCanvas.prototype.drawUp = function (e) {
         points: this._strokePoints.clone(),
         alpha: this._context.globalAlpha
     };
-    log(this._context);
 };
 
+//
+//
+//
 FORTE.GridCanvas.prototype._adjustAlpha = function (e) {
     var regionInfo = this._regions[this._hitRegion];
     if (regionInfo != undefined) {

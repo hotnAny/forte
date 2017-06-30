@@ -42,11 +42,17 @@ FORTE.GridCanvas.prototype = {
     constructor: FORTE.GridCanvas
 };
 
+//
+//  [obselete]
+//
 FORTE.GridCanvas.prototype.remove = function () {
     this._canvas.remove();
     this._removed = true;
 }
 
+//
+//  [obselete]
+//
 FORTE.GridCanvas.prototype.revive = function () {
     if (!this._removed) return;
     this._parent.append(this._canvas);
@@ -56,11 +62,17 @@ FORTE.GridCanvas.prototype.revive = function () {
     this._removed = false;
 }
 
+//
+//  enable the canvas and set opacity to 1
+//
 FORTE.GridCanvas.prototype.enable = function () {
     this._enabled = true;
     this._canvas.css('opacity', 1);
 }
 
+//
+//  disable the canvas and set opacity to the given value
+//
 FORTE.GridCanvas.prototype.disable = function (opacity) {
     this._enabled = false;
     this._canvas.css('opacity', opacity);
@@ -215,6 +227,7 @@ FORTE.GridCanvas.prototype.package = function () {
 }
 
 //
+//  [obselete]
 //  when global ui layout changes, manually update canvas position so it stays with the parent
 //
 FORTE.GridCanvas.prototype.updateCanvasPosition = function () {

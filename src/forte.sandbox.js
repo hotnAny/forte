@@ -1,4 +1,4 @@
-FORTE.sandbox = function() {
+FORTE.sandbox = function () {
     // FORTE.m = 1;
     $(document).keydown(XAC.keydown);
     // XAC.on(XAC.UPARROW, function (e) {
@@ -10,11 +10,13 @@ FORTE.sandbox = function() {
     //     log(FORTE.m);
     // });
     // FORTE.maskLayers = [];
-    FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height);
-    FORTE.layers.push(FORTE.lessMaterialLayer);
+    // FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height);
+    // FORTE.layers.push(FORTE.lessMaterialLayer);
 
-    FORTE.lessMaterialLayer.disable(0);
+    // FORTE.lessMaterialLayer.disable(0);
     XAC.on('L', function (e) {
+        FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height);
+        FORTE.layers.push(FORTE.lessMaterialLayer);
         FORTE.switchLayer(FORTE.layers.indexOf(FORTE.lessMaterialLayer));
         FORTE.lessMaterialLayer.enable();
     });
