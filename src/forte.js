@@ -164,11 +164,6 @@ $(document).ready(function () {
                 $('#tblMoreCtrl').show();
                 $(this).html(FORTE.HTMLCODETRIANGLEUP);
             }
-
-            // for (layer of FORTE.layers) layer.updateCanvasPosition();
-            // for (layer of FORTE.optimizedLayers) layer.updateCanvasPosition();
-            // FORTE.adjustOptimizationPanel();
-
         });
 
         $('#tblMoreCtrl').css('background-color', 'rgba(255, 255, 255, 0.5)');
@@ -216,7 +211,15 @@ $(document).ready(function () {
             //
             FORTE.htOptimizedLayers = {};
             FORTE.startOtimizationdPanel = $('#divOptimizedPanel');
-            FORTE.adjustOptimizationPanel();
+            var topMarginPanel = 5;
+            var rightMarginPanel = 5;
+            FORTE.startOtimizationdPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
+            var parentWidth = $('#tdCanvas').width();
+            var parentWidth = $('#tdCanvas').width();
+            var parentOffset = $('#tdCanvas').offset();
+            FORTE.startOtimizationdPanel.css('position', 'absolute');
+            FORTE.startOtimizationdPanel.css('top', parentOffset.top);
+            FORTE.startOtimizationdPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
             $('#tdCanvas').append(FORTE.startOtimizationdPanel);
 
             FORTE.optimizedLayerList = $('<ul></ul>');
@@ -383,7 +386,7 @@ FORTE.finishOptimization = function () {
 }
 
 //
-//
+//  update stress visualization across layers
 //
 FORTE.updateStressAcrossLayers = function (toShow) {
     var layers = [FORTE.designLayer];
@@ -403,17 +406,25 @@ FORTE.updateStressAcrossLayers = function (toShow) {
 
 }
 
+//
+//  get a value to assign to a slider, given preset range (raw value -> slider value)
+//
 FORTE._getSliderValue = function (value) {
     return FORTE.MINSLIDER * (1 - value) + FORTE.MAXSLIDER * value;
 }
 
+//
+//  normalize value read from a slider (slider value -> normalized value -> raw value)
+//
 FORTE._normalizeSliderValue = function (slider, value) {
     var max = slider.slider("option", "max");
     var min = slider.slider("option", "min");
     return (value - min) * 1.0 / (max - min);
 }
 
-
+//
+//  extending jquery to do pulsing for buttons
+//
 jQuery.fn.extend({
     pulse: function (color0, color1, period) {
         $(this).animate({
@@ -422,10 +433,8 @@ jQuery.fn.extend({
         $(this).animate({
             backgroundColor: color1
         }, period, function () {
-            // log($(this).attr('pulsing'))
             if ($(this).attr('pulsing') == 'true') $(this).pulse(color0, color1, period);
             else {
-                // $(this).stop();
                 $(this).css('background-color', color0);
             }
         });
@@ -452,19 +461,4 @@ FORTE.resetButtonFromOptimization = function (button, label) {
     button.stop();
     button.attr('pulsing', false);
     button.css('background-color', button.attr('bg-original'));
-}
-
-//
-//
-//
-FORTE.adjustOptimizationPanel = function () {
-    var topMarginPanel = 5;
-    var rightMarginPanel = 5;
-    FORTE.startOtimizationdPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
-    var parentWidth = $('#tdCanvas').width();
-    var parentWidth = $('#tdCanvas').width();
-    var parentOffset = $('#tdCanvas').offset();
-    FORTE.startOtimizationdPanel.css('position', 'absolute');
-    FORTE.startOtimizationdPanel.css('top', parentOffset.top);
-    FORTE.startOtimizationdPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
 }

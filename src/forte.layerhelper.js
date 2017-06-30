@@ -2,7 +2,7 @@
 //
 //  routines to help with the interactive layers
 //
-//  by xiangchen@acm.org, v0.0, 06/2017
+//  by xiangchen@acm.org, v0.1, 06/2017
 //
 // ......................................................................................................
 
@@ -135,6 +135,9 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
     return distrVectors;
 }
 
+//
+//  special customization for the load layer (for specifying load)
+//
 FORTE.customizeLoadLayer = function () {
     // interaction on the load layer
     FORTE.loadLayer.specifyingLoad = false;
