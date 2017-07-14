@@ -189,6 +189,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
     _similarity = float(safe_retrieve_one(post_data, 'similarity', 1))
     _mode = float(safe_retrieve_one(post_data, 'mode', DEFAULTMODE))
+    _lesspoints = safe_retrieve_all(_designobj, 'lesspoints', None)
+    _lessvalues = safe_retrieve_all(_designobj, 'lessvalues', None)
 
     #
     #   convert to matlab input
@@ -237,7 +239,15 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matinput['LOADNODES'] = tb_loadnodes
     matinput['LOADVALUES'] = tb_loadvalues
 
-    # [debug]
+    # active/passive/favored(obselete)/less-material elements
+    matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
+    matinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
+    matinput['FAVELMS'] = matinput['ACTVELMS']
+    matinput['LESSELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _lesspoints]
+    matinput['LESSVALS'] = _lessvalues
+    # print matinput['LESSVALS']
+
+    # [debug] do NOT remove
     # vis_str = ''
     # for j in xrange(0, nely+1):
     #     for i in xrange(0, nelx+1):
@@ -246,16 +256,12 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     #             vis_str += ' x '
     #         elif dof*idx in tb_loadnodes and dof*idx+1 in tb_loadnodes:
     #             vis_str += ' O '
+    #         elif elm_num_2d(nelx, nely, i + 1, j + 1) in matinput['LESSELMS']:
+    #             vis_str += ' # '
     #         else:
     #             vis_str += ' . '
     #     vis_str += '\n'
     # print vis_str
-
-    # active/passive/favored elements
-    matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
-    matinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
-    # print matinput['PASVELMS']
-    matinput['FAVELMS'] = matinput['ACTVELMS']
 
     if _mode == 1:
         # use similarity to set lambda for mass transport
@@ -273,7 +279,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
-        matinput['DISTFIELD'], matinput['LAMBDA']]
+        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['LESSELMS'], matinput['LESSVALS']]
 
     input_file = open(INPUTFILE, 'w')
     input_file.write('&'.join([str(x) for x in matargs]))
