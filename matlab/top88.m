@@ -16,11 +16,12 @@ actvelms = str2num(char(args(12)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
 lambda = str2double(args(16));
-debugging = str2num(char(args(17)));
+lesselms = str2num(char(args(17)));
+lessvals = str2num(char(args(18)));
+debugging = str2num(char(args(19)));
 
 % [exp]
-try weight = str2double(args(18)); catch weight=0; end
-
+% try weight = str2double(args(18)); catch weight=0; end
 
 %% [xac] mass transport
 if lambda > 0
@@ -102,9 +103,9 @@ loop = 0;
 change = 1;
 
 %% [xac] [exp]
-matweight = weight
-matmask = repmat(1,nely,nelx);
-matmask(pasvelms) = matweight;
+% matweight = weight;
+matmask = ones(nely,nelx);
+matmask(lesselms) = lessvals;
 gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
 matmask = conv2(matmask, gaussianmask, 'same');
 matmask = matmask * nely * nelx / sum(matmask(:));
