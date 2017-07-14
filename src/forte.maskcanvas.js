@@ -1,12 +1,44 @@
+// ......................................................................................................
+//
+//  an inheritance from gridcanvas for drawing mask (rather than sketching)
+//
+//  by xiangchen@acm.org, v0.0, 07/2017
+//
+// ......................................................................................................
+
 var FORTE = FORTE || {};
 
-FORTE.MaskCanvas = function (parent, width, height) {
-    FORTE.GridCanvas.call(this, parent, width, height, FORTE.COLORMASKSTROKE);
-    this._canvas.css('background-color', FORTE.COLORMASKBACKGROUND);
+FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
+    FORTE.GridCanvas.call(this, parent, width, height, strokeColor);
     this._canvas.bind('mousewheel', this._adjustAlpha.bind(this));
     this._nregions = 0;
     this._regions = {};
     this._context.globalAlpha = 0.5;
+
+    //
+    //  override to package mask data
+    //
+    this.package = function () {
+        var info = {
+            points: [],
+            values: []
+        };
+
+        var imgData = this._context.getImageData(0, 0, this._canvas[0].width, this._canvas[0].height);
+
+        for (var idx = 0; idx < imgData.data.length; idx += 4) {
+            if (imgData.data[idx] > 0) {
+                var x = (idx / 4) % this._canvas[0].width;
+                var y = (idx / 4 - x) / this._canvas[0].width;
+                var i = (x / this._cellSize) | 0;
+                var j = (y / this._cellSize) | 0;
+                info.points.push([i, j]);
+                info.values.push(1 - imgData.data[idx + 3] / 255.0);
+            }
+        }
+
+        return info;
+    };
 };
 
 FORTE.MaskCanvas.prototype = Object.create(FORTE.GridCanvas.prototype);
@@ -19,7 +51,6 @@ FORTE.MaskCanvas.prototype.drawDown = function (e) {
     this._isDown = true;
 
     this._strokePoints = [];
-    // this._doDraw(e);
     this._context.beginPath();
     var canvasOffset = this._canvas.offset();
     var x = e.clientX - canvasOffset.left;
@@ -39,8 +70,6 @@ FORTE.MaskCanvas.prototype.drawMove = function (e) {
 
     if (!this._enabled) return;
     if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
-
-    // this._doDraw(e);
 
     var canvasOffset = this._canvas.offset();
     var x = e.clientX - canvasOffset.left;
@@ -70,10 +99,12 @@ FORTE.MaskCanvas.prototype.drawUp = function (e) {
         points: this._strokePoints.clone(),
         alpha: this._context.globalAlpha
     };
+
+    this.package();
 };
 
 //
-//
+//  adjust the alpha of a selected region
 //
 FORTE.GridCanvas.prototype._adjustAlpha = function (e) {
     var regionInfo = this._regions[this._hitRegion];
