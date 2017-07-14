@@ -19,7 +19,7 @@ lambda = str2double(args(16));
 debugging = str2num(char(args(17)));
 
 % [exp]
-try weight = str2double(args(18)); catch weight=-10; end
+try weight = str2double(args(18)); catch weight=0; end
 
 
 %% [xac] mass transport
@@ -101,13 +101,6 @@ xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
 
-% minweight = eps;
-% weightmap = repmat(1,nely,nelx);
-% weightmap(1:64, 1:64) = 10;
-% weightmap = weightmap * nely * nelx / sum(weightmap(:));
-% weightmap = minweight + max(0, weightmap-minweight);
-% x = x .* (1+weightmap);
-
 %% [xac] [exp]
 matweight = weight
 matmask = repmat(1,nely,nelx);
@@ -155,8 +148,8 @@ while change > 0.05 && (loop <= maxloop)
         innerloop = innerloop + 1;
         if(innerloop > maxinnerloop) break; end
         lmid = 0.5*(l2+l1);
-%         xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
-xnew = max(0,max(x-move,min(1,min(x+move,x.*matmask.*sqrt(-dc./dv/lmid)))));
+        %         xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
+        xnew = max(0,max(x-move,min(1,min(x+move,x.*matmask.*sqrt(-dc./dv/lmid)))));
         if ft == 1
             xPhys = xnew;
         elseif ft == 2
@@ -164,17 +157,17 @@ xnew = max(0,max(x-move,min(1,min(x+move,x.*matmask.*sqrt(-dc./dv/lmid)))));
         end
         % ORIGINAL
         if sum(xPhys(:)) > volfrac*nelx*nely, l1 = lmid; else l2 = lmid; end
-%         xPhysWeighted = xPhys .* matmask;
-%         xPhys = xPhysWeighted * sum(xPhys(:)) / sum(xPhysWeighted(:));
-%         if sum(xPhysWeighted(:)) > volfrac*nelx*nely, l1 = lmid; else l2 = lmid; end
-%         sum(xPhysWeighted(:)) - sum(xPhys(:))
+        %         xPhysWeighted = xPhys .* matmask;
+        %         xPhys = xPhysWeighted * sum(xPhys(:)) / sum(xPhysWeighted(:));
+        %         if sum(xPhysWeighted(:)) > volfrac*nelx*nely, l1 = lmid; else l2 = lmid; end
+        %         sum(xPhysWeighted(:)) - sum(xPhys(:))
     end
     change = max(abs(xnew(:)-x(:)));
     x = xnew;
     
-%     matmask(pasvelms) = matmask(pasvelms) * 0.99;
-%     matmask = conv2(matmask, gaussian, 'same');
-%     matmask = matmask * nely * nelx / sum(matmask(:));
+    %     matmask(pasvelms) = matmask(pasvelms) * 0.99;
+    %     matmask = conv2(matmask, gaussian, 'same');
+    %     matmask = matmask * nely * nelx / sum(matmask(:));
     
     %% [xac] set void element to 'zero'
     %     x(pasvelms) = eps;
