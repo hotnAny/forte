@@ -14,6 +14,9 @@ var FORTE = FORTE || {};
 $(document).ready(function () {
     time();
 
+    // manage timeouts
+    FORTE.timeouts = [];
+
     // client-server setup
     FORTE.xmlhttp = new XMLHttpRequest();
     FORTE.xmlhttp.timeout = 1e9;
@@ -60,9 +63,10 @@ $(document).ready(function () {
             var keys = Object.keys(FORTE.htOptimizedLayers);
             for (key of keys) {
                 var layer = FORTE.htOptimizedLayers[key];
-                if(layer!=undefined) layer._canvas.remove();
+                if (layer != undefined) layer._canvas.remove();
             }
-            FORTE.optimizedLayerList.empty(); //tagit('removeAll');
+            FORTE.htOptimizedLayers = {};
+            FORTE.optimizedLayerList.tagit('removeAll');
         });
 
         // material amount slider
@@ -235,7 +239,7 @@ $(document).ready(function () {
                     var keys = Object.keys(FORTE.htOptimizedLayers);
                     for (key of keys) {
                         var layer2 = FORTE.htOptimizedLayers[key];
-                        if (layer2 != undefined && layer2 != layer) {
+                        if (layer2 != undefined && layer2 != layer && layer2._stressInfo != undefined) {
                             FORTE.design.maxStress =
                                 Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
                         }
@@ -246,6 +250,7 @@ $(document).ready(function () {
             });
             FORTE.optimizationPanel.append(FORTE.optimizedLayerList);
 
+            // [debug] test stuff in the sandbox
             FORTE.sandbox();
 
             time('ready');
@@ -257,6 +262,7 @@ $(document).ready(function () {
 //  routine to reset radio button for each selection/deselection
 //
 FORTE.resetRadioButtons = function (idx) {
+    // remove and re-add all the radio buttons 
     $('[name="' + FORTE.nameBrushButtons + '"]').remove();
     $('[name="lb' + FORTE.nameBrushButtons + '"]').remove();
     var imgSrcs = [FORTE.ICONDESIGN, FORTE.ICONVOID, FORTE.ICONLOAD, FORTE.ICONBOUNDARY];
@@ -277,6 +283,7 @@ FORTE.resetRadioButtons = function (idx) {
         }
     });
 
+    // reset all corresponding layers
     if (FORTE.layers != undefined) FORTE.switchLayer(-1);
 }
 
@@ -284,21 +291,25 @@ FORTE.resetRadioButtons = function (idx) {
 //  routine to only show selected optimized layer, given its label
 //
 FORTE.showOptimizedLayer = function (tag, label) {
+    // un-select the recorded selected tag
     if (FORTE.selectedTag != undefined) {
         $(FORTE.selectedTag).removeClass('ui-state-highlight');
     }
 
+    // removed any currently displayed optimized layers
     var keys = Object.keys(FORTE.htOptimizedLayers);
     for (key of keys) {
         var layer = FORTE.htOptimizedLayers[key];
         if (layer != undefined) layer._canvas.remove();
     }
 
+    // if it's the tag that's already selected, do not re-select it
     if (FORTE.selectedTag != undefined && FORTE.selectedTag[0] == tag[0]) {
         FORTE.selectedTag = undefined;
         return;
     }
 
+    // select the tag and show its associcated canvas
     var layer = FORTE.htOptimizedLayers[label];
     if (layer != undefined) {
         if (layer._needsUpdate) layer.forceRedraw(layer._heatmap);
@@ -326,7 +337,6 @@ FORTE.render = function (pointer) {
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
         FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
-        // XAC.stats.update();
         FORTE.pointer++;
 
         setTimeout(function () {
@@ -351,17 +361,14 @@ FORTE.startOptimization = function (mode) {
     }
 
     FORTE.design.designPoints = FORTE.designLayer.package();
-    // FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
     // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-
-    // [debug]
     var lessMaterialInfo = FORTE.lessMaterialLayer.package();
     FORTE.design.lessPoints = lessMaterialInfo.points;
     FORTE.design.lessValues = lessMaterialInfo.values;
 
     var dataObject = FORTE.design.getData();
-    if (dataObject == undefined) return;
+    if (dataObject == undefined) return false;
 
     FORTE.resolution = dataObject.resolution;
 
@@ -373,6 +380,8 @@ FORTE.startOptimization = function (mode) {
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'started';
         time();
+        for (id of FORTE.timeouts) clearTimeout(id);
+        FORTE.timeouts = [];
         FORTE.fetchData();
         return true;
     }
@@ -384,7 +393,7 @@ FORTE.startOptimization = function (mode) {
 //
 FORTE.finishOptimization = function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
-    FORTE.failureCounter = FORTE.GIVEUPTHRESHOLD + 1;
+    FORTE.state = 'finished';
 
     FORTE.resetButtonFromOptimization($('#btnGetVariation'), FORTE.LABELGETVARIATION);
     FORTE.resetButtonFromOptimization($('#btnAddStructs'), FORTE.LABELADDSTRUCTS);
@@ -394,7 +403,7 @@ FORTE.finishOptimization = function () {
 //  update stress visualization across layers
 //
 FORTE.updateStressAcrossLayers = function (toShow) {
-    var layers = [FORTE.designLayer];
+    var layers = [];
     var keys = Object.keys(FORTE.htOptimizedLayers);
     for (key of keys) layers.push(FORTE.htOptimizedLayers[key]);
     var layerCurrent = FORTE.htOptimizedLayers[FORTE.selectedTag[0].innerText];
@@ -451,7 +460,6 @@ jQuery.fn.extend({
 //
 FORTE.setButtonForOptimization = function (button) {
     button.html('finish');
-    button.prop('disabled', true).css('opacity', 0.5);
     button.attr('pulsing', true);
     button.pulse(button.css('background-color'), FORTE.COLORBLUE, 1000);
     button.attr('bg-original', button.css('background-color'));
@@ -462,7 +470,6 @@ FORTE.setButtonForOptimization = function (button) {
 //
 FORTE.resetButtonFromOptimization = function (button, label) {
     button.html(label);
-    button.prop('disabled', false).css('opacity', 1.0);
     button.stop();
     button.attr('pulsing', false);
     button.css('background-color', button.attr('bg-original'));
