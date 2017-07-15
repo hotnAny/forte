@@ -156,10 +156,10 @@ FORTE.GridCanvas.prototype._doDraw = function (e) {
 //  clear the canvas
 //
 FORTE.GridCanvas.prototype.clear = function () {
-    if (this._context != undefined) {
-        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-        this._bitmap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
-    }
+    // if (this._context != undefined) {
+    this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+    this._bitmap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
+    // }
 }
 
 //
