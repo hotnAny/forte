@@ -136,7 +136,7 @@ FORTE.Design.prototype.getData = function () {
     return {
         resolution: [width, height],
         design: designPoints,
-        emptiness: emptyPoints,
+        // emptiness: emptyPoints,
         loadpoints: loadPoints,
         loadvalues: loadValues,
         boundaries: boundaryPoints,

@@ -236,3 +236,17 @@ FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
     this._canvas.css('left', parentOffset.left);
     this._canvas.css('top', parentOffset.top);
 }
+
+// //
+// //
+// //
+// FORTE.GridCanvas.prototype.getImageData = function () {
+//     return this._context.getImageData(0, 0, this._canvas[0].width, this._canvas[0].height);
+// }
+
+// //
+// //
+// //
+// FORTE.GridCanvas.prototype.drawFromImageData = function (data) {
+//     this._context.putImageData(data, 0, 0);
+// }

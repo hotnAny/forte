@@ -14,12 +14,12 @@ FORTE.sandbox = function () {
     // FORTE.layers.push(FORTE.lessMaterialLayer);
 
     // FORTE.lessMaterialLayer.disable(0);
-    XAC.on('L', function (e) {
-        FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height);
-        FORTE.layers.push(FORTE.lessMaterialLayer);
-        FORTE.switchLayer(FORTE.layers.indexOf(FORTE.lessMaterialLayer));
-        FORTE.lessMaterialLayer.enable();
-    });
+    // XAC.on('L', function (e) {
+    //     FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height);
+    //     FORTE.layers.push(FORTE.lessMaterialLayer);
+    //     FORTE.switchLayer(FORTE.layers.indexOf(FORTE.lessMaterialLayer));
+    //     FORTE.lessMaterialLayer.enable();
+    // });
     FORTE.toShowStress = false;
     // XAC.on('S', function (e) {
     //     FORTE.toShowStress = !FORTE.toShowStress;

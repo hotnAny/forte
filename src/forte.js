@@ -116,7 +116,7 @@ $(document).ready(function () {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.finishOptimization();
             } else {
-                if (FORTE.startOtimization(FORTE.GETVARIATION)) {
+                if (FORTE.startOptimization(FORTE.GETVARIATION)) {
                     FORTE.setButtonForOptimization($(this));
                 }
             }
@@ -130,7 +130,7 @@ $(document).ready(function () {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.finishOptimization();
             } else {
-                if (FORTE.startOtimization(FORTE.ADDSTRUCTS)) {
+                if (FORTE.startOptimization(FORTE.ADDSTRUCTS)) {
                     FORTE.setButtonForOptimization($(this));
                 }
             }
@@ -191,13 +191,15 @@ $(document).ready(function () {
             // layers of editing
             //
             FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLACK);
-            FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
-            FORTE.emptinessLayer._strokeRadius = 3;
+            // FORTE.emptinessLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
+            FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
+            // FORTE.emptinessLayer._strokeRadius = 3;
             FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
             FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
+            
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
-            FORTE.layers = [FORTE.designLayer, FORTE.emptinessLayer, FORTE.loadLayer, FORTE.boundaryLayer];
+            FORTE.layers = [FORTE.designLayer, FORTE.lessMaterialLayer, FORTE.loadLayer, FORTE.boundaryLayer];
             FORTE.layer = FORTE.designLayer;
             FORTE.toggleLayerZindex(0);
 
@@ -210,17 +212,17 @@ $(document).ready(function () {
             // layers of optimization
             //
             FORTE.htOptimizedLayers = {};
-            FORTE.startOtimizationdPanel = $('#divOptimizedPanel');
+            FORTE.optimizationPanel = $('#divOptimizedPanel');
             var topMarginPanel = 5;
             var rightMarginPanel = 5;
-            FORTE.startOtimizationdPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
+            FORTE.optimizationPanel.width(FORTE.WIDTHOPTIMIZEDPANEL);
             var parentWidth = $('#tdCanvas').width();
             var parentWidth = $('#tdCanvas').width();
             var parentOffset = $('#tdCanvas').offset();
-            FORTE.startOtimizationdPanel.css('position', 'absolute');
-            FORTE.startOtimizationdPanel.css('top', parentOffset.top);
-            FORTE.startOtimizationdPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
-            $('#tdCanvas').append(FORTE.startOtimizationdPanel);
+            FORTE.optimizationPanel.css('position', 'absolute');
+            FORTE.optimizationPanel.css('top', parentOffset.top);
+            FORTE.optimizationPanel.css('left', parentOffset.left + parentWidth - FORTE.WIDTHOPTIMIZEDPANEL - rightMarginPanel);
+            $('#tdCanvas').append(FORTE.optimizationPanel);
 
             FORTE.optimizedLayerList = $('<ul></ul>');
             FORTE.optimizedLayerList.addClass('ui-widget');
@@ -246,7 +248,7 @@ $(document).ready(function () {
                     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
                 }
             });
-            FORTE.startOtimizationdPanel.append(FORTE.optimizedLayerList);
+            FORTE.optimizationPanel.append(FORTE.optimizedLayerList);
 
             FORTE.sandbox();
 
@@ -343,7 +345,7 @@ FORTE.render = function (pointer) {
 //
 //  start the optimization
 //
-FORTE.startOtimization = function (mode) {
+FORTE.startOptimization = function (mode) {
     FORTE.resetRadioButtons();
 
     var keys = Object.keys(FORTE.htOptimizedLayers);
@@ -353,8 +355,15 @@ FORTE.startOtimization = function (mode) {
     }
 
     FORTE.design.designPoints = FORTE.designLayer.package();
-    FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
+    // FORTE.design.emptyPoints = FORTE.emptinessLayer.package();
+    // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
+
+    // [debug]
+    var lessMaterialInfo = FORTE.lessMaterialLayer.package();
+    FORTE.design.lessPoints = lessMaterialInfo.points;
+    FORTE.design.lessValues = lessMaterialInfo.values;
+    
     var dataObject = FORTE.design.getData();
     if (dataObject == undefined) return;
 

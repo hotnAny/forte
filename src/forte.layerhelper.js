@@ -27,7 +27,7 @@ FORTE.changeResolution = function () {
     }
 
     // special treatments
-    FORTE.emptinessLayer._strokeRadius *= 3;
+    // FORTE.emptinessLayer._strokeRadius *= 3;
     FORTE.loadLayer._context.lineWidth = 8;
     FORTE.loadLayer._context.lineJoin = 'round';
     FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
