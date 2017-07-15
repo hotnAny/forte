@@ -10,7 +10,7 @@ var FORTE = FORTE || {};
 
 FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
     FORTE.GridCanvas.call(this, parent, width, height, strokeColor);
-    this._canvas.bind('mousewheel', this._adjustAlpha.bind(this));
+    this._canvas.bind('mousewheel', this._update.bind(this));
     this._nregions = 0;
     this._regions = {};
     this._context.globalAlpha = 0.5;
@@ -51,15 +51,17 @@ FORTE.MaskCanvas.prototype.drawDown = function (e) {
     this._isDown = true;
 
     this._strokePoints = [];
-    this._context.beginPath();
+    this._markPoints = [];
+    this._doDraw(e);
+    // this._context.beginPath();
     var canvasOffset = this._canvas.offset();
     var x = e.clientX - canvasOffset.left;
     var y = e.clientY - canvasOffset.top;
-    this._strokePoints.push({
+    this._markPoints.push({
         x: x,
         y: y
     });
-    this._context.moveTo(x, y);
+    // this._context.moveTo(x, y);
 };
 
 //
@@ -74,12 +76,13 @@ FORTE.MaskCanvas.prototype.drawMove = function (e) {
     var canvasOffset = this._canvas.offset();
     var x = e.clientX - canvasOffset.left;
     var y = e.clientY - canvasOffset.top;
-    this._strokePoints.push({
+    this._markPoints.push({
         x: x,
         y: y
     });
-    this._context.lineTo(x, y);
-    this._context.fill();
+    // this._context.lineTo(x, y);
+    // this._context.fill();
+    this._doDraw(e);
 };
 
 //
@@ -89,26 +92,27 @@ FORTE.MaskCanvas.prototype.drawUp = function (e) {
     if (!this._enabled) return;
     this._isDown = false;
 
-    this._context.closePath();
-    this._context.fill();
+    // this._context.closePath();
+    // this._context.fill();
     var idRegion = this._id + '_' + this._nregions++;
     this._context.addHitRegion({
         id: idRegion
     });
     this._regions[idRegion] = {
-        points: this._strokePoints.clone(),
+        points: this._markPoints.clone(),
         alpha: this._context.globalAlpha
     };
 
-    this.package();
+    this._update();
 };
 
 //
 //  adjust the alpha of a selected region
 //
-FORTE.GridCanvas.prototype._adjustAlpha = function (e) {
+FORTE.MaskCanvas.prototype._update = function (e) {
     var regionInfo = this._regions[this._hitRegion];
-    if (regionInfo != undefined) {
+    // e == undefined means force update everything
+    if (regionInfo != undefined || e == undefined) {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         var keys = Object.keys(this._regions);
         for (key of keys) {
