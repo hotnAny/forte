@@ -13,8 +13,8 @@ FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
     this._canvas.bind('mousewheel', this._update.bind(this));
     this._nregions = 0;
     this._regions = {};
-    this._context.globalAlpha = 0.5;
-
+    // this._context.globalAlpha = 0.5;
+    this._strokeRadius = 1;
     //
     //  override to package mask data
     //
@@ -38,6 +38,14 @@ FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
         }
 
         return info;
+    };
+
+    //
+    //  override clearing method
+    //
+    this.clear = function(){
+        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+        this._regions = {};
     };
 };
 
@@ -118,7 +126,7 @@ FORTE.MaskCanvas.prototype._update = function (e) {
         for (key of keys) {
             regionInfo = this._regions[key];
             var originalAlpha = this._context.globalAlpha;
-            if (key == this._hitRegion) {
+            if (key == this._hitRegion && e != undefined) {
                 var alphaDelta = e.originalEvent.wheelDelta / 3600.0;
                 regionInfo.alpha += alphaDelta;
                 regionInfo.alpha = Math.min(1, Math.max(0, regionInfo.alpha));
