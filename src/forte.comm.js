@@ -22,7 +22,7 @@ FORTE.loadForteFile = function (e) {
     // FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0);
     FORTE.lessMaterialLayer._regions = dataObject.lessMaterialRegions;
     FORTE.lessMaterialLayer._update();
-    
+
     FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
     for (arrow of dataObject.loadArrows) {
         FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
@@ -65,7 +65,7 @@ FORTE.fetchData = function () {
         FORTE.itrCounter = 0;
         log('data fetching started');
         FORTE.state = 'ongoing';
-        setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL);
+        FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL));
         FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
         FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
@@ -74,9 +74,11 @@ FORTE.fetchData = function () {
         FORTE.design.bitmaps = [];
         FORTE.renderStarted = false;
         FORTE.pointer = 0;
-    } else if (FORTE.state == 'finished') {
-        return;
-    } else {
+    } 
+    // else if (FORTE.state == 'finished') {
+    //     return;
+    // }
+    else {
         if (FORTE.outDir == undefined || FORTE.outDir == null)
             console.error('output directory unavailable');
         FORTE.readOptimizationOutput();
@@ -154,7 +156,7 @@ FORTE.readStressData = function () {
             },
             // failure
             function () {
-                setTimeout(FORTE.readStressData, 250);
+                FORTE.timeouts.push(setTimeout(FORTE.readStressData, 250));
             }
         );
     }
@@ -181,7 +183,7 @@ FORTE.readOptimizationOutput = function () {
             time('fetched data for itr# ' + (FORTE.itrCounter + 1) +
                 ' after failing ' + FORTE.failureCounter + ' time(s)');
             FORTE.itrCounter += 1;
-            setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+            FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
             FORTE.failureCounter = 0;
         },
         // on failure
@@ -189,10 +191,10 @@ FORTE.readOptimizationOutput = function () {
             FORTE.__misses++;
             FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 2.5, FORTE.fetchInterval * 1.1);
             if (FORTE.itrCounter == 0) {
-                setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+                FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
             } else {
                 FORTE.failureCounter++;
-                if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD) {
+                if (FORTE.failureCounter > FORTE.GIVEUPTHRESHOLD || FORTE.state == 'finished') {
                     FORTE.state = 'finished';
                     log('data fetching finished');
 
@@ -213,7 +215,7 @@ FORTE.readOptimizationOutput = function () {
 
                     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
                 } else {
-                    setTimeout(FORTE.fetchData, FORTE.fetchInterval);
+                    FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
                 }
             }
         });

@@ -36,6 +36,7 @@ FORTE.changeResolution = function () {
 
 //
 //  switch to different layers (design, emptiness, load, boundary, etc.)
+//  -   set idx to -1 to set all layers equally to disabled state
 //
 FORTE.switchLayer = function (idx) {
     for (layer of FORTE.layers) layer.disable(idx >= 0 ? 0.25 : 0);
