@@ -319,6 +319,8 @@ FORTE.showOptimizedLayer = function (tag, label) {
     } else {
         FORTE.selectedTag = undefined;
     }
+
+    FORTE.focusedDesignLayer = layer;
 }
 
 //
@@ -359,6 +361,9 @@ FORTE.startOptimization = function (mode) {
         var layer = FORTE.htOptimizedLayers[key];
         if (layer != undefined) layer._canvas.remove();
     }
+
+    // [exp]
+    // var designLayer = FORTE.focusedDesignLayer || FORTE.designLayer;
 
     FORTE.design.designPoints = FORTE.designLayer.package();
     // load points are recorded as soon as loads are created

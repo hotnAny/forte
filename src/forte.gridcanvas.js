@@ -218,7 +218,8 @@ FORTE.GridCanvas.prototype.package = function () {
     var points = [];
     for (var j = 0; j < this._gridHeight; j++) {
         for (var i = 0; i < this._gridWidth; i++) {
-            if (this._bitmap[j][i] == 1) {
+            // if (this._bitmap[j][i] == 1) {
+            if (this._bitmap[j][i] > FORTE.THRESDENSITY) {
                 points.push([i, j]);
             }
         }

@@ -46,6 +46,8 @@ FORTE.switchLayer = function (idx) {
         FORTE.layer.enable();
         FORTE.toggleLayerZindex(idx);
     }
+
+    // if(idx == 0) FORTE.focusedDesignLayer = FORTE.layers[idx];
 }
 
 //
