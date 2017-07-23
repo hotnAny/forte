@@ -25,8 +25,8 @@ $(document).ready(function () {
             log('server response: ' + FORTE.xmlhttp.responseText);
             var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
             if (outDir != null && outDir != undefined) {
-                FORTE.outDir = outDir;
-                log('server output directory: ' + FORTE.outDir);
+                FORTE.outputDir = outDir;
+                log('server output directory: ' + FORTE.outputDir);
             }
         }
     }
@@ -295,6 +295,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
     if (FORTE.selectedTag != undefined) {
         $(FORTE.selectedTag).removeClass('ui-state-highlight');
     }
+    FORTE.focusedDesignLayer = undefined;
 
     // removed any currently displayed optimized layers
     var keys = Object.keys(FORTE.htOptimizedLayers);
@@ -362,15 +363,18 @@ FORTE.startOptimization = function (mode) {
         if (layer != undefined) layer._canvas.remove();
     }
 
-    // [exp]
-    // var designLayer = FORTE.focusedDesignLayer || FORTE.designLayer;
-
     FORTE.design.designPoints = FORTE.designLayer.package();
     // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
     var lessMaterialInfo = FORTE.lessMaterialLayer.package();
     FORTE.design.lessPoints = lessMaterialInfo.points;
     FORTE.design.lessValues = lessMaterialInfo.values;
+
+    // [exp]
+    // FORTE.design.prevDesignPoints = FORTE.focusedDesignLayer == undefined ? [] :
+    //     FORTE.focusedDesignLayer.package();
+    FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
+        FORTE.focusedDesignLayer.lastOutputFile;
 
     var dataObject = FORTE.design.getData();
     if (dataObject == undefined) return false;

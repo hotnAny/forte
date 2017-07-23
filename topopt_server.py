@@ -191,6 +191,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _mode = float(safe_retrieve_one(post_data, 'mode', DEFAULTMODE))
     _lesspoints = safe_retrieve_all(_designobj, 'lesspoints', None)
     _lessvalues = safe_retrieve_all(_designobj, 'lessvalues', None)
+    _lastoutput = str(safe_retrieve_all(_designobj, 'lastoutput', None))
 
     #
     #   convert to matlab input
@@ -247,6 +248,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matinput['LESSVALS'] = _lessvalues
     # print matinput['LESSVALS']
 
+    matinput['LASTOUTPUT'] = _lastoutput
+
     # [debug] do NOT remove
     # vis_str = ''
     # for j in xrange(0, nely+1):
@@ -279,7 +282,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
-        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['LESSELMS'], matinput['LESSVALS']]
+        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['LESSELMS'], matinput['LESSVALS'], \
+        matinput['LASTOUTPUT']]
 
     input_file = open(INPUTFILE, 'w')
     input_file.write('&'.join([str(x) for x in matargs]))

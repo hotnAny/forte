@@ -74,12 +74,12 @@ FORTE.fetchData = function () {
         FORTE.design.bitmaps = [];
         FORTE.renderStarted = false;
         FORTE.pointer = 0;
-    } 
+    }
     // else if (FORTE.state == 'finished') {
     //     return;
     // }
     else {
-        if (FORTE.outDir == undefined || FORTE.outDir == null)
+        if (FORTE.outputDir == undefined || FORTE.outputDir == null)
             console.error('output directory unavailable');
         FORTE.readOptimizationOutput();
     }
@@ -118,7 +118,7 @@ FORTE.getBitmap = function (text) {
 //  routine to read stress output from optimization
 //
 FORTE.readStressData = function () {
-    var baseDir = FORTE.outDir + '/' + FORTE.trial;
+    var baseDir = FORTE.outputDir + '/' + FORTE.trial;
     var stressFieldLabels = ['before', 'after'];
     for (var i = 0; i < stressFieldLabels.length; i++) {
         var label = stressFieldLabels[i];
@@ -166,8 +166,10 @@ FORTE.readStressData = function () {
 //  routine to read optimization output
 //
 FORTE.readOptimizationOutput = function () {
-    var baseDir = FORTE.outDir + '/' + FORTE.trial;
-    XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out',
+    // var baseDir = FORTE.outputDir + '/' + FORTE.trial;
+    FORTE.outputFile = FORTE.outputDir + '/' + FORTE.trial + '_' + (FORTE.itrCounter + 1) + '.out';
+    // XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out',
+    XAC.readTextFile(FORTE.outputFile,
         // on success
         function (text) {
             FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 0.75, FORTE.fetchInterval * 0.9);
@@ -185,6 +187,8 @@ FORTE.readOptimizationOutput = function () {
             FORTE.itrCounter += 1;
             FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
             FORTE.failureCounter = 0;
+
+            FORTE.lastOutputFile = FORTE.outputFile;
         },
         // on failure
         function () {
@@ -202,6 +206,7 @@ FORTE.readOptimizationOutput = function () {
                     var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
                     var label = 'layer ' + (numLayers + 1);
                     FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
+                    FORTE.optimizedLayer.lastOutputFile = FORTE.lastOutputFile;
                     var tag = FORTE.optimizedLayerList.tagit('createTag', label);
                     FORTE.showOptimizedLayer(tag, label);
 

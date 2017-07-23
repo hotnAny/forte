@@ -1,8 +1,8 @@
 // ......................................................................................................
 //
-//  a class of forte design, v0.1
+//  a class of forte design, primarily data/parameters for topology optimization, v0.2
 //
-//  by xiangchen@acm.org, 06/2017
+//  by xiangchen@acm.org, 07/2017
 //
 // ......................................................................................................
 
@@ -10,7 +10,6 @@ FORTE.Design = function (width, height) {
     this.width = width;
     this.height = height;
     this.designPoints = [];
-    // this.emptyPoints = [];
     this.loadPoints = [];
     this.loadValues = [];
     this.boundaryPoints = [];
@@ -98,8 +97,6 @@ FORTE.Design.prototype.getData = function () {
 
     var designPoints = [];
     for (p of this.designPoints) designPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
-    // var emptyPoints = [];
-    // for (p of this.emptyPoints) emptyPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     var loadPoints = [];
     for (lps of this.loadPoints)
         for (p of lps) loadPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
@@ -108,11 +105,15 @@ FORTE.Design.prototype.getData = function () {
         for (v of lvs) loadValues.push(v);
     var boundaryPoints = [];
     for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
+    
     // less material
     var lessPoints = [];
     for (p of this.lessPoints) lessPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     var lessValues = [];
     for (v of this.lessValues) lessValues.push(v);
+
+    // previous result
+    var lastOutputFile = this.lastOutputFile;
 
     // [debug] do NOT remove
     // var arr = XAC.initMDArray([height, width], ' ');
@@ -136,11 +137,11 @@ FORTE.Design.prototype.getData = function () {
     return {
         resolution: [width, height],
         design: designPoints,
-        // emptiness: emptyPoints,
         loadpoints: loadPoints,
         loadvalues: loadValues,
         boundaries: boundaryPoints,
         lesspoints: lessPoints,
-        lessvalues: lessValues
+        lessvalues: lessValues,
+        lastoutput: lastOutputFile
     };
 }
