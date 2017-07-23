@@ -189,8 +189,9 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
     _similarity = float(safe_retrieve_one(post_data, 'similarity', 1))
     _mode = float(safe_retrieve_one(post_data, 'mode', DEFAULTMODE))
-    _lesspoints = safe_retrieve_all(_designobj, 'lesspoints', None)
-    _lessvalues = safe_retrieve_all(_designobj, 'lessvalues', None)
+    # _lesspoints = safe_retrieve_all(_designobj, 'lesspoints', None)
+    # _lessvalues = safe_retrieve_all(_designobj, 'lessvalues', None)
+    _slimpoints = safe_retrieve_all(_designobj, 'slimpoints', None)
     _lastoutput = str(safe_retrieve_all(_designobj, 'lastoutput', None))
 
     #
@@ -244,8 +245,10 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
     matinput['PASVELMS'] = [] #[elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
     matinput['FAVELMS'] = matinput['ACTVELMS']
-    matinput['LESSELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _lesspoints]
-    matinput['LESSVALS'] = _lessvalues
+
+    matinput['SLIMELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _slimpoints]
+    # matinput['LESSELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _lesspoints]
+    # matinput['LESSVALS'] = _lessvalues
     # print matinput['LESSVALS']
 
     matinput['LASTOUTPUT'] = _lastoutput
@@ -282,8 +285,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
-        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['LESSELMS'], matinput['LESSVALS'], \
-        matinput['LASTOUTPUT']]
+        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['SLIMELMS'], matinput['LASTOUTPUT']]
+        # matinput['LESSELMS'], matinput['LESSVALS'], 
 
     input_file = open(INPUTFILE, 'w')
     input_file.write('&'.join([str(x) for x in matargs]))

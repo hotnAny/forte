@@ -118,6 +118,7 @@ $(document).ready(function () {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.finishOptimization();
             } else {
+                FORTE.resetRadioButtons();
                 if (FORTE.startOptimization(FORTE.GETVARIATION)) {
                     FORTE.setButtonForOptimization($(this));
                 }
@@ -132,6 +133,7 @@ $(document).ready(function () {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.finishOptimization();
             } else {
+                FORTE.resetRadioButtons();
                 if (FORTE.startOptimization(FORTE.ADDSTRUCTS)) {
                     FORTE.setButtonForOptimization($(this));
                 }
@@ -193,17 +195,19 @@ $(document).ready(function () {
             // layers of editing
             //
             FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLACK);
-            FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
+            // FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
+            FORTE.slimLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
             FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
             FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
 
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
-            FORTE.layers = [FORTE.designLayer, FORTE.lessMaterialLayer, FORTE.loadLayer, FORTE.boundaryLayer];
+            FORTE.layers = [FORTE.designLayer, FORTE.slimLayer, FORTE.loadLayer, FORTE.boundaryLayer];
             FORTE.layer = FORTE.designLayer;
             FORTE.toggleLayerZindex(0);
 
             FORTE.customizeLoadLayer();
+            FORTE.customizeSlimLayer();
             FORTE.changeResolution();
 
             FORTE.optimizedLayers = [];
@@ -346,8 +350,10 @@ FORTE.render = function (pointer) {
             FORTE.render();
         }, FORTE.renderInterval);
     } else {
-        FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-        log('rendering stopped.');
+        if (FORTE.renderStarted) {
+            FORTE.updateStressAcrossLayers(FORTE.toShowStress);
+            log('rendering stopped.');
+        }
     }
 }
 
@@ -355,26 +361,23 @@ FORTE.render = function (pointer) {
 //  start the optimization
 //
 FORTE.startOptimization = function (mode) {
-    FORTE.resetRadioButtons();
 
-    var keys = Object.keys(FORTE.htOptimizedLayers);
-    for (key of keys) {
-        var layer = FORTE.htOptimizedLayers[key];
-        if (layer != undefined) layer._canvas.remove();
-    }
+    // var keys = Object.keys(FORTE.htOptimizedLayers);
+    // for (key of keys) {
+    //     var layer = FORTE.htOptimizedLayers[key];
+    //     if (layer != undefined) layer._canvas.remove();
+    // }
 
     FORTE.design.designPoints = FORTE.designLayer.package();
     // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-    var lessMaterialInfo = FORTE.lessMaterialLayer.package();
-    FORTE.design.lessPoints = lessMaterialInfo.points;
-    FORTE.design.lessValues = lessMaterialInfo.values;
+    // var lessMaterialInfo = FORTE.lessMaterialLayer.package();
+    // FORTE.design.lessPoints = lessMaterialInfo.points;
+    // FORTE.design.lessValues = lessMaterialInfo.values;
+    FORTE.design.slimPoints = FORTE.slimLayer.package();
 
-    // [exp]
-    // FORTE.design.prevDesignPoints = FORTE.focusedDesignLayer == undefined ? [] :
-    //     FORTE.focusedDesignLayer.package();
-    FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
-        FORTE.focusedDesignLayer.lastOutputFile;
+    // FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
+    //     FORTE.focusedDesignLayer.lastOutputFile;
 
     var dataObject = FORTE.design.getData();
     if (dataObject == undefined) return false;
@@ -382,6 +385,7 @@ FORTE.startOptimization = function (mode) {
     FORTE.resolution = dataObject.resolution;
 
     var data = JSON.stringify(dataObject);
+    var started = false;
     if (data != undefined) {
         var fields = ['trial', 'forte', 'material', 'similarity', 'mode'];
         FORTE.trial = 'forte_' + Date.now();
@@ -392,9 +396,19 @@ FORTE.startOptimization = function (mode) {
         for (id of FORTE.timeouts) clearTimeout(id);
         FORTE.timeouts = [];
         FORTE.fetchData();
-        return true;
+        started = true;
     }
-    return false;
+
+    // var designLayer = FORTE.focusedDesignLayer == undefined ? FORTE.designLayer :
+    //     FORTE.focusedDesignLayer;
+    // FORTE.design.bitmaps = [designLayer._bitmap.clone()];
+    // FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
+    // FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
+    // FORTE.renderStarted = false;
+    // FORTE.pointer = 0;
+    // FORTE.render(0);
+
+    return started;
 }
 
 //

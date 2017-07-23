@@ -16,10 +16,11 @@ actvelms = str2num(char(args(12)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
 lambda = str2double(args(16));
-lesselms = str2num(char(args(17)));
-lessvals = str2num(char(args(18)));
-lastoutput = char(args(19));
-debugging = str2num(char(args(20)));
+% lesselms = str2num(char(args(17)));
+% lessvals = str2num(char(args(18)));
+slimelms = str2num(char(args(17)));
+lastoutput = char(args(18));
+debugging = str2num(char(args(19)));
 
 % [exp]
 % try weight = str2double(args(18)); catch weight=0; end
@@ -118,7 +119,8 @@ end
 %% [xac] [exp]
 % matweight = weight;
 matmask = ones(nely,nelx);
-matmask(lesselms) = lessvals;
+% matmask(lesselms) = lessvals;
+matmask(slimelms) = 0.5;
 gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
 matmask = conv2(matmask, gaussianmask, 'same');
 matmask = matmask * nely * nelx / sum(matmask(:));

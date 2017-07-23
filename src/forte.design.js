@@ -107,13 +107,19 @@ FORTE.Design.prototype.getData = function () {
     for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     
     // less material
-    var lessPoints = [];
-    for (p of this.lessPoints) lessPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
-    var lessValues = [];
-    for (v of this.lessValues) lessValues.push(v);
+    // var lessPoints = [];
+    // for (p of this.lessPoints) lessPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
+    // var lessValues = [];
+    // for (v of this.lessValues) lessValues.push(v);
 
-    // previous result
+    // [one time only] points to slim the design
+    var slimPoints = [];
+    for (p of this.slimPoints) slimPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
+    this.slimPoints = [];
+
+    // [one time only] previous result
     var lastOutputFile = this.lastOutputFile;
+    this.lastOutputFile = undefined;
 
     // [debug] do NOT remove
     // var arr = XAC.initMDArray([height, width], ' ');
@@ -122,7 +128,6 @@ FORTE.Design.prototype.getData = function () {
     // for (p of loadPoints) arr[p[1]][p[0]] = '*';
     // for (p of boundaryPoints) arr[p[1]][p[0]] = '#'
     //     for (p of lessPoints) arr[p[1]][p[0]] = '$'
-
     // var str = ''
     // for (row of arr)
     //     str += row.toString() + '\n'
@@ -140,8 +145,9 @@ FORTE.Design.prototype.getData = function () {
         loadpoints: loadPoints,
         loadvalues: loadValues,
         boundaries: boundaryPoints,
-        lesspoints: lessPoints,
-        lessvalues: lessValues,
+        // lesspoints: lessPoints,
+        // lessvalues: lessValues,
+        slimpoints: slimPoints,
         lastoutput: lastOutputFile
     };
 }

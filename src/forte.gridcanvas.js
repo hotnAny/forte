@@ -33,6 +33,9 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._canvas.mouseup(this.drawUp.bind(this));
 
     this._enabled = true;
+
+    this._defaultAlpha = 1;
+    this._canvas.css('opacity', this._defaultAlpha);
 };
 
 // max canvas height to stay within a normal screen
@@ -45,29 +48,29 @@ FORTE.GridCanvas.prototype = {
 //
 //  [obselete]
 //
-FORTE.GridCanvas.prototype.remove = function () {
-    this._canvas.remove();
-    this._removed = true;
-}
+// FORTE.GridCanvas.prototype.remove = function () {
+//     this._canvas.remove();
+//     this._removed = true;
+// }
 
 //
 //  [obselete]
 //
-FORTE.GridCanvas.prototype.revive = function () {
-    if (!this._removed) return;
-    this._parent.append(this._canvas);
-    this._canvas.mousedown(this.drawDown.bind(this));
-    this._canvas.mousemove(this.drawMove.bind(this));
-    this._canvas.mouseup(this.drawUp.bind(this));
-    this._removed = false;
-}
+// FORTE.GridCanvas.prototype.revive = function () {
+//     if (!this._removed) return;
+//     this._parent.append(this._canvas);
+//     this._canvas.mousedown(this.drawDown.bind(this));
+//     this._canvas.mousemove(this.drawMove.bind(this));
+//     this._canvas.mouseup(this.drawUp.bind(this));
+//     this._removed = false;
+// }
 
 //
 //  enable the canvas and set opacity to 1
 //
 FORTE.GridCanvas.prototype.enable = function () {
     this._enabled = true;
-    this._canvas.css('opacity', 1);
+    this._canvas.css('opacity', this._defaultAlpha);
 }
 
 //
@@ -156,10 +159,8 @@ FORTE.GridCanvas.prototype._doDraw = function (e) {
 //  clear the canvas
 //
 FORTE.GridCanvas.prototype.clear = function () {
-    // if (this._context != undefined) {
     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     this._bitmap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
-    // }
 }
 
 //

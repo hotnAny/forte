@@ -31,7 +31,7 @@ FORTE.changeResolution = function () {
     FORTE.loadLayer._context.lineJoin = 'round';
     FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
 
-    FORTE.lessMaterialLayer._strokeRadius = 1;
+    // FORTE.lessMaterialLayer._strokeRadius = 1;
 }
 
 //
@@ -47,7 +47,7 @@ FORTE.switchLayer = function (idx) {
         FORTE.toggleLayerZindex(idx);
     }
 
-    // if(idx == 0) FORTE.focusedDesignLayer = FORTE.layers[idx];
+    if (idx == 0) FORTE.focusedDesignLayer = FORTE.layers[idx];
 }
 
 //
@@ -125,7 +125,7 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
         varr[2] *= -1;
         distrVectors.push(varr);
 
-        // [debug] to show the load direction at each point
+        // [debug] do NOT remove - to show the load direction at each point
         // point.x *= FORTE.loadLayer._cellSize;
         // point.y *= FORTE.loadLayer._cellSize;
         // FORTE.loadLayer._context.lineWidth = 1;
@@ -220,7 +220,7 @@ FORTE.customizeLoadLayer = function () {
             this.__loadValueLayer._context.strokeStyle = this._context.fillStyle;
             this.__loadValueLayer._context.lineWidth = this._context.lineWidth;
             this.__loadValueLayer._context.lineJoin = this._context.lineJoin;
-            
+
             this.__strokePoints = this._strokePoints.clone();
 
             // this.__strokePoints = [this._strokePoints[0]];
@@ -228,4 +228,20 @@ FORTE.customizeLoadLayer = function () {
             this._enabled = false;
         }
     }.bind(FORTE.loadLayer));
+}
+
+//
+//
+//
+FORTE.customizeSlimLayer = function () {
+    FORTE.slimLayer._defaultAlpha = 0.75;
+    FORTE.slimLayer._canvas.css('opacity', this._defaultAlpha);
+    FORTE.slimLayer._canvas.mouseup(function (e) {
+        if (!this._enabled) return;
+        this._isDown = false;
+        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+        FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
+        FORTE.focusedDesignLayer.lastOutputFile;
+        FORTE.startOptimization(FORTE.GETVARIATION)
+    }.bind(FORTE.slimLayer));
 }

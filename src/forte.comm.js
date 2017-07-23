@@ -20,8 +20,8 @@ FORTE.loadForteFile = function (e) {
 
     FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0);
     // FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0);
-    FORTE.lessMaterialLayer._regions = dataObject.lessMaterialRegions;
-    FORTE.lessMaterialLayer._update();
+    // FORTE.lessMaterialLayer._regions = dataObject.lessMaterialRegions;
+    // FORTE.lessMaterialLayer._update();
 
     FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
     for (arrow of dataObject.loadArrows) {
@@ -66,8 +66,8 @@ FORTE.fetchData = function () {
         log('data fetching started');
         FORTE.state = 'ongoing';
         FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL));
-        FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
-        FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
+        // FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
+        // FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
         FORTE.__misses = 0;
@@ -75,9 +75,6 @@ FORTE.fetchData = function () {
         FORTE.renderStarted = false;
         FORTE.pointer = 0;
     }
-    // else if (FORTE.state == 'finished') {
-    //     return;
-    // }
     else {
         if (FORTE.outputDir == undefined || FORTE.outputDir == null)
             console.error('output directory unavailable');
@@ -177,6 +174,14 @@ FORTE.readOptimizationOutput = function () {
             FORTE.design.bitmaps.push(bitmap);
             if (FORTE.itrCounter >= FORTE.DELAYEDSTART && !FORTE.renderStarted) {
                 FORTE.renderInterval = FORTE.RENDERINTERVAL;
+
+                var keys = Object.keys(FORTE.htOptimizedLayers);
+                for (key of keys) {
+                    var layer = FORTE.htOptimizedLayers[key];
+                    if (layer != undefined) layer._canvas.remove();
+                }
+                FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
+                FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
                 FORTE.render(0);
                 FORTE.renderStarted = true;
                 time();
