@@ -108,37 +108,58 @@ $(document).ready(function () {
                 FORTE.similarityRatio = FORTE.MINSIMILARITYRATIO * (1 - value) +
                     FORTE.MAXSIMILARITYRATIO * value;
             }
-        })
+        });
+
+        // var labels = [FORTE.LABELGETVARIATION, FORTE.LABELADDSTRUCTS];
+        // XAC.makeRadioButtons('brushButtons', labels, [FORTE.GETVARIATION, FORTE.ADDSTRUCTS],
+        //     $('#tdOptType'), FORTE.GETVARIATION, false);
+        // $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
+        //     FORTE.optimizationType = $(e.target).val();
+        // });
+
+        // control optimization
+        $('#btnOptCtrl').attr('src', FORTE.ICONERASER);
+        $('#btnOptCtrl').button();
+        $('#btnOptCtrl').click(function (e) {
+            if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
+                FORTE.finishOptimization();
+            } else {
+                if(FORTE.startOptimization()) {
+                    FORTE.resetRadioButtons();
+                    FORTE.setButtonForOptimization($(this));
+                }
+            }
+        });
 
         // get variations
-        $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
-        $('#btnGetVariation').button();
-        $('#btnGetVariation').css('min-width', $('#btnGetVariation').width());
-        $('#btnGetVariation').click(function (e) {
-            if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
-                FORTE.finishOptimization();
-            } else {
-                FORTE.resetRadioButtons();
-                if (FORTE.startOptimization(FORTE.GETVARIATION)) {
-                    FORTE.setButtonForOptimization($(this));
-                }
-            }
-        });
+        // $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
+        // $('#btnGetVariation').button();
+        // $('#btnGetVariation').css('min-width', $('#btnGetVariation').width());
+        // $('#btnGetVariation').click(function (e) {
+        //     if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
+        //         FORTE.finishOptimization();
+        //     } else {
+        //         FORTE.resetRadioButtons();
+        //         if (FORTE.startOptimization(FORTE.GETVARIATION)) {
+        //             FORTE.setButtonForOptimization($(this));
+        //         }
+        //     }
+        // });
 
         // add structs
-        $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
-        $('#btnAddStructs').button();
-        $('#btnAddStructs').css('min-width', $('#btnAddStructs').width());
-        $('#btnAddStructs').click(function (e) {
-            if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
-                FORTE.finishOptimization();
-            } else {
-                FORTE.resetRadioButtons();
-                if (FORTE.startOptimization(FORTE.ADDSTRUCTS)) {
-                    FORTE.setButtonForOptimization($(this));
-                }
-            }
-        });
+        // $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
+        // $('#btnAddStructs').button();
+        // $('#btnAddStructs').css('min-width', $('#btnAddStructs').width());
+        // $('#btnAddStructs').click(function (e) {
+        //     if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
+        //         FORTE.finishOptimization();
+        //     } else {
+        //         FORTE.resetRadioButtons();
+        //         if (FORTE.startOptimization(FORTE.ADDSTRUCTS)) {
+        //             FORTE.setButtonForOptimization($(this));
+        //         }
+        //     }
+        // });
 
         // show stress
         $('#btnShow').attr('src', FORTE.ICONEYE);
@@ -273,7 +294,7 @@ FORTE.resetRadioButtons = function (idx) {
     var labels = [];
     for (src of imgSrcs) labels.push('<img class="icon" src="' + src + '"></img>');
     FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', labels, [0, 1, 2, 3],
-        $('#tdBrushes'), idx);
+        $('#tdBrushes'), idx, false);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
         var checked = $(e.target).attr('checked');
         if (checked == 'checked') {
@@ -360,13 +381,20 @@ FORTE.render = function (pointer) {
 //
 //  start the optimization
 //
-FORTE.startOptimization = function (mode) {
+FORTE.startOptimization = function () {
 
     // var keys = Object.keys(FORTE.htOptimizedLayers);
     // for (key of keys) {
     //     var layer = FORTE.htOptimizedLayers[key];
     //     if (layer != undefined) layer._canvas.remove();
     // }
+
+    var mode;
+    if ($('#rbGetVariation')[0].checked) {
+        mode = FORTE.GETVARIATION;
+    } else if ($('#rbAddStructs')[0].checked) {
+        mode = FORTE.ADDSTRUCTS;
+    }
 
     FORTE.design.designPoints = FORTE.designLayer.package();
     // load points are recorded as soon as loads are created
@@ -417,9 +445,7 @@ FORTE.startOptimization = function (mode) {
 FORTE.finishOptimization = function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
     FORTE.state = 'finished';
-
-    FORTE.resetButtonFromOptimization($('#btnGetVariation'), FORTE.LABELGETVARIATION);
-    FORTE.resetButtonFromOptimization($('#btnAddStructs'), FORTE.LABELADDSTRUCTS);
+    FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 }
 
 //
@@ -482,7 +508,7 @@ jQuery.fn.extend({
 //  set button for optimization (changes to 'finish', pulses, disables others, etc.)
 //
 FORTE.setButtonForOptimization = function (button) {
-    button.html('finish');
+    // button.html('finish');
     button.attr('pulsing', true);
     button.pulse(button.css('background-color'), FORTE.COLORBLUE, 1000);
     button.attr('bg-original', button.css('background-color'));
@@ -491,8 +517,8 @@ FORTE.setButtonForOptimization = function (button) {
 //
 //  reset button from optimization (reset to original state)
 //
-FORTE.resetButtonFromOptimization = function (button, label) {
-    button.html(label);
+FORTE.resetButtonFromOptimization = function (button) {
+    // button.html(label);
     button.stop();
     button.attr('pulsing', false);
     button.css('background-color', button.attr('bg-original'));

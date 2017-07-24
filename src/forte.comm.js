@@ -220,8 +220,7 @@ FORTE.readOptimizationOutput = function () {
 
                     log('misses: ' + FORTE.__misses);
 
-                    FORTE.resetButtonFromOptimization($('#btnGetVariation'), FORTE.LABELGETVARIATION);
-                    FORTE.resetButtonFromOptimization($('#btnAddStructs'), FORTE.LABELADDSTRUCTS);
+                    FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
                     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
                 } else {
