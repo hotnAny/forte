@@ -21,7 +21,9 @@ FORTE.loadForteFile = function (e) {
     FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0);
     FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
     for (arrow of dataObject.loadArrows) {
-        FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
+        var w = FORTE.loadLayer._canvas[0].width;
+        var h = FORTE.loadLayer._canvas[0].height;
+        FORTE.drawArrow(FORTE.loadLayer._context, arrow[0] * w, arrow[1] * h, arrow[2] * w, arrow[3] * h);
     }
     FORTE.design.loadPoints = dataObject.loadPoints;
     FORTE.design.loadValues = dataObject.loadValues;
@@ -37,7 +39,7 @@ FORTE.saveForteToFile = function () {
         height: FORTE.height,
         designBitmap: FORTE.designLayer._bitmap,
         loadBitmap: FORTE.loadLayer._bitmap,
-        loadArrows: FORTE.loadLayer._arrows,
+        loadArrows: FORTE.loadLayer.normalizedArrows(),
         loadPoints: FORTE.design.loadPoints,
         loadValues: FORTE.design.loadValues,
         boundaryBitmap: FORTE.boundaryLayer._bitmap
@@ -68,8 +70,7 @@ FORTE.fetchData = function () {
         FORTE.design.bitmaps = [];
         FORTE.renderStarted = false;
         FORTE.pointer = 0;
-    }
-    else {
+    } else {
         if (FORTE.outputDir == undefined || FORTE.outputDir == null)
             console.error('output directory unavailable');
         FORTE.readOptimizationOutput();

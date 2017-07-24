@@ -228,6 +228,16 @@ FORTE.customizeLoadLayer = function () {
             this._enabled = false;
         }
     }.bind(FORTE.loadLayer));
+
+    // 
+    FORTE.loadLayer.normalizedArrows = function () {
+        var w = this._canvas[0].width;
+        var h = this._canvas[0].height;
+        var arrows = [];
+        for (arrow of this._arrows)
+            arrows.push([arrow[0] / w, arrow[1] / h, arrow[2] / w, arrow[3] / h]);
+        return arrows;
+    }
 }
 
 //
@@ -241,7 +251,7 @@ FORTE.customizeSlimLayer = function () {
         this._isDown = false;
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
-        FORTE.focusedDesignLayer.lastOutputFile;
+            FORTE.focusedDesignLayer.lastOutputFile;
         FORTE.startOptimization(FORTE.GETVARIATION)
     }.bind(FORTE.slimLayer));
 }

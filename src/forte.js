@@ -88,11 +88,11 @@ $(document).ready(function () {
         FORTE.resetRadioButtons(0);
 
         // eraser
-        $('#btnErase').attr('src', FORTE.ICONERASER);
-        $('#btnErase').button();
-        $('#btnErase').click(function (e) {
+        // $('#btnErase').attr('src', FORTE.ICONERASER);
+        // $('#btnErase').button();
+        // $('#btnErase').click(function (e) {
 
-        });
+        // });
 
         //  similarity slider
         FORTE.similarityRatio = 5;
@@ -118,15 +118,17 @@ $(document).ready(function () {
         // });
 
         // control optimization
-        $('#btnOptCtrl').attr('src', FORTE.ICONERASER);
+        $('#btnOptCtrl').attr('src', FORTE.ICONRUN);
         $('#btnOptCtrl').button();
         $('#btnOptCtrl').click(function (e) {
             if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
                 FORTE.finishOptimization();
+                $('#btnOptCtrl').attr('src', FORTE.ICONRUN);
             } else {
                 if(FORTE.startOptimization()) {
                     FORTE.resetRadioButtons();
                     FORTE.setButtonForOptimization($(this));
+                    $('#btnOptCtrl').attr('src', FORTE.ICONSTOP);
                 }
             }
         });

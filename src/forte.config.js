@@ -38,6 +38,8 @@ FORTE.ICONBOUNDARY = 'assets/boundary.svg';
 FORTE.ICONERASER = 'assets/eraser.svg';
 FORTE.ICONSAVE = 'assets/save.svg';
 FORTE.ICONEYE = 'assets/eye.svg';
+FORTE.ICONRUN = 'assets/run.svg';
+FORTE.ICONSTOP = 'assets/stop.svg';
 
 FORTE.MINSLIDER = 0;
 FORTE.MAXSLIDER = 100;
