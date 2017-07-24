@@ -88,11 +88,12 @@ $(document).ready(function () {
         FORTE.resetRadioButtons(0);
 
         // eraser
-        // $('#btnErase').attr('src', FORTE.ICONERASER);
-        // $('#btnErase').button();
-        // $('#btnErase').click(function (e) {
-
-        // });
+        $('#btnErase').attr('src', FORTE.ICONERASER);
+        $('#btnErase').button();
+        $('#btnErase').click(function (e) {
+            $(this).toggleClass('ui-state-active');
+            for (layer of FORTE.layers) layer._toErase = !layer._toErase;
+        });
 
         //  similarity slider
         FORTE.similarityRatio = 5;
@@ -110,13 +111,6 @@ $(document).ready(function () {
             }
         });
 
-        // var labels = [FORTE.LABELGETVARIATION, FORTE.LABELADDSTRUCTS];
-        // XAC.makeRadioButtons('brushButtons', labels, [FORTE.GETVARIATION, FORTE.ADDSTRUCTS],
-        //     $('#tdOptType'), FORTE.GETVARIATION, false);
-        // $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
-        //     FORTE.optimizationType = $(e.target).val();
-        // });
-
         // control optimization
         $('#btnOptCtrl').attr('src', FORTE.ICONRUN);
         $('#btnOptCtrl').button();
@@ -125,43 +119,13 @@ $(document).ready(function () {
                 FORTE.finishOptimization();
                 $('#btnOptCtrl').attr('src', FORTE.ICONRUN);
             } else {
-                if(FORTE.startOptimization()) {
+                if (FORTE.startOptimization()) {
                     FORTE.resetRadioButtons();
                     FORTE.setButtonForOptimization($(this));
                     $('#btnOptCtrl').attr('src', FORTE.ICONSTOP);
                 }
             }
         });
-
-        // get variations
-        // $('#btnGetVariation').html(FORTE.LABELGETVARIATION);
-        // $('#btnGetVariation').button();
-        // $('#btnGetVariation').css('min-width', $('#btnGetVariation').width());
-        // $('#btnGetVariation').click(function (e) {
-        //     if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
-        //         FORTE.finishOptimization();
-        //     } else {
-        //         FORTE.resetRadioButtons();
-        //         if (FORTE.startOptimization(FORTE.GETVARIATION)) {
-        //             FORTE.setButtonForOptimization($(this));
-        //         }
-        //     }
-        // });
-
-        // add structs
-        // $('#btnAddStructs').html(FORTE.LABELADDSTRUCTS);
-        // $('#btnAddStructs').button();
-        // $('#btnAddStructs').css('min-width', $('#btnAddStructs').width());
-        // $('#btnAddStructs').click(function (e) {
-        //     if (FORTE.state == 'started' || FORTE.state == 'ongoing') {
-        //         FORTE.finishOptimization();
-        //     } else {
-        //         FORTE.resetRadioButtons();
-        //         if (FORTE.startOptimization(FORTE.ADDSTRUCTS)) {
-        //             FORTE.setButtonForOptimization($(this));
-        //         }
-        //     }
-        // });
 
         // show stress
         $('#btnShow').attr('src', FORTE.ICONEYE);
@@ -194,7 +158,7 @@ $(document).ready(function () {
             }
         });
 
-        $('#divMoreCtrl').css('background-color', 'rgba(255, 255, 255, 0.75)');
+        $('#divMoreCtrl').css('background-color', FORTE.BGCOLORCANVAS); //'rgba(255, 255, 255, 0.75)');
         $('#divMoreCtrl').css('z-index', ++FORTE.MAXZINDEX);
         $('#divMoreCtrl').css('position', 'absolute');
         var _parentOffset = $('#tdCanvas').offset();
@@ -218,19 +182,20 @@ $(document).ready(function () {
             // layers of editing
             //
             FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLACK);
+            FORTE.emptyLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
             // FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
-            FORTE.slimLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
+            FORTE.eraserLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.BGCOLORCANVAS);
             FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
             FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
 
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
-            FORTE.layers = [FORTE.designLayer, FORTE.slimLayer, FORTE.loadLayer, FORTE.boundaryLayer];
+            FORTE.layers = [FORTE.designLayer, FORTE.emptyLayer, FORTE.loadLayer, FORTE.boundaryLayer];
             FORTE.layer = FORTE.designLayer;
-            FORTE.toggleLayerZindex(0);
+            FORTE.switchLayer(0);
 
             FORTE.customizeLoadLayer();
-            FORTE.customizeSlimLayer();
+            // FORTE.customizeEraserLayer();
             FORTE.changeResolution();
 
             FORTE.optimizedLayers = [];
@@ -295,7 +260,7 @@ FORTE.resetRadioButtons = function (idx) {
     var imgSrcs = [FORTE.ICONDESIGN, FORTE.ICONVOID, FORTE.ICONLOAD, FORTE.ICONBOUNDARY];
     var labels = [];
     for (src of imgSrcs) labels.push('<img class="icon" src="' + src + '"></img>');
-    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', labels, [0, 1, 2, 3],
+    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', labels, [0, 1, 2, 3, 4],
         $('#tdBrushes'), idx, false);
     $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
         var checked = $(e.target).attr('checked');
@@ -384,13 +349,6 @@ FORTE.render = function (pointer) {
 //  start the optimization
 //
 FORTE.startOptimization = function () {
-
-    // var keys = Object.keys(FORTE.htOptimizedLayers);
-    // for (key of keys) {
-    //     var layer = FORTE.htOptimizedLayers[key];
-    //     if (layer != undefined) layer._canvas.remove();
-    // }
-
     var mode;
     if ($('#rbGetVariation')[0].checked) {
         mode = FORTE.GETVARIATION;
@@ -401,10 +359,7 @@ FORTE.startOptimization = function () {
     FORTE.design.designPoints = FORTE.designLayer.package();
     // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-    // var lessMaterialInfo = FORTE.lessMaterialLayer.package();
-    // FORTE.design.lessPoints = lessMaterialInfo.points;
-    // FORTE.design.lessValues = lessMaterialInfo.values;
-    FORTE.design.slimPoints = FORTE.slimLayer.package();
+    FORTE.design.slimPoints = FORTE.eraserLayer.package();
 
     // FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
     //     FORTE.focusedDesignLayer.lastOutputFile;
@@ -512,6 +467,7 @@ FORTE.setButtonForOptimization = function (button) {
 //
 FORTE.resetButtonFromOptimization = function (button) {
     // button.html(label);
+    button.attr('src', FORTE.ICONSTOP);
     button.stop();
     button.attr('pulsing', false);
     button.css('background-color', button.attr('bg-original'));

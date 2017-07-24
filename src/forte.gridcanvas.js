@@ -46,26 +46,6 @@ FORTE.GridCanvas.prototype = {
 };
 
 //
-//  [obselete]
-//
-// FORTE.GridCanvas.prototype.remove = function () {
-//     this._canvas.remove();
-//     this._removed = true;
-// }
-
-//
-//  [obselete]
-//
-// FORTE.GridCanvas.prototype.revive = function () {
-//     if (!this._removed) return;
-//     this._parent.append(this._canvas);
-//     this._canvas.mousedown(this.drawDown.bind(this));
-//     this._canvas.mousemove(this.drawMove.bind(this));
-//     this._canvas.mouseup(this.drawUp.bind(this));
-//     this._removed = false;
-// }
-
-//
 //  enable the canvas and set opacity to 1
 //
 FORTE.GridCanvas.prototype.enable = function () {
@@ -104,7 +84,7 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     this._isDown = true;
 
     this._strokePoints = [];
-    this._doDraw(e);
+    this._doDraw(e, this._toErase);
 };
 
 //
@@ -114,7 +94,7 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
     if (!this._enabled) return;
     if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
 
-    this._doDraw(e);
+    this._doDraw(e, this._toErase);
 };
 
 //
@@ -128,7 +108,7 @@ FORTE.GridCanvas.prototype.drawUp = function (e) {
 //
 //  actually perform the drawing based on a mouse event
 //
-FORTE.GridCanvas.prototype._doDraw = function (e) {
+FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
     var canvasOffset = this._canvas.offset();
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
@@ -141,10 +121,16 @@ FORTE.GridCanvas.prototype._doDraw = function (e) {
             var y = Math.max(0, Math.min(this._gridHeight - 1, ycenter + dy));
             this._context.globalAlpha = 1 - (Math.abs(dx) + Math.abs(dy)) * alphaDescent;
             this._context.beginPath();
-            this._context.rect(x * this._cellSize, y * this._cellSize,
-                this._cellSize, this._cellSize);
-            this._context.fill();
-            this._bitmap[y][x] = 1;
+            if (toErase) {
+                this._context.clearRect(x * this._cellSize, y * this._cellSize,
+                    this._cellSize, this._cellSize);
+                this._bitmap[y][x] = 0;
+            } else {
+                this._context.rect(x * this._cellSize, y * this._cellSize,
+                    this._cellSize, this._cellSize);
+                this._context.fill();
+                this._bitmap[y][x] = 1;
+            }
             this._strokePoints.push({
                 x: x,
                 y: y
@@ -239,16 +225,11 @@ FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
     this._canvas.css('top', parentOffset.top);
 }
 
-// //
-// //
-// //
-// FORTE.GridCanvas.prototype.getImageData = function () {
-//     return this._context.getImageData(0, 0, this._canvas[0].width, this._canvas[0].height);
-// }
-
-// //
-// //
-// //
-// FORTE.GridCanvas.prototype.drawFromImageData = function (data) {
-//     this._context.putImageData(data, 0, 0);
-// }
+//
+//
+//
+FORTE.GridCanvas.prototype.eraseInLayer = function (points) {
+    for (p of points) {
+        this._bitmap[p.y][p.x] = 0;
+    }
+}
