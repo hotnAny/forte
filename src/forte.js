@@ -427,15 +427,6 @@ FORTE.startOptimization = function () {
         started = true;
     }
 
-    // var designLayer = FORTE.focusedDesignLayer == undefined ? FORTE.designLayer :
-    //     FORTE.focusedDesignLayer;
-    // FORTE.design.bitmaps = [designLayer._bitmap.clone()];
-    // FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
-    // FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
-    // FORTE.renderStarted = false;
-    // FORTE.pointer = 0;
-    // FORTE.render(0);
-
     return started;
 }
 

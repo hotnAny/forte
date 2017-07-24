@@ -19,10 +19,6 @@ FORTE.loadForteFile = function (e) {
     FORTE.btnNew.trigger('click');
 
     FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0);
-    // FORTE.emptinessLayer.drawFromBitmap(dataObject.emptinessBitmap, 0, 0);
-    // FORTE.lessMaterialLayer._regions = dataObject.lessMaterialRegions;
-    // FORTE.lessMaterialLayer._update();
-
     FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
     for (arrow of dataObject.loadArrows) {
         FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
@@ -40,8 +36,6 @@ FORTE.saveForteToFile = function () {
         width: FORTE.width,
         height: FORTE.height,
         designBitmap: FORTE.designLayer._bitmap,
-        lessMaterialRegions: FORTE.lessMaterialLayer._regions,
-        // emptinessBitmap: FORTE.emptinessLayer._bitmap,
         loadBitmap: FORTE.loadLayer._bitmap,
         loadArrows: FORTE.loadLayer._arrows,
         loadPoints: FORTE.design.loadPoints,
