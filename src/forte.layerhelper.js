@@ -136,7 +136,7 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
 }
 
 //
-//  special customization for the load layer (for specifying load)
+//  special customization for the load layer (mainly for specifying/removing load)
 //
 FORTE.customizeLoadLayer = function () {
     // interaction on the load layer
@@ -144,9 +144,6 @@ FORTE.customizeLoadLayer = function () {
     FORTE.loadLayer._loadInputs = [];
 
     FORTE.loadLayer._canvas.mousedown(function (e) {
-        // do not specify loads when in eraser mode
-        if (this._toErase) return;
-
         if (this.specifyingLoad) {
             // compute distributed record load information
             this._context.strokeStyle = this.__loadValueLayer._context.strokeStyle;
@@ -173,27 +170,25 @@ FORTE.customizeLoadLayer = function () {
             FORTE.design.loadValues.push(FORTE.distribute(this.__strokePoints, vector, midPoint, 1));
 
             this._enabled = true;
-        } else {
-            this._rawMouseEvents = [];
         }
     }.bind(FORTE.loadLayer));
     FORTE.loadLayer._canvas.mousemove(function (e) {
-        if (this._toErase) return;
-        // if (this.__centerLoadPoint == undefined) return;
         if (this.specifyingLoad) {
             // draw or update an arrow between center point and current mouse
             this.__loadValueLayer.clear();
             var canvasOffset = this.__loadValueLayer._canvas.offset();
             FORTE.drawArrow(this.__loadValueLayer._context,
                 this.__centerLoadPoint.x * this._cellSize, this.__centerLoadPoint.y * this._cellSize, e.clientX - canvasOffset.left, e.clientY - canvasOffset.top);
-        } else {
-            if (this._isDown) this._rawMouseEvents.push(e);
         }
     }.bind(FORTE.loadLayer));
     FORTE.loadLayer._canvas.mouseup(function (e) {
+        //
+        // erase the whole case of loading
+        //
         if (this._toErase) {
             var toRemoveLoadPoints = [];
             var toRemoveLoadValues = [];
+            var margin = 2;
             for (var i = 0; i < FORTE.design.loadPoints.length; i++) {
                 var points = FORTE.design.loadPoints[i];
                 for (p of points) {
@@ -205,7 +200,9 @@ FORTE.customizeLoadLayer = function () {
 
                             FORTE.loadLayer.eraseArrow(i);
 
-                            for (e of FORTE.loadLayer._loadInputs[i]) FORTE.loadLayer._doDraw(e, true);
+                            for (p of points)
+                                this._context.clearRect(p[0] * this._cellSize - margin, p[1] * this._cellSize - margin,
+                                    this._cellSize + margin * 2, this._cellSize + margin * 2);
 
                             done = true;
                             break;
@@ -217,7 +214,11 @@ FORTE.customizeLoadLayer = function () {
 
             for (points of toRemoveLoadPoints) FORTE.design.loadPoints.remove(points);
             for (values of toRemoveLoadValues) FORTE.design.loadValues.remove(values);
-        } else {
+        } 
+        //
+        // start or finish specifying load value / direction
+        //
+        else {
             this.specifyingLoad = !this.specifyingLoad;
             if (this.specifyingLoad) {
                 // find the center point of last stroke
@@ -255,11 +256,8 @@ FORTE.customizeLoadLayer = function () {
 
                 this.__strokePoints = this._strokePoints.clone();
 
-                // this.__strokePoints = [this._strokePoints[0]];
-
                 this._enabled = false;
             }
-            if (this._rawMouseEvents != undefined) this._loadInputs.push(this._rawMouseEvents);
         }
     }.bind(FORTE.loadLayer));
 
@@ -288,6 +286,8 @@ FORTE.customizeLoadLayer = function () {
         FORTE.drawArrow(this._context, arrow[0], arrow[1], arrow[2], arrow[3]);
         this._context.strokeStyle = this._context.fillStyle;
         this._context.globalCompositeOperation = globalCompositeOperation;
+        this._context.lineWidth /= inflationRatio;
+        this._arrows.removeAt(idx);
     }
 }
 
@@ -300,7 +300,7 @@ FORTE.addEraser = function (layer) {
         this._context.fillStyle = FORTE.COLORERASER;
         this._strokeRadius *= 1.5;
         this._bitmapBackup = [];
-        for(row of this._bitmap) this._bitmapBackup.push(row.clone());
+        for (row of this._bitmap) this._bitmapBackup.push(row.clone());
         this.drawDown(e);
     }.bind(layer));
 
@@ -318,7 +318,7 @@ FORTE.addEraser = function (layer) {
         this.forceRedraw(this._heatmap);
         FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
         FORTE.design.slimPoints = [];
-        for(p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
+        for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
         $('#btnOptCtrl').trigger('click');
     }.bind(layer));
 }

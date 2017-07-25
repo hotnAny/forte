@@ -36,6 +36,8 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
 
     this._defaultAlpha = 1;
     this._canvas.css('opacity', this._defaultAlpha);
+
+    this._inputEvents = [];
 };
 
 // max canvas height to stay within a normal screen

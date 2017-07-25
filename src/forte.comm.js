@@ -20,10 +20,13 @@ FORTE.loadForteFile = function (e) {
 
     FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0);
     FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
-    for (arrow of dataObject.loadArrows) {
+    FORTE.loadLayer._arrows = [];
+    for (arrowNormalized of dataObject.loadArrows) {
         var w = FORTE.loadLayer._canvas[0].width;
         var h = FORTE.loadLayer._canvas[0].height;
-        FORTE.drawArrow(FORTE.loadLayer._context, arrow[0] * w, arrow[1] * h, arrow[2] * w, arrow[3] * h);
+        var arrow = [arrowNormalized[0] * w, arrowNormalized[1] * h, arrowNormalized[2] * w, arrowNormalized[3] * h];
+        FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
+        FORTE.loadLayer._arrows.push(arrow);
     }
     FORTE.design.loadPoints = dataObject.loadPoints;
     FORTE.design.loadValues = dataObject.loadValues;
