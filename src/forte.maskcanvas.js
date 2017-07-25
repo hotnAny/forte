@@ -13,7 +13,6 @@ FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
     this._canvas.bind('mousewheel', this._update.bind(this));
     this._nregions = 0;
     this._regions = {};
-    // this._context.globalAlpha = 0.5;
     this._strokeRadius = 1;
     //
     //  override to package mask data

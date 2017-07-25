@@ -189,8 +189,6 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
     _similarity = float(safe_retrieve_one(post_data, 'similarity', 1))
     _mode = float(safe_retrieve_one(post_data, 'mode', DEFAULTMODE))
-    # _lesspoints = safe_retrieve_all(_designobj, 'lesspoints', None)
-    # _lessvalues = safe_retrieve_all(_designobj, 'lessvalues', None)
     _slimpoints = safe_retrieve_all(_designobj, 'slimpoints', None)
     _lastoutput = str(safe_retrieve_all(_designobj, 'lastoutput', None))
 
@@ -243,7 +241,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
 
     # active/passive/favored(obselete)/less-material elements
     matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
-    matinput['PASVELMS'] = [] #[elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
+    matinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
     matinput['FAVELMS'] = matinput['ACTVELMS']
 
     matinput['SLIMELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _slimpoints]

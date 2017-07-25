@@ -97,6 +97,8 @@ FORTE.Design.prototype.getData = function () {
 
     var designPoints = [];
     for (p of this.designPoints) designPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
+    var emptyPoints = [];
+    for (p of this.emptyPoints) emptyPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     var loadPoints = [];
     for (lps of this.loadPoints)
         for (p of lps) loadPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
@@ -105,12 +107,6 @@ FORTE.Design.prototype.getData = function () {
         for (v of lvs) loadValues.push(v);
     var boundaryPoints = [];
     for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
-
-    // less material
-    // var lessPoints = [];
-    // for (p of this.lessPoints) lessPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
-    // var lessValues = [];
-    // for (v of this.lessValues) lessValues.push(v);
 
     // [one time only] points to slim the design
     var slimPoints = [];
@@ -144,11 +140,10 @@ FORTE.Design.prototype.getData = function () {
     return {
         resolution: [width, height],
         design: designPoints,
+        emptiness: emptyPoints,
         loadpoints: loadPoints,
         loadvalues: loadValues,
         boundaries: boundaryPoints,
-        // lesspoints: lessPoints,
-        // lessvalues: lessValues,
         slimpoints: slimPoints,
         lastoutput: lastOutputFile
     };

@@ -16,8 +16,6 @@ actvelms = str2num(char(args(12)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
 lambda = str2double(args(16));
-% lesselms = str2num(char(args(17)));
-% lessvals = str2num(char(args(18)));
 slimelms = str2num(char(args(17)));
 lastoutput = char(args(18));
 debugging = str2num(char(args(19)));
@@ -186,7 +184,7 @@ while change > 0.05 && (loop <= maxloop)
     %     matmask = matmask * nely * nelx / sum(matmask(:));
     
     %% [xac] set void element to 'zero'
-    %     x(pasvelms) = eps;
+    x(pasvelms) = eps;
     %     x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
     x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
     x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;

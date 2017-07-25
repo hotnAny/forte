@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3684859503" file="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte/matlab" name="topopt" preferred-package-location="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt/for_redistribution" preferred-package-type="package.type.app" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3563370100" file="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt.prj" location="/Users/hotnAny/Dropbox/Codebase/forte/matlab" name="topopt" preferred-package-location="/Users/hotnAny/Dropbox/Codebase/forte/matlab/topopt/for_redistribution" preferred-package-type="package.type.app" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>topopt</param.appname>
     <param.icon />
     <param.icons />
@@ -135,7 +135,7 @@ If it is defined, set it to the concatenation of these strings:
       <vista>false</vista>
       <linux>false</linux>
       <solaris>false</solaris>
-      <osver>10.12.4</osver>
+      <osver>10.12.5</osver>
       <os32>false</os32>
       <os64>true</os64>
       <arch>maci64</arch>

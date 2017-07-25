@@ -16,6 +16,7 @@ while(true)
         break;
     end
     
+    %% decomposing input string & run top88
     filestr = strcat(filestr, '&', string(debugging));
     args = strsplit(filestr, '&');
     trial = char(args(1));

@@ -182,7 +182,7 @@ $(document).ready(function () {
             // layers of editing
             //
             FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLACK);
-            FORTE.emptyLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
+            FORTE.emptyLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
             // FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
             FORTE.eraserLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.BGCOLORCANVAS);
             FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
@@ -358,13 +358,10 @@ FORTE.startOptimization = function () {
     }
 
     FORTE.design.designPoints = FORTE.designLayer.package();
+    FORTE.design.emptyPoints = FORTE.emptyLayer.package().points;
     // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-    // FORTE.design.slimPoints = FORTE.eraserLayer.package();
-
-    // FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
-    //     FORTE.focusedDesignLayer.lastOutputFile;
-
+    
     var dataObject = FORTE.design.getData();
     if (dataObject == undefined) return false;
 
