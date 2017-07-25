@@ -56,3 +56,72 @@
 //     }
 //     return alphaMap;
 // }
+
+
+// //
+// //
+// //
+// FORTE.customizeEraserLayer = function () {
+//     FORTE.eraserLayer._defaultAlpha = 1;
+
+//     FORTE.eraserLayer._canvas.css('opacity', this._defaultAlpha);
+
+//     FORTE.eraserLayer._canvas.mousedown(function (e) {
+//         for (layer of FORTE.layers) {
+//             if (layer != this) {
+//                 layer.enable();
+//                 // layer._context.fillStyle = this._context.fillStyle;
+//                 layer.drawDown(e, true);
+//             }
+//         }
+//     }.bind(FORTE.eraserLayer));
+
+//     FORTE.eraserLayer._canvas.mousemove(function (e) {
+//         for (layer of FORTE.layers)
+//             if (layer != this) layer.drawMove(e, true);
+//     }.bind(FORTE.eraserLayer));
+
+//     FORTE.eraserLayer._canvas.mouseup(function (e) {
+//         if (!this._enabled) return;
+//         this._isDown = false;
+
+//         if (FORTE.focusedDesignLayer != undefined) {
+//             this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+//             FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
+//             FORTE.startOptimization(FORTE.GETVARIATION)
+//         } else {
+//             var toRemoveLoadPoints = [];
+//             var toRemoveLoadValues = [];
+//             for (var i = 0; i < FORTE.design.loadPoints.length; i++) {
+//                 var points = FORTE.design.loadPoints[i];
+//                 for (p of points) {
+//                     var done = false;
+//                     for (q of this._strokePoints) {
+//                         if (p[0] == q.x && p[1] == q.y) {
+//                             toRemoveLoadPoints.push(points);
+//                             toRemoveLoadValues.push(FORTE.design.loadValues[i]);
+//                             FORTE.loadLayer.eraseArrow(i);
+
+//                             for (e of FORTE.loadLayer._loadInputs[i]) FORTE.loadLayer._doDraw(e, true);
+
+//                             done = true;
+//                             break;
+//                         }
+//                     } // each stroke point
+//                     if (done) break;
+//                 } // each load point
+//             } // each load point array
+
+//             for (points of toRemoveLoadPoints) FORTE.design.loadPoints.remove(points);
+//             for (values of toRemoveLoadValues) FORTE.design.loadValues.remove(values);
+
+//             for (layer of FORTE.layers) {
+//                 if (layer != this) {
+//                     // layer.eraseInLayer(this._strokePoints);
+//                     layer.drawUp(e);
+//                     layer._context.fillStyle = layer._strokeColor;
+//                 }
+//             }
+//         }
+//     }.bind(FORTE.eraserLayer));
+// }

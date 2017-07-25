@@ -62,8 +62,6 @@ FORTE.fetchData = function () {
         log('data fetching started');
         FORTE.state = 'ongoing';
         FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL));
-        // FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
-        // FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
         FORTE.__misses = 0;

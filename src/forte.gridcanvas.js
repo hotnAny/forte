@@ -228,8 +228,8 @@ FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
 //
 //
 //
-FORTE.GridCanvas.prototype.eraseInLayer = function (points) {
-    for (p of points) {
-        this._bitmap[p.y][p.x] = 0;
-    }
-}
+// FORTE.GridCanvas.prototype.eraseInLayer = function (points) {
+//     for (p of points) {
+//         this._bitmap[p.y][p.x] = 0;
+//     }
+// }

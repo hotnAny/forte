@@ -307,6 +307,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
     if (layer != undefined) {
         if (layer._needsUpdate) layer.forceRedraw(layer._heatmap);
         layer._parent.append(layer._canvas);
+        FORTE.addEraser(layer);
         FORTE.selectedTag = tag;
         $(FORTE.selectedTag).addClass('ui-state-highlight');
     } else {
@@ -359,7 +360,7 @@ FORTE.startOptimization = function () {
     FORTE.design.designPoints = FORTE.designLayer.package();
     // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-    FORTE.design.slimPoints = FORTE.eraserLayer.package();
+    // FORTE.design.slimPoints = FORTE.eraserLayer.package();
 
     // FORTE.design.lastOutputFile = FORTE.focusedDesignLayer == undefined ? undefined :
     //     FORTE.focusedDesignLayer.lastOutputFile;
@@ -467,7 +468,7 @@ FORTE.setButtonForOptimization = function (button) {
 //
 FORTE.resetButtonFromOptimization = function (button) {
     // button.html(label);
-    button.attr('src', FORTE.ICONSTOP);
+    button.attr('src', FORTE.ICONRUN);
     button.stop();
     button.attr('pulsing', false);
     button.css('background-color', button.attr('bg-original'));

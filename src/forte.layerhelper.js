@@ -1,8 +1,8 @@
 // ......................................................................................................
 //
-//  routines to help with the interactive layers
+//  routines to customize different interactive layers
 //
-//  by xiangchen@acm.org, v0.1, 06/2017
+//  by xiangchen@acm.org, v0.2, 07/2017
 //
 // ......................................................................................................
 
@@ -22,16 +22,14 @@ FORTE.changeResolution = function () {
     FORTE.width = width;
     FORTE.height = height;
 
-    for (layer of FORTE.layers) {
+    // roughly adjust stroke radius based on resolution
+    for (layer of FORTE.layers)
         layer._strokeRadius = FORTE.width / 96 | 0;
-    }
 
     // special treatments
     FORTE.loadLayer._context.lineWidth = 8;
     FORTE.loadLayer._context.lineJoin = 'round';
     FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
-
-    // FORTE.lessMaterialLayer._strokeRadius = 1;
 }
 
 //
@@ -39,25 +37,28 @@ FORTE.changeResolution = function () {
 //  -   set idx to -1 to set all layers equally to disabled state
 //
 FORTE.switchLayer = function (idx) {
-    // for (layer of FORTE.layers) layer.disable(idx >= 0 ? 0.25 : 0);
+    // disbale all brush layers, but only hide them (opacity=0)
+    // when idx < 0, which means opitmization starts
     for (layer of FORTE.layers) layer.disable(idx < 0 ? 0 : 1);
 
+    // enable the selected layer
     if (!isNaN(idx) && idx >= 0) {
         FORTE.layer = FORTE.layers[idx];
         FORTE.layer.enable();
-        FORTE.toggleLayerZindex(idx);
     }
+
+    // adjust z-index accordingly
+    FORTE.toggleLayerZindex(idx);
 }
 
 //
-//  pop one layer to the top
+//  pop one layer (given its index in FORTE.layers) to the top
 //
 FORTE.toggleLayerZindex = function (idxTop) {
     for (var i = 0; i < FORTE.layers.length; i++) {
         var zindex = i == idxTop ? FORTE.layers.length - 1 : 0;
         FORTE.layers[i]._canvas.css('z-index', zindex);
     }
-    // FORTE.eraserLayer._canvas.css('z-index', FORTE.layers.length + 1);
 };
 
 //
@@ -66,7 +67,6 @@ FORTE.toggleLayerZindex = function (idxTop) {
 FORTE.drawArrow = function (context, fromx, fromy, tox, toy) {
     // log([fromx, fromy, tox, toy])
     var headlen = context.lineWidth * 4; // length of head in pixels
-    log(context.lineWidth)
     var angle = Math.atan2(toy - fromy, tox - fromx);
     var theta = Math.PI / 6;
     context.beginPath();
@@ -295,70 +295,29 @@ FORTE.customizeLoadLayer = function () {
     }
 }
 
-// //
-// //
-// //
-// FORTE.customizeEraserLayer = function () {
-//     FORTE.eraserLayer._defaultAlpha = 1;
+FORTE.addEraser = function (layer) {
+    layer._canvas.mousedown(function (e) {
+        this._context.fillStyle = FORTE.COLORYELLOW;
+        this._strokeRadius *= 1.5;
+        this._bitmapBackup = [];
+        for(row of this._bitmap) this._bitmapBackup.push(row.clone());
+        this.drawDown(e);
+    }.bind(layer));
 
-//     FORTE.eraserLayer._canvas.css('opacity', this._defaultAlpha);
+    layer._canvas.mousemove(function (e) {
+        this.drawMove(e);
+    }.bind(layer));
 
-//     FORTE.eraserLayer._canvas.mousedown(function (e) {
-//         for (layer of FORTE.layers) {
-//             if (layer != this) {
-//                 layer.enable();
-//                 // layer._context.fillStyle = this._context.fillStyle;
-//                 layer.drawDown(e, true);
-//             }
-//         }
-//     }.bind(FORTE.eraserLayer));
-
-//     FORTE.eraserLayer._canvas.mousemove(function (e) {
-//         for (layer of FORTE.layers)
-//             if (layer != this) layer.drawMove(e, true);
-//     }.bind(FORTE.eraserLayer));
-
-//     FORTE.eraserLayer._canvas.mouseup(function (e) {
-//         if (!this._enabled) return;
-//         this._isDown = false;
-
-//         if (FORTE.focusedDesignLayer != undefined) {
-//             this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-//             FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
-//             FORTE.startOptimization(FORTE.GETVARIATION)
-//         } else {
-//             var toRemoveLoadPoints = [];
-//             var toRemoveLoadValues = [];
-//             for (var i = 0; i < FORTE.design.loadPoints.length; i++) {
-//                 var points = FORTE.design.loadPoints[i];
-//                 for (p of points) {
-//                     var done = false;
-//                     for (q of this._strokePoints) {
-//                         if (p[0] == q.x && p[1] == q.y) {
-//                             toRemoveLoadPoints.push(points);
-//                             toRemoveLoadValues.push(FORTE.design.loadValues[i]);
-//                             FORTE.loadLayer.eraseArrow(i);
-
-//                             for (e of FORTE.loadLayer._loadInputs[i]) FORTE.loadLayer._doDraw(e, true);
-
-//                             done = true;
-//                             break;
-//                         }
-//                     } // each stroke point
-//                     if (done) break;
-//                 } // each load point
-//             } // each load point array
-
-//             for (points of toRemoveLoadPoints) FORTE.design.loadPoints.remove(points);
-//             for (values of toRemoveLoadValues) FORTE.design.loadValues.remove(values);
-
-//             for (layer of FORTE.layers) {
-//                 if (layer != this) {
-//                     // layer.eraseInLayer(this._strokePoints);
-//                     layer.drawUp(e);
-//                     layer._context.fillStyle = layer._strokeColor;
-//                 }
-//             }
-//         }
-//     }.bind(FORTE.eraserLayer));
-// }
+    layer._canvas.mouseup(function (e) {
+        this.drawUp(e);
+        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+        this._context.fillStyle = this._strokeColor;
+        this._strokeRadius /= 1.5;
+        this._bitmap = this._bitmapBackup;
+        this.forceRedraw(this._heatmap);
+        FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
+        FORTE.design.slimPoints = [];
+        for(p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
+        $('#btnOptCtrl').trigger('click');
+    }.bind(layer));
+}
