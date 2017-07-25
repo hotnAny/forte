@@ -94,9 +94,6 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
     try {
         var circleInfo = XAC.fitCircle(points);
         ctr = new THREE.Vector3(circleInfo.x0, circleInfo.y0, 0);
-        // FORTE.loadLayer._context.rect(ctr.x * FORTE.loadLayer._cellSize, ctr.y * FORTE.loadLayer._cellSize,
-        //     FORTE.loadLayer._cellSize, FORTE.loadLayer._cellSize);
-        // FORTE.loadLayer._context.fill();
     } catch (e) {
         console.error(e);
         ctr = new THREE.Vector3();
@@ -126,7 +123,7 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
         varr[2] *= -1;
         distrVectors.push(varr);
 
-        // [debug] do NOT remove - to show the load direction at each point
+        // [debug] do ** NOT ** remove - to show the load direction at each point
         // point.x *= FORTE.loadLayer._cellSize;
         // point.y *= FORTE.loadLayer._cellSize;
         // FORTE.loadLayer._context.lineWidth = 1;
@@ -134,8 +131,6 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
         //     point.x, point.y, point.x + varr[0] * 50, point.y + varr[1] * 50);
         // FORTE.loadLayer._context.lineWidth = 8;
     }
-
-    // log(distrVectors)
 
     return distrVectors;
 }
@@ -149,8 +144,9 @@ FORTE.customizeLoadLayer = function () {
     FORTE.loadLayer._loadInputs = [];
 
     FORTE.loadLayer._canvas.mousedown(function (e) {
+        // do not specify loads when in eraser mode
         if (this._toErase) return;
-        // if (this.__centerLoadPoint == undefined) return;
+
         if (this.specifyingLoad) {
             // compute distributed record load information
             this._context.strokeStyle = this.__loadValueLayer._context.strokeStyle;
@@ -268,7 +264,7 @@ FORTE.customizeLoadLayer = function () {
     }.bind(FORTE.loadLayer));
 
     // 
-    //
+    //  normalize the magnitude of arrows (indicating loads)
     //
     FORTE.loadLayer.normalizedArrows = function () {
         var w = this._canvas[0].width;
@@ -280,7 +276,7 @@ FORTE.customizeLoadLayer = function () {
     }
 
     //
-    //
+    //  'erase' an arrow by drawing over it
     //
     FORTE.loadLayer.eraseArrow = function (idx) {
         var arrow = this._arrows[idx];
@@ -295,9 +291,13 @@ FORTE.customizeLoadLayer = function () {
     }
 }
 
+//
+//  add eraser to an optimized layer to interactively remove material
+//
 FORTE.addEraser = function (layer) {
     layer._canvas.mousedown(function (e) {
-        this._context.fillStyle = FORTE.COLORYELLOW;
+        // temporarily changing properties of the layer to show eraser
+        this._context.fillStyle = FORTE.COLORERASER;
         this._strokeRadius *= 1.5;
         this._bitmapBackup = [];
         for(row of this._bitmap) this._bitmapBackup.push(row.clone());
@@ -310,6 +310,7 @@ FORTE.addEraser = function (layer) {
 
     layer._canvas.mouseup(function (e) {
         this.drawUp(e);
+        // recover the origiinal proerties
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         this._context.fillStyle = this._strokeColor;
         this._strokeRadius /= 1.5;
