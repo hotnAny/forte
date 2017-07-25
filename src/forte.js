@@ -195,7 +195,6 @@ $(document).ready(function () {
             FORTE.switchLayer(0);
 
             FORTE.customizeLoadLayer();
-            // FORTE.customizeEraserLayer();
             FORTE.changeResolution();
 
             FORTE.optimizedLayers = [];
@@ -308,6 +307,23 @@ FORTE.showOptimizedLayer = function (tag, label) {
         if (layer._needsUpdate) layer.forceRedraw(layer._heatmap);
         layer._parent.append(layer._canvas);
         FORTE.addEraser(layer);
+        
+        // set to mode
+        if(layer.mode == FORTE.GETVARIATION) $('#rbGetVariation')[0].checked = true;
+        else if(layer.mode == FORTE.ADDSTRUCTS) $('#rbAddStructs')[0].checked = true;
+        
+        // set to material ratio
+        XAC.updateSlider(FORTE.sldrMaterial, layer._lastMaterialRatio, function (valMat) {
+            var value = (valMat - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
+            return FORTE._getSliderValue(value);
+        });
+
+        // set to similarity ratio
+        XAC.updateSlider(FORTE.sldrSimilarity, layer._lastSimilarityRatio, function (valMat) {
+            var value = (valMat - FORTE.MINSIMILARITYRATIO) / (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
+            return FORTE._getSliderValue(value);
+        });
+        
         FORTE.selectedTag = tag;
         $(FORTE.selectedTag).addClass('ui-state-highlight');
     } else {
@@ -351,17 +367,14 @@ FORTE.render = function (pointer) {
 //
 FORTE.startOptimization = function () {
     var mode;
-    if ($('#rbGetVariation')[0].checked) {
-        mode = FORTE.GETVARIATION;
-    } else if ($('#rbAddStructs')[0].checked) {
-        mode = FORTE.ADDSTRUCTS;
-    }
+    if ($('#rbGetVariation')[0].checked) mode = FORTE.GETVARIATION;
+    else if ($('#rbAddStructs')[0].checked) mode = FORTE.ADDSTRUCTS;
 
     FORTE.design.designPoints = FORTE.designLayer.package();
     FORTE.design.emptyPoints = FORTE.emptyLayer.package().points;
     // load points are recorded as soon as loads are created
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
-    
+
     var dataObject = FORTE.design.getData();
     if (dataObject == undefined) return false;
 
@@ -469,4 +482,13 @@ FORTE.resetButtonFromOptimization = function (button) {
     button.stop();
     button.attr('pulsing', false);
     button.css('background-color', button.attr('bg-original'));
+}
+
+//
+//
+//
+XAC.updateSlider = function (sldr, value, mapFunc) {
+    var sldrValue = sldr.slider('option', 'value');
+    value = mapFunc(value, sldr);
+    if (sldrValue != value) sldr.slider('value', value);
 }

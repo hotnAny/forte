@@ -106,7 +106,6 @@ FORTE.getBitmap = function (text) {
     return bitmap;
 }
 
-
 //
 //  routine to read stress output from optimization
 //
@@ -142,10 +141,7 @@ FORTE.readStressData = function () {
                     maxStress: maxStress
                 }
 
-                if (label == 'after') {
-                    FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
-                    // FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-                }
+                if (label == 'after') FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
             },
             // failure
             function () {
@@ -159,9 +155,7 @@ FORTE.readStressData = function () {
 //  routine to read optimization output
 //
 FORTE.readOptimizationOutput = function () {
-    // var baseDir = FORTE.outputDir + '/' + FORTE.trial;
     FORTE.outputFile = FORTE.outputDir + '/' + FORTE.trial + '_' + (FORTE.itrCounter + 1) + '.out';
-    // XAC.readTextFile(baseDir + '_' + (FORTE.itrCounter + 1) + '.out',
     XAC.readTextFile(FORTE.outputFile,
         // on success
         function (text) {
@@ -207,6 +201,12 @@ FORTE.readOptimizationOutput = function () {
                     var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
                     var label = 'layer ' + (numLayers + 1);
                     FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
+                    var mode;
+                    if ($('#rbGetVariation')[0].checked) mode = FORTE.GETVARIATION;
+                    else if ($('#rbAddStructs')[0].checked) mode = FORTE.ADDSTRUCTS;
+                    FORTE.optimizedLayer.mode = mode;
+                    FORTE.optimizedLayer._lastMaterialRatio = FORTE.materialRatio;
+                    FORTE.optimizedLayer._lastSimilarityRatio = FORTE.similarityRatio;
                     FORTE.optimizedLayer.lastOutputFile = FORTE.lastOutputFile;
                     var tag = FORTE.optimizedLayerList.tagit('createTag', label);
                     FORTE.showOptimizedLayer(tag, label);

@@ -220,18 +220,9 @@ FORTE.GridCanvas.prototype.package = function () {
 //  [obselete]
 //  when global ui layout changes, manually update canvas position so it stays with the parent
 //
-FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
-    var parentOffset = this._parent.offset();
-    this._canvas.css('position', 'absolute');
-    this._canvas.css('left', parentOffset.left);
-    this._canvas.css('top', parentOffset.top);
-}
-
-//
-//
-//
-// FORTE.GridCanvas.prototype.eraseInLayer = function (points) {
-//     for (p of points) {
-//         this._bitmap[p.y][p.x] = 0;
-//     }
+// FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
+//     var parentOffset = this._parent.offset();
+//     this._canvas.css('position', 'absolute');
+//     this._canvas.css('left', parentOffset.left);
+//     this._canvas.css('top', parentOffset.top);
 // }

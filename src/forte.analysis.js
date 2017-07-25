@@ -2,7 +2,7 @@
 //
 //  routines for analyzing stress
 //
-//  by xiangchen@acm.org, v0.0, 06/2017
+//  by xiangchen@acm.org, v0.1, 07/2017
 //
 // ......................................................................................................
 
@@ -40,12 +40,6 @@ FORTE.GridCanvas.prototype.updateHeatmap = function (maxStress, map) {
     }
     return this._heatmap;
 }
-
-// var C = [
-//     [1.125 * E, 0.375 * E, 0],
-//     [0.375 * E, 1.125 * E, 0],
-//     [0, 0, 0.375 * E]
-// ];
 
 //
 //  compute stress

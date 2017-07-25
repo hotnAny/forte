@@ -25,6 +25,7 @@ FORTE.changeResolution = function () {
     // roughly adjust stroke radius based on resolution
     for (layer of FORTE.layers)
         layer._strokeRadius = FORTE.width / 96 | 0;
+    FORTE.emptyLayer._strokeRadius = 0;
 
     // special treatments
     FORTE.loadLayer._context.lineWidth = 8;
@@ -315,7 +316,7 @@ FORTE.addEraser = function (layer) {
         this._context.fillStyle = this._strokeColor;
         this._strokeRadius /= 1.5;
         this._bitmap = this._bitmapBackup;
-        this.forceRedraw(this._heatmap);
+        this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
         FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
         FORTE.design.slimPoints = [];
         for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);

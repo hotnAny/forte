@@ -178,11 +178,7 @@ while change > 0.05 && (loop <= maxloop)
     end
     change = max(abs(xnew(:)-x(:)));
     x = xnew;
-    
-    %     matmask(pasvelms) = matmask(pasvelms) * 0.99;
-    %     matmask = conv2(matmask, gaussian, 'same');
-    %     matmask = matmask * nely * nelx / sum(matmask(:));
-    
+          
     %% [xac] set void element to 'zero'
     x(pasvelms) = eps;
     %     x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
