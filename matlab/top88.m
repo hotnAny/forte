@@ -120,7 +120,7 @@ end
 % matweight = weight;
 matmask = ones(nely,nelx);
 % matmask(lesselms) = lessvals;
-matmask(slimelms) = 0.5;
+matmask(slimelms) = 0.25;
 gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
 matmask = conv2(matmask, gaussianmask, 'same');
 matmask = matmask * nely * nelx / sum(matmask(:));
