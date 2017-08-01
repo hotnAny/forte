@@ -15,6 +15,13 @@ actvelms = str2num(char(args(12)));
 % favelms = str2num(char(args(13)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
+mindf = min(distfield(:))
+maxdf = max(distfield(:)) / 2;
+s = 0.1;
+lowend = mindf+(maxdf-mindf)*max(0.05, s^3);
+highend = lowend + 0.03 ^ (1+s);
+% lowend<distfield & distfield<=highend
+
 lambda = str2double(args(16));
 slimelms = str2num(char(args(17)));
 lastoutput = char(args(18));
@@ -86,11 +93,11 @@ end
 H = sparse(iH,jH,sH);
 Hs = sum(H,2);
 %% INITIALIZE ITERATION
-if isadding
+% if isadding
     x = repmat(volfrac,nely,nelx);
-else
-    x = eps + max(0, distfield-eps);
-end
+% else
+%     x = eps + max(0, distfield-eps);
+% end
 
 % [xac] eliminate boundary effect
 % x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
@@ -111,8 +118,6 @@ try
 catch
     disp('cannot read previous results ...');
 end
-
-% return;
 
 %% [xac] [exp]
 % matweight = weight;
@@ -178,7 +183,8 @@ while change > 0.05 && (loop <= maxloop)
     end
     change = max(abs(xnew(:)-x(:)));
     x = xnew;
-          
+    
+    
     %% [xac] set void element to 'zero'
     x(pasvelms) = eps;
     %     x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
@@ -193,6 +199,10 @@ while change > 0.05 && (loop <= maxloop)
     
     %% [xac] add structs
     if isadding x(actvelms) = 1; end
+    
+    %% [xac] sandbox
+    x = min(1, x + (lowend<distfield & distfield<=highend));
+    x = max(eps, x - (distfield > highend));     
     
     %% [xac] update xPhys
     xPhys = x;
