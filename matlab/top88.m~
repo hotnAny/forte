@@ -1,10 +1,10 @@
 function xPhys = top88(trial, args)
 
-ADDSTRUCTS = 0
-GETVARIATION = 1
-OPTIMIZEWITHIN = 2
+ADDSTRUCTS = 0;
+GETVARIATION = 1;
+OPTIMIZEWITHIN = 2;
 
-%% [xac] input data cleansing
+%% [forte] input data cleansing
 disp(args)
 nelx = str2double(args(2));
 nely = str2double(args(3));
@@ -17,7 +17,7 @@ fixeddofs = str2num(char(args(9)));
 loadnodes = str2num(char(args(10)));
 loadvalues = str2num(char(args(11)));
 actvelms = str2num(char(args(12)));
-% favelms = str2num(char(args(13)));
+favelms = str2num(char(args(13)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
 lambda = str2double(args(16));
@@ -26,17 +26,6 @@ lastoutput = char(args(18));
 type = str2num(char(args(19)));
 debugging = str2num(char(args(20)));
 
-% [exp]
-% try weight = str2double(args(18)); catch weight=0; end
-
-%% [xac] mass transport
-% if lambda > 0
-%     isadding = true;
-%     disp('adding structs ...');
-% else
-%     isadding = false;
-%     disp('getting variation ...');
-% end
 niters = 64;
 decay = 0.95;
 eps = 0.001;
@@ -66,7 +55,7 @@ U0 = U;
 fixeddofs = union(fixeddofs, [2*(nelx+1)*(nely+1)]);
 alldofs = [1:2*(nely+1)*(nelx+1)];
 freedofs = setdiff(alldofs,fixeddofs);
-%% [xac] setup Stress Analysis
+%% [forte] setup Stress Analysis
 L=1;
 B = (1/2/L)*[-1 0 1 0 1 0 -1 0; 0 -1 0 -1 0 1 0 1; -1 -1 -1 1 1 1 1 -1];
 DE = (1/(1-nu^2))*[1 nu 0; nu 1 0; 0 0 (1-nu)/2];
@@ -94,51 +83,51 @@ Hs = sum(H,2);
 %% INITIALIZE ITERATION
 if type == ADDSTRUCTS
     x = repmat(volfrac,nely,nelx);
-    disp('getting variation ...');
+    disp('adding structs ...');
 elseif type == GETVARIATION
     x = eps + max(0, distfield-eps);
+    disp('getting variation ...');
 elseif type == OPTIMIZEWITHIN
     x = repmat(volfrac,nely,nelx);
-    mindf = min(distfield(:))
+    mindf = min(distfield(:));
     maxdf = max(distfield(:)) / 2;
-    s = 0.1;
-    lowend = mindf+(maxdf-mindf)*max(0.05, s^3);
-    highend = lowend + 0.03 ^ (1+s);
-end 
+    lowend = mindf+(maxdf-mindf)*max(0.001, lambda)
+    highend = lowend + 0.03 ^ (1+lambda)
+    disp('optimizing within ...');
+end
 
-% [xac] eliminate boundary effect
-% x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
 margindecay = 0.5;
 
-% [xac] set xPhys to be the original design
+%% [forte] set xPhys to be the original design
 xPhys = repmat(eps, nely,nelx);
 xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
 
+%%
 try
     fileid = fopen(lastoutput, 'r');
     filestr = fread(fileid, inf, 'uint8=>char')';
     fclose(fileid);
     strx = strrep(filestr, '\n', ';');
     x = str2num(strx);
+    x(favelms) = 1;
+%     colormap(flipud(gray));
+%     subplot(2,1,1); imagesc(x); axis equal off; text(2,-2,'x');    
+%     drawnow;
 catch
     disp('cannot read previous results ...');
 end
 
-%% [xac] [exp]
-% matweight = weight;
+%% [forte] mask for removing material by the user
 matmask = ones(nely,nelx);
-% matmask(lesselms) = lessvals;
 matmask(slimelms) = 0.25;
 gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
 matmask = conv2(matmask, gaussianmask, 'same');
 matmask = matmask * nely * nelx / sum(matmask(:));
 
-% disp(sum(matmask(:))/nely/nelx);
-
 telapsed = 0;
-%% START ITERATION [xac] added maxloop
+%% START ITERATION [forte] added maxloop
 while change > 0.05 && (loop <= maxloop)
     tic
     loop = loop + 1;
@@ -147,12 +136,12 @@ while change > 0.05 && (loop <= maxloop)
     K = sparse(iK,jK,sK); K = (K+K')/2;
     U(freedofs) = K(freedofs,freedofs)\F(freedofs);
     
-    %% [xac] stress
+    %% [forte] stress
     E = Emin+xPhys(:)'.^penal*(E0-Emin);
     s = (U(edofMat)*(DE*B)').*repmat(E',1,3);
     vms = reshape(sqrt(sum(s.^2,2)-s(:,1).*s(:,2)+2.*s(:,3).^2),nely,nelx);
     
-    %% [xac] log the 'before' results (i.e., skip optimization, just compute displacement and vms
+    %% [forte] log the 'before' results (i.e., skip optimization, just compute displacement and vms
     if loop==1 U0 = U; vms0 = vms; xPhys = x; continue; end
     
     %% OBJECTIVE FUNCTION AND SENSITIVITY ANALYSIS
@@ -174,31 +163,26 @@ while change > 0.05 && (loop <= maxloop)
         innerloop = innerloop + 1;
         if(innerloop > maxinnerloop) break; end
         lmid = 0.5*(l2+l1);
-        %         xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
+        % ORIGINAL: xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc./dv/lmid)))));
         xnew = max(0,max(x-move,min(1,min(x+move,x.*matmask.*sqrt(-dc./dv/lmid)))));
         if ft == 1
             xPhys = xnew;
         elseif ft == 2
             xPhys(:) = (H*xnew(:))./Hs;
         end
-        % ORIGINAL
         if sum(xPhys(:)) > volfrac*nelx*nely, l1 = lmid; else l2 = lmid; end
-        %         xPhysWeighted = xPhys .* matmask;
-        %         xPhys = xPhysWeighted * sum(xPhys(:)) / sum(xPhysWeighted(:));
-        %         if sum(xPhysWeighted(:)) > volfrac*nelx*nely, l1 = lmid; else l2 = lmid; end
-        %         sum(xPhysWeighted(:)) - sum(xPhys(:))
     end
     change = max(abs(xnew(:)-x(:)));
     x = xnew;
-        
-    %% [xac] set void element to 'zero'
+    
+    %% [forte] set void element to 'zero'
     x(pasvelms) = eps;
     x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
     x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;
-  
-    %% [xac] forte optimization
+    
+    %% [forte] forte optimization
     % add structs
-    if type == ADDSTRUCTS 
+    if type == ADDSTRUCTS
         % mass transport
         if lambda > 0
             x = masstransport(x, max(0, distfield-eps), lambda, niters, kernelsize);
@@ -206,17 +190,20 @@ while change > 0.05 && (loop <= maxloop)
             % keep original sketch
             x(actvelms) = 1;
         end
-    % get varation
+        % get varation
     elseif type == GETVARIATION
         % do nothing
-    % optimize within
+        % optimize within
     elseif type == OPTIMIZEWITHIN
         % optimize within
         x = min(1, x + (lowend<distfield & distfield<=highend));
         x = max(eps, x - (distfield > highend));
     end
-                 
-    %% [xac] update xPhys
+    
+    %% [forte sandbox]
+%     x(favelms) = (x(favelms) + eps) * 1.2;
+    
+    %% [forte] update xPhys
     xPhys = x;
     
     %% PRINT RESULTS

@@ -215,14 +215,3 @@ FORTE.GridCanvas.prototype.package = function () {
     }
     return points;
 }
-
-//
-//  [obselete]
-//  when global ui layout changes, manually update canvas position so it stays with the parent
-//
-// FORTE.GridCanvas.prototype.updateCanvasPosition = function () {
-//     var parentOffset = this._parent.offset();
-//     this._canvas.css('position', 'absolute');
-//     this._canvas.css('left', parentOffset.left);
-//     this._canvas.css('top', parentOffset.top);
-// }

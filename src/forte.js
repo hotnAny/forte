@@ -93,7 +93,10 @@ $(document).ready(function () {
         $('#btnErase').click(function (e) {
             $(this).toggleClass('ui-state-active');
             for (layer of FORTE.layers) layer._toErase = !layer._toErase;
+            FORTE.toErase = !FORTE.toErase;
         });
+        FORTE.toErase = false;
+        
 
         //  similarity slider
         FORTE.similarityRatio = 5;
@@ -365,10 +368,6 @@ FORTE.render = function (pointer) {
 //  start the optimization
 //
 FORTE.startOptimization = function () {
-    // var type;
-    // if ($('#rbGetVariation')[0].checked) type = FORTE.GETVARIATION;
-    // else if ($('#rbAddStructs')[0].checked) type = FORTE.ADDSTRUCTS;
-
     var type = $('#ddOptType :selected').val();
 
     FORTE.design.designPoints = FORTE.designLayer.package();

@@ -215,7 +215,7 @@ FORTE.customizeLoadLayer = function () {
 
             for (points of toRemoveLoadPoints) FORTE.design.loadPoints.remove(points);
             for (values of toRemoveLoadValues) FORTE.design.loadValues.remove(values);
-        } 
+        }
         //
         // start or finish specifying load value / direction
         //
@@ -298,10 +298,12 @@ FORTE.customizeLoadLayer = function () {
 FORTE.addEraser = function (layer) {
     layer._canvas.mousedown(function (e) {
         // temporarily changing properties of the layer to show eraser
-        this._context.fillStyle = FORTE.COLORERASER;
-        this._strokeRadius *= 1.5;
-        this._bitmapBackup = [];
-        for (row of this._bitmap) this._bitmapBackup.push(row.clone());
+        if (FORTE.toErase) {
+            this._context.fillStyle = FORTE.COLORERASER;
+            this._strokeRadius *= 1.5;
+            this._bitmapBackup = [];
+            for (row of this._bitmap) this._bitmapBackup.push(row.clone());
+        }
         this.drawDown(e);
     }.bind(layer));
 
@@ -312,14 +314,20 @@ FORTE.addEraser = function (layer) {
     layer._canvas.mouseup(function (e) {
         this.drawUp(e);
         // recover the origiinal proerties
-        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-        this._context.fillStyle = this._strokeColor;
-        this._strokeRadius /= 1.5;
-        this._bitmap = this._bitmapBackup;
-        this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
+        if (FORTE.toErase) {
+            this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+            this._context.fillStyle = this._strokeColor;
+            this._strokeRadius /= 1.5;
+            this._bitmap = this._bitmapBackup;
+            this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
+            FORTE.design.slimPoints = [];
+            for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
+        } else {
+            FORTE.design.favPoints = [];
+            for (p of this._strokePoints) FORTE.design.favPoints.push([p.x, p.y]);
+        }
         FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
-        FORTE.design.slimPoints = [];
-        for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
+        log(FORTE.design.lastOutputFile)
         $('#btnOptCtrl').trigger('click');
     }.bind(layer));
 }

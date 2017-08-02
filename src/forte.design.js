@@ -83,7 +83,7 @@ FORTE.Design.prototype.getData = function () {
     for (p of this.boundaryPoints) __updateBbox(p, bbox);
 
     // log(bbox)
-    var margin = 0;
+    var margin = 2;
     var xminNew = Math.max(bbox.xmin - margin, 0);
     var xmaxNew = Math.min(bbox.xmax + margin, this.width);
     var yminNew = Math.max(bbox.ymin - margin, 0);
@@ -107,6 +107,12 @@ FORTE.Design.prototype.getData = function () {
         for (v of lvs) loadValues.push(v);
     var boundaryPoints = [];
     for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
+
+    var favPoints = [];
+    if (this.favPoints != undefined) {
+        for (p of this.favPoints) favPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
+        this.favPoints = [];
+    }
 
     // [one time only] points to slim the design
     var slimPoints = [];
@@ -145,6 +151,7 @@ FORTE.Design.prototype.getData = function () {
         loadvalues: loadValues,
         boundaries: boundaryPoints,
         slimpoints: slimPoints,
+        favpoints: favPoints,
         lastoutput: lastOutputFile
     };
 }
