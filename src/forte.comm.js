@@ -201,10 +201,7 @@ FORTE.readOptimizationOutput = function () {
                     var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
                     var label = 'layer ' + (numLayers + 1);
                     FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
-                    var mode;
-                    if ($('#rbGetVariation')[0].checked) mode = FORTE.GETVARIATION;
-                    else if ($('#rbAddStructs')[0].checked) mode = FORTE.ADDSTRUCTS;
-                    FORTE.optimizedLayer.mode = mode;
+                    FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
                     FORTE.optimizedLayer._lastMaterialRatio = FORTE.materialRatio;
                     FORTE.optimizedLayer._lastSimilarityRatio = FORTE.similarityRatio;
                     FORTE.optimizedLayer.lastOutputFile = FORTE.lastOutputFile;

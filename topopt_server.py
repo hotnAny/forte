@@ -10,23 +10,30 @@
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from urlparse import urlparse, parse_qs
-import sys
+# import sys
 from sys import argv
-import os
+# import os
 import time
 import subprocess
 import json
-import traceback
-from numpy import array, hstack, empty
+# import traceback
 from math import sqrt, floor, cos, pi, exp
+from numpy import array, empty
 
 # default input file path/name
 INPUTFILE = '~matinput'
 MAXSIMILARITY = 10
 DEFAULTLAMBDA = 0.1
-MINLAMBDA = 0.01
-MAXLAMBDA = 0.79
-DEFAULTMODE = 0
+MINLAMBDAOPTIN = 0.001
+MAXLAMBDAOPTIN = 0.199
+MINLAMBDAVARIATION = 0.01
+MAXLAMBDAVARIATION = 0.79
+DEFAULTTYPE = 0
+
+# types of optimization
+ADDSTRUCTS = 0
+GETVARIATION = 1
+OPTIMIZEWITHIN = 2
 
 #
 #   for execution time measurement
@@ -138,21 +145,21 @@ def get_distance_field(elms, nelx, nely, m, alpha):
 
         buf_prev = list(buf)
 
-    # eps = 0.001  # avoid long tail
+    if m >= 1:
+        max_val *= 1.0
+        for i in xrange(0, nelx):
+            for j in xrange(0, nely):
+                df[j][i] /= max_val
+                df[j][i] = min(df[j][i], 1)
+                df[j][i] = max(0, df[j][i])
 
-    max_val *= 1.0
-    for i in xrange(0, nelx):
-        for j in xrange(0, nely):
-            df[j][i] /= max_val
-            df[j][i] = min(df[j][i], 1)
-            df[j][i] = max(0, df[j][i])
-
-            df[j][i] = alpha * (cos(df[j][i] * pi / 2))**m
+                df[j][i] = alpha * (cos(df[j][i] * pi / 2))**m
 
     # debug, print normalized distance field
     # for i in xrange(0, nelx):
     #     print ' '.join([(format(x, '1.1f') if x > 0.9 else '   ') for x in df[i]])
     # return [float(format(j, '1.2f')) for i in df for j in i]
+
     return df
 
 # 1 - (1/(1+e^(64*(0.1-x)))-0.039)/(1-0.039)
@@ -188,7 +195,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _boundaries = safe_retrieve_all(_designobj, 'boundaries', None)
     _material = float(safe_retrieve_one(post_data, 'material', amnt))
     _similarity = float(safe_retrieve_one(post_data, 'similarity', 1))
-    _mode = float(safe_retrieve_one(post_data, 'mode', DEFAULTMODE))
+    _type = float(safe_retrieve_one(post_data, 'type', DEFAULTTYPE))
     _slimpoints = safe_retrieve_all(_designobj, 'slimpoints', None)
     _lastoutput = str(safe_retrieve_all(_designobj, 'lastoutput', None))
 
@@ -245,9 +252,6 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matinput['FAVELMS'] = matinput['ACTVELMS']
 
     matinput['SLIMELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _slimpoints]
-    # matinput['LESSELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _lesspoints]
-    # matinput['LESSVALS'] = _lessvalues
-    # print matinput['LESSVALS']
 
     matinput['LASTOUTPUT'] = _lastoutput
 
@@ -267,13 +271,20 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     #     vis_str += '\n'
     # print vis_str
 
-    if _mode == 1:
+    matinput['TYPE'] = _type
+    
+    if _type == ADDSTRUCTS:
         # use similarity to set lambda for mass transport
-        matinput['LAMBDA'] = MINLAMBDA + (MAXLAMBDA-MINLAMBDA) * _similarity / MAXSIMILARITY
+        matinput['LAMBDA'] = MINLAMBDAVARIATION + (MAXLAMBDAVARIATION-MINLAMBDAVARIATION) * _similarity / MAXSIMILARITY
         # then set it to max so to use a constant max distance field
         _similarity = MAXSIMILARITY
-    else:
+    elif _type == GETVARIATION:
         matinput['LAMBDA'] = 0
+        _similarity = _similarity
+    elif _type == OPTIMIZEWITHIN:
+        matinput['LAMBDA'] = MINLAMBDAOPTIN + (MAXLAMBDAOPTIN-MINLAMBDAOPTIN) * (1-_similarity / MAXSIMILARITY)
+        _similarity = -1
+
 
     df = get_distance_field(matinput['FAVELMS'], nelx, nely, 2**_similarity, 1)
     s = material * nelx * nely / sum([sum(x) for x in df])    
@@ -283,8 +294,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
         matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
-        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['SLIMELMS'], matinput['LASTOUTPUT']]
-        # matinput['LESSELMS'], matinput['LESSVALS'], 
+        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['SLIMELMS'], matinput['LASTOUTPUT'],\
+        matinput['TYPE']]
 
     input_file = open(INPUTFILE, 'w')
     input_file.write('&'.join([str(x) for x in matargs]))

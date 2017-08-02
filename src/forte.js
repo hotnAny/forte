@@ -308,9 +308,8 @@ FORTE.showOptimizedLayer = function (tag, label) {
         layer._parent.append(layer._canvas);
         FORTE.addEraser(layer);
         
-        // set to mode
-        if(layer.mode == FORTE.GETVARIATION) $('#rbGetVariation')[0].checked = true;
-        else if(layer.mode == FORTE.ADDSTRUCTS) $('#rbAddStructs')[0].checked = true;
+        // set to type
+       FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
         
         // set to material ratio
         XAC.updateSlider(FORTE.sldrMaterial, layer._lastMaterialRatio, function (valMat) {
@@ -366,11 +365,11 @@ FORTE.render = function (pointer) {
 //  start the optimization
 //
 FORTE.startOptimization = function () {
-    // var mode;
-    // if ($('#rbGetVariation')[0].checked) mode = FORTE.GETVARIATION;
-    // else if ($('#rbAddStructs')[0].checked) mode = FORTE.ADDSTRUCTS;
+    // var type;
+    // if ($('#rbGetVariation')[0].checked) type = FORTE.GETVARIATION;
+    // else if ($('#rbAddStructs')[0].checked) type = FORTE.ADDSTRUCTS;
 
-    var mode = $('#ddOptType :selected').val();
+    var type = $('#ddOptType :selected').val();
 
     FORTE.design.designPoints = FORTE.designLayer.package();
     FORTE.design.emptyPoints = FORTE.emptyLayer.package().points;
@@ -385,9 +384,9 @@ FORTE.startOptimization = function () {
     var data = JSON.stringify(dataObject);
     var started = false;
     if (data != undefined) {
-        var fields = ['trial', 'forte', 'material', 'similarity', 'mode'];
+        var fields = ['trial', 'forte', 'material', 'similarity', 'type'];
         FORTE.trial = 'forte_' + Date.now();
-        var values = [FORTE.trial, data, FORTE.materialRatio, FORTE.similarityRatio, mode];
+        var values = [FORTE.trial, data, FORTE.materialRatio, FORTE.similarityRatio, type];
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'started';
         time();

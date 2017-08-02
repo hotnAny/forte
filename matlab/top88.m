@@ -1,4 +1,9 @@
 function xPhys = top88(trial, args)
+
+ADDSTRUCTS = 0;
+GETVARIATION = 1;
+OPTIMIZEWITHIN = 2;
+
 %% [xac] input data cleansing
 disp(args)
 nelx = str2double(args(2));
@@ -15,29 +20,12 @@ actvelms = str2num(char(args(12)));
 % favelms = str2num(char(args(13)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
-mindf = min(distfield(:))
-maxdf = max(distfield(:)) / 2;
-s = 0.1;
-lowend = mindf+(maxdf-mindf)*max(0.05, s^3);
-highend = lowend + 0.03 ^ (1+s);
-% lowend<distfield & distfield<=highend
-
 lambda = str2double(args(16));
 slimelms = str2num(char(args(17)));
 lastoutput = char(args(18));
-debugging = str2num(char(args(19)));
+type = str2num(char(args(19)));
+debugging = str2num(char(args(20)));
 
-% [exp]
-% try weight = str2double(args(18)); catch weight=0; end
-
-%% [xac] mass transport
-if lambda > 0
-    isadding = true;
-    disp('adding structs ...');
-else
-    isadding = false;
-    disp('getting variation ...');
-end
 niters = 64;
 decay = 0.95;
 eps = 0.001;
@@ -93,22 +81,31 @@ end
 H = sparse(iH,jH,sH);
 Hs = sum(H,2);
 %% INITIALIZE ITERATION
-% if isadding
+if type == ADDSTRUCTS
     x = repmat(volfrac,nely,nelx);
-% else
-%     x = eps + max(0, distfield-eps);
-% end
+    disp('adding structs ...');
+elseif type == GETVARIATION
+    x = eps + max(0, distfield-eps);
+    disp('getting variation ...');
+elseif type == OPTIMIZEWITHIN
+    x = repmat(volfrac,nely,nelx);
+    mindf = min(distfield(:));
+    maxdf = max(distfield(:)) / 2;
+%     lambda=0.5
+    lowend = mindf+(maxdf-mindf)*max(0.001, lambda)
+    highend = lowend + 0.03 ^ (1+lambda)
+    disp('optimizing within ...');
+end
 
-% [xac] eliminate boundary effect
-% x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
 margindecay = 0.5;
 
-% [xac] set xPhys to be the original design
+%% [xac] set xPhys to be the original design
 xPhys = repmat(eps, nely,nelx);
 xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
 
+%%
 try
     fileid = fopen(lastoutput, 'r');
     filestr = fread(fileid, inf, 'uint8=>char')';
@@ -119,16 +116,12 @@ catch
     disp('cannot read previous results ...');
 end
 
-%% [xac] [exp]
-% matweight = weight;
+%% [xac] mask for removing material by the user
 matmask = ones(nely,nelx);
-% matmask(lesselms) = lessvals;
 matmask(slimelms) = 0.25;
 gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
 matmask = conv2(matmask, gaussianmask, 'same');
 matmask = matmask * nely * nelx / sum(matmask(:));
-
-% disp(sum(matmask(:))/nely/nelx);
 
 telapsed = 0;
 %% START ITERATION [xac] added maxloop
@@ -184,29 +177,33 @@ while change > 0.05 && (loop <= maxloop)
     change = max(abs(xnew(:)-x(:)));
     x = xnew;
     
-    
     %% [xac] set void element to 'zero'
     x(pasvelms) = eps;
-    %     x(1,:) = eps; x(end,:) = eps; x(:,1) = eps; x(:,end) = eps;
     x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
     x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;
     
-    %% [xac] [exp] mass transport
-    if lambda > 0
-        x = masstransport(x, max(0, distfield-eps), lambda, niters, kernelsize);
-        lambda = lambda * decay;
+    %% [xac] forte optimization
+    % add structs
+    if type == ADDSTRUCTS
+        % mass transport
+        if lambda > 0
+            x = masstransport(x, max(0, distfield-eps), lambda, niters, kernelsize);
+            lambda = lambda * decay;
+            % keep original sketch
+            x(actvelms) = 1;
+        end
+        % get varation
+    elseif type == GETVARIATION
+        % do nothing
+        % optimize within
+    elseif type == OPTIMIZEWITHIN
+        % optimize within
+        x = min(1, x + (lowend<distfield & distfield<=highend));
+        x = max(eps, x - (distfield > highend));
     end
-    
-    %% [xac] add structs
-    if isadding x(actvelms) = 1; end
-    
-    %% [xac] sandbox
-    x = min(1, x + (lowend<distfield & distfield<=highend));
-    x = max(eps, x - (distfield > highend));     
     
     %% [xac] update xPhys
     xPhys = x;
-    %     xPhys = conv2(x, gaussian, 'same');
     
     %% PRINT RESULTS
     t = toc;

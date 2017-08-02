@@ -7,56 +7,53 @@
                         <img id="btnNew" class="icon" src="assets/new.svg"></img>
                     </td>
 
-                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
                     <td id="tdMaterial"></td>
 
-                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
                     <td id="tdBrushes"></td>
 
-                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
                      <td id="tdErase">
                         <img id="btnErase" class="icon"></img>
                     </td>
 
-                    <td>&nbsp;&nbsp;&nbsp;</td> 
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td> 
 
                     <td id="tdSimilarity"></td>
 
-                    <td>&nbsp;&nbsp;&nbsp;</td>
-
-                    <!-- <td id="tdSuggest">
-                        <div id="btnGetVariation"></div>
-                    </td>
-
-                    <td>&nbsp;&nbsp;&nbsp;</td>
-
-                    <td id="tdAdd">
-                        <div id="btnAddStructs"></div>
-                    </td> -->
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
                     <td id="tdOptType">
-                        <input type="radio" id="rbGetVariation" name="embeddingOption" value="0" checked=true> 
+                        <!-- <input type="radio" id="rbAddStructs" name="optimizationType" value="1"> 
+                        <label class="ui-widget">add structs &nbsp;</label>
+                        <input type="radio" id="rbGetVariation" name="optimizationType" value="0" checked=true> 
                         <label class="ui-widget">get variation &nbsp;</label>
-                        <input type="radio" id="rbAddStructs" name="embeddingOption" value="1"> 
-                        <label class="ui-widget">add structs</label>
+                        <input type="radio" id="rbOptimizeWithin" name="optimizationType" value="1"> 
+                        <label class="ui-widget">optimize within </label> -->
+                        <select class="ui-widget" id='ddOptType'>
+                            <option value="0">add structs</option>
+                            <option value="1" selected="true">get variation</option>
+                            <option value="2">optimize within</option>
+                        </select>
                     </td>
 
-                     <td>&nbsp;</td> 
+                     <td>&nbsp;&nbsp;</td> 
 
                     <td id="tdOptCtrl">
                         <img id="btnOptCtrl" class="icon"></img>
                     </td>
 
-                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
                     <td id="tdShow">
                         <img id="btnShow" class="icon"></img>
                     </td>
 
-                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
                     <td id="tdMore">
                         <a id="btnMore" href=""></a>
@@ -76,7 +73,7 @@
                             <input id="tbWidth" type="text" size="3"> &nbsp;×&nbsp;
                             <input id="tbHeight" type="text" size="3">
                         </td>
-                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
                         <td id="tdSave">
                             <img id="btnSave" class="icon"></img>
                         </td>
