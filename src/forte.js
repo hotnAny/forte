@@ -366,9 +366,11 @@ FORTE.render = function (pointer) {
 //  start the optimization
 //
 FORTE.startOptimization = function () {
-    var mode;
-    if ($('#rbGetVariation')[0].checked) mode = FORTE.GETVARIATION;
-    else if ($('#rbAddStructs')[0].checked) mode = FORTE.ADDSTRUCTS;
+    // var mode;
+    // if ($('#rbGetVariation')[0].checked) mode = FORTE.GETVARIATION;
+    // else if ($('#rbAddStructs')[0].checked) mode = FORTE.ADDSTRUCTS;
+
+    var mode = $('#ddOptType :selected').val();
 
     FORTE.design.designPoints = FORTE.designLayer.package();
     FORTE.design.emptyPoints = FORTE.emptyLayer.package().points;
