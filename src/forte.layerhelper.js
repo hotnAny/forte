@@ -298,11 +298,15 @@ FORTE.customizeLoadLayer = function () {
 FORTE.addEraser = function (layer) {
     layer._canvas.mousedown(function (e) {
         // temporarily changing properties of the layer to show eraser
-        if (FORTE.toErase) {
-            this._context.fillStyle = FORTE.COLORERASER;
-            this._strokeRadius *= 1.5;
-            this._bitmapBackup = [];
-            for (row of this._bitmap) this._bitmapBackup.push(row.clone());
+        switch (FORTE.editMode) {
+            case FORTE.DRAW:
+                break;
+            case FORTE.ERASE:
+                this._context.fillStyle = FORTE.COLORERASER;
+                this._strokeRadius *= 1.5;
+                this._bitmapBackup = [];
+                for (row of this._bitmap) this._bitmapBackup.push(row.clone());
+                break;
         }
         this.drawDown(e);
     }.bind(layer));
@@ -314,17 +318,20 @@ FORTE.addEraser = function (layer) {
     layer._canvas.mouseup(function (e) {
         this.drawUp(e);
         // recover the origiinal proerties
-        if (FORTE.toErase) {
-            this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-            this._context.fillStyle = this._strokeColor;
-            this._strokeRadius /= 1.5;
-            this._bitmap = this._bitmapBackup;
-            this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
-            FORTE.design.slimPoints = [];
-            for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
-        } else {
-            FORTE.design.favPoints = [];
-            for (p of this._strokePoints) FORTE.design.favPoints.push([p.x, p.y]);
+        switch (FORTE.editMode) {
+            case FORTE.DRAW:
+                FORTE.design.favPoints = [];
+                for (p of this._strokePoints) FORTE.design.favPoints.push([p.x, p.y]);
+                break;
+            case FORTE.ERASE:
+                this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+                this._context.fillStyle = this._strokeColor;
+                this._strokeRadius /= 1.5;
+                this._bitmap = this._bitmapBackup;
+                this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
+                FORTE.design.slimPoints = [];
+                for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
+                break;
         }
         FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
         log(FORTE.design.lastOutputFile)

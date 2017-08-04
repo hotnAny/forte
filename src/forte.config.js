@@ -23,6 +23,9 @@ FORTE.ADDSTRUCTS = 0;
 FORTE.GETVARIATION = 1;
 FORTE.OPTIMIZEWITHIN = 2;
 
+FORTE.DRAW = 0;
+FORTE.ERASE = 1;
+
 FORTE.THRESDENSITY = 0.01;
 
 //
@@ -36,6 +39,7 @@ FORTE.ICONDESIGN = 'assets/design.svg';
 FORTE.ICONVOID = 'assets/void.svg';
 FORTE.ICONLOAD = 'assets/load.svg';
 FORTE.ICONBOUNDARY = 'assets/boundary.svg';
+FORTE.ICONDRAW = 'assets/draw.svg';
 FORTE.ICONERASER = 'assets/eraser.svg';
 FORTE.ICONSAVE = 'assets/save.svg';
 FORTE.ICONEYE = 'assets/eye.svg';

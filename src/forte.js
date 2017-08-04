@@ -84,18 +84,31 @@ $(document).ready(function () {
         })
 
         // brushes for design, load and boundary
-        FORTE.nameBrushButtons = 'brushButtons';
+        FORTE.nameBtnsInputLayer = 'BtnsInputLayer';
         FORTE.resetRadioButtons(0);
 
         // eraser
-        $('#btnErase').attr('src', FORTE.ICONERASER);
-        $('#btnErase').button();
-        $('#btnErase').click(function (e) {
-            $(this).toggleClass('ui-state-active');
-            for (layer of FORTE.layers) layer._toErase = !layer._toErase;
-            FORTE.toErase = !FORTE.toErase;
+        // $('#btnErase').attr('src', FORTE.ICONERASER);
+        // $('#btnErase').button();
+        // $('#btnErase').click(function (e) {
+        //     $(this).toggleClass('ui-state-active');
+        //     for (layer of FORTE.layers) layer._toErase = !layer._toErase;
+        //     FORTE.toErase = !FORTE.toErase;
+        // });
+        // FORTE.toErase = false;
+
+        // tools: brush vs. eraser
+        FORTE.nameBtnsTools = 'BtnsTools';
+        var imgSrcsTools = [FORTE.ICONDRAW, FORTE.ICONERASER];
+        var labelsTools = [];
+        FORTE.editMode = FORTE.DRAW;
+        for (src of imgSrcsTools) labelsTools.push('<img class="icon" src="' + src + '"></img>');
+        FORTE.checkedBtnTool = XAC.makeRadioButtons(FORTE.nameBtnsTools, labelsTools, [FORTE.DRAW, FORTE.ERASE],
+            $('#tdTools'), FORTE.editMode, false);
+        $('[name="' + FORTE.nameBtnsTools + '"]').on("click", function (e) {
+            FORTE.editMode = parseInt($(e.target).val());
+            for (layer of FORTE.layers) layer._toErase = FORTE.editMode;
         });
-        FORTE.toErase = false;
         
 
         //  similarity slider
@@ -257,23 +270,23 @@ $(document).ready(function () {
 //
 FORTE.resetRadioButtons = function (idx) {
     // remove and re-add all the radio buttons 
-    $('[name="' + FORTE.nameBrushButtons + '"]').remove();
-    $('[name="lb' + FORTE.nameBrushButtons + '"]').remove();
+    $('[name="' + FORTE.nameBtnsInputLayer + '"]').remove();
+    $('[name="lb' + FORTE.nameBtnsInputLayer + '"]').remove();
     var imgSrcs = [FORTE.ICONDESIGN, FORTE.ICONVOID, FORTE.ICONLOAD, FORTE.ICONBOUNDARY];
     var labels = [];
     for (src of imgSrcs) labels.push('<img class="icon" src="' + src + '"></img>');
-    FORTE.checkedButton = XAC.makeRadioButtons('brushButtons', labels, [0, 1, 2, 3, 4],
-        $('#tdBrushes'), idx, false);
-    $('[name="' + FORTE.nameBrushButtons + '"]').on("click", function (e) {
+    FORTE.checkedBtnInputLayer = XAC.makeRadioButtons('BtnsInputLayer', labels, [0, 1, 2, 3, 4],
+        $('#tdInputLayers'), idx, false);
+    $('[name="' + FORTE.nameBtnsInputLayer + '"]').on("click", function (e) {
         var checked = $(e.target).attr('checked');
         if (checked == 'checked') {
             FORTE.switchLayer(-1);
             FORTE.resetRadioButtons();
         } else {
             FORTE.switchLayer(parseInt($(e.target).val()));
-            if (FORTE.checkedButton != undefined) FORTE.checkedButton.attr('checked', false);
+            if (FORTE.checkedBtnInputLayer != undefined) FORTE.checkedBtnInputLayer.attr('checked', false);
             $(e.target).attr('checked', true);
-            FORTE.checkedButton = $(e.target);
+            FORTE.checkedBtnInputLayer = $(e.target);
         }
     });
 
@@ -310,10 +323,10 @@ FORTE.showOptimizedLayer = function (tag, label) {
         if (layer._needsUpdate) layer.forceRedraw(layer._heatmap);
         layer._parent.append(layer._canvas);
         FORTE.addEraser(layer);
-        
+
         // set to type
-       FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
-        
+        FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
+
         // set to material ratio
         XAC.updateSlider(FORTE.sldrMaterial, layer._lastMaterialRatio, function (valMat) {
             var value = (valMat - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
@@ -325,7 +338,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
             var value = (valMat - FORTE.MINSIMILARITYRATIO) / (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
             return FORTE._getSliderValue(value);
         });
-        
+
         FORTE.selectedTag = tag;
         $(FORTE.selectedTag).addClass('ui-state-highlight');
     } else {
