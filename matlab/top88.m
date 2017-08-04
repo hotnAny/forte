@@ -177,8 +177,6 @@ while change > 0.05 && (loop <= maxloop)
     
     %% [forte] set void element to 'zero'
     x(pasvelms) = eps;
-    x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
-    x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;
     
     %% [forte] forte optimization
     % add structs
@@ -200,8 +198,9 @@ while change > 0.05 && (loop <= maxloop)
         x = max(eps, x - (distfield > highend));
     end
     
-    %% [forte sandbox]
-%     x(favelms) = (x(favelms) + eps) * 1.2;
+    %% [forte] avoid boundary effects
+    x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
+    x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;
     
     %% [forte] update xPhys
     xPhys = x;
