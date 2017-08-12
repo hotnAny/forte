@@ -27,9 +27,12 @@ $(document).ready(function () {
             log('server response: ' + FORTE.xmlhttp.responseText);
             var outDir = XAC.getParameterByName('outdir', FORTE.xmlhttp.responseText);
             if (outDir != null && outDir != undefined) {
-                FORTE.outputDir = outDir;
-                log('server output directory: ' + FORTE.outputDir);
-                FORTE.notify('topopt server ready.');
+                if (FORTE.outputDir == undefined) {
+                    FORTE.outputDir = outDir;
+                    log('server output directory: ' + FORTE.outputDir);
+                    FORTE.notify('topopt server ready.');
+                }
+
             }
         }
     }
@@ -405,6 +408,8 @@ FORTE.startOptimization = function () {
         FORTE.timeouts = [];
         FORTE.fetchData();
         started = true;
+
+        $("body").css("cursor", "progress");
     }
 
     return started;
@@ -417,6 +422,8 @@ FORTE.finishOptimization = function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
     FORTE.state = 'finished';
     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
+    
+    $("body").css("cursor", "default");
 }
 
 //

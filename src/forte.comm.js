@@ -216,6 +216,8 @@ FORTE.readOptimizationOutput = function () {
                     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
                     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
+
+                    $("body").css("cursor", "default");
                 } else {
                     FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
                 }
