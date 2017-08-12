@@ -199,7 +199,7 @@ FORTE.readOptimizationOutput = function () {
 
                     // update tags
                     var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
-                    var label = 'layer ' + (numLayers + 1);
+                    var label = 'iteration ' + (numLayers + 1);
                     FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
                     FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
                     FORTE.optimizedLayer._lastMaterialRatio = FORTE.materialRatio;

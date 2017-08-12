@@ -1,32 +1,5 @@
 FORTE.sandbox = function () {
-    // FORTE.m = 1;
     $(document).keydown(XAC.keydown);
-    // XAC.on(XAC.UPARROW, function (e) {
-    //     FORTE.m *= 2;
-    //     log(FORTE.m);
-    // });
-    // XAC.on(XAC.DOWNARROW, function (e) {
-    //     FORTE.m /= 2;
-    //     log(FORTE.m);
-    // });
-    // FORTE.maskLayers = [];
-    // FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height);
-    // FORTE.layers.push(FORTE.lessMaterialLayer);
-
-    // FORTE.lessMaterialLayer.disable(0);
-    // XAC.on('L', function (e) {
-    //     FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height);
-    //     FORTE.layers.push(FORTE.lessMaterialLayer);
-    //     FORTE.switchLayer(FORTE.layers.indexOf(FORTE.lessMaterialLayer));
-    //     FORTE.lessMaterialLayer.enable();
-    // });
-    FORTE.toShowStress = false;
-    // XAC.on('S', function (e) {
-    //     FORTE.toShowStress = !FORTE.toShowStress;
-    //     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-    // });
-
-    FORTE.notifications = [];
 };
 
 //

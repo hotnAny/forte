@@ -14,8 +14,10 @@ var FORTE = FORTE || {};
 $(document).ready(function () {
     time();
 
-    // manage timeouts
+    // global variables and data structures
     FORTE.timeouts = [];
+    FORTE.notifications = [];
+    FORTE.toShowStress = false;
 
     // client-server setup
     FORTE.xmlhttp = new XMLHttpRequest();
@@ -29,9 +31,6 @@ $(document).ready(function () {
                 log('server output directory: ' + FORTE.outputDir);
                 FORTE.notify('topopt server ready.');
             }
-            // else {
-            //     FORTE.notify('topopt server unavailable.');
-            // }
         }
     }
     // initial ping to get the output directory
@@ -156,7 +155,7 @@ $(document).ready(function () {
 
         // more controls
         $('#btnMore').html(FORTE.HTMLCODETRIANGLEDOWN);
-        $('#btnMore').css('font-size', 'x-small');
+        // $('#btnMore').css('font-size', 'x-small');
         $('#btnMore').click(function (e) {
             e.preventDefault();
             if ($('#divMoreCtrl').is(":visible")) {
@@ -169,18 +168,16 @@ $(document).ready(function () {
             }
         });
 
-        $('#divMoreCtrl').css('background-color', 'rgba(255, 255, 255, 0.75)');
         $('#divMoreCtrl').css('z-index', ++FORTE.MAXZINDEX);
-        $('#divMoreCtrl').css('position', 'absolute');
         var _parentOffset = $('#tdCanvas').offset();
         $('#divMoreCtrl').css('left', _parentOffset.left);
         $('#divMoreCtrl').css('top', _parentOffset.top);
         $('#divMoreCtrl').hide();
 
         // notification
-        $('#divNotification').css('position', 'absolute');
         $('#divNotification').width($('#tdCanvas').width());
         $('#divNotification').css('top', _parentOffset.top + 5);
+        FORTE.notify('welcome to forte!');
 
         // resolution
         $('#tbWidth').attr('value', FORTE.width);
@@ -199,7 +196,6 @@ $(document).ready(function () {
             //
             FORTE.designLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLACK);
             FORTE.emptyLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
-            // FORTE.lessMaterialLayer = new FORTE.MaskCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORYELLOW);
             FORTE.eraserLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.BGCOLORCANVAS);
             FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
             FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
@@ -262,9 +258,7 @@ $(document).ready(function () {
 
             time('ready');
 
-            FORTE.notify('welcome to forte!');
-
-            if (FORTE.outDir == undefined) FORTE.notify('topopt server unavailable.');
+            if (FORTE.outputDir == undefined) FORTE.notify('topopt server unavailable.');
         }, 100);
 
     });
@@ -503,7 +497,7 @@ FORTE.resetButtonFromOptimization = function (button) {
 }
 
 //
-//
+//  update slider by mapping the value to it using the mapFunc
 //
 XAC.updateSlider = function (sldr, value, mapFunc) {
     var sldrValue = sldr.slider('option', 'value');
@@ -512,13 +506,14 @@ XAC.updateSlider = function (sldr, value, mapFunc) {
 }
 
 //
-//
+//  show notification
 //
 FORTE.notify = function (msg) {
-    if(msg == undefined) return;
-    var isFading = $('#divNotification').attr('isFading')
-    if($('#divNotification').attr('isFading') == 'true') {
+    if (msg == undefined) return;
+    // var isFading = $('#divNotification').attr('isFading')
+    if ($('#divNotification').attr('isFading') == 'true') {
         FORTE.notifications.push(msg);
+        log(FORTE.notifications)
         return;
     }
 
@@ -526,8 +521,9 @@ FORTE.notify = function (msg) {
     $('#divNotification').html(msg);
     $('#divNotification').attr('isFading', true);
     $('#divNotification').fadeIn(500, function () {
-        $('#divNotification').fadeOut(1500, function(){
+        $('#divNotification').fadeOut(1500, function () {
             $('#divNotification').attr('isFading', false);
+            log(FORTE.notifications)
             FORTE.notify(FORTE.notifications.pop());
         });
     });

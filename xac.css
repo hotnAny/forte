@@ -28,6 +28,15 @@ a {
 	color: #999;
 }
 
+#btnMore{
+	font-size: x-small;
+}
+
+#divMoreCtrl {
+	background-color: rgba(255, 255, 255, 0.75);
+	position: absolute;
+}
+
 #divNotification {
 	/* background-color: rgba(192, 192, 192, 0.75); */
 	position: absolute;
