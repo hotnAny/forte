@@ -27,7 +27,11 @@ $(document).ready(function () {
             if (outDir != null && outDir != undefined) {
                 FORTE.outputDir = outDir;
                 log('server output directory: ' + FORTE.outputDir);
+                FORTE.notify('topopt server ready.');
             }
+            // else {
+            //     FORTE.notify('topopt server unavailable.');
+            // }
         }
     }
     // initial ping to get the output directory
@@ -45,6 +49,7 @@ $(document).ready(function () {
     var mainTable = $('<table></table>');
     $(document.body).append(mainTable);
     mainTable.load(FORTE.MAINTABLETEMPLATE, function (e) {
+
         // set font size
         $('*').each(function () {
             $(this).css('font-size', 'small');
@@ -84,32 +89,22 @@ $(document).ready(function () {
         })
 
         // brushes for design, load and boundary
-        FORTE.nameBtnsInputLayer = 'BtnsInputLayer';
+        FORTE.nameButtonsInputLayer = 'ButtonsInputLayer';
         FORTE.resetRadioButtons(0);
 
-        // eraser
-        // $('#btnErase').attr('src', FORTE.ICONERASER);
-        // $('#btnErase').button();
-        // $('#btnErase').click(function (e) {
-        //     $(this).toggleClass('ui-state-active');
-        //     for (layer of FORTE.layers) layer._toErase = !layer._toErase;
-        //     FORTE.toErase = !FORTE.toErase;
-        // });
-        // FORTE.toErase = false;
-
         // tools: brush vs. eraser
-        FORTE.nameBtnsTools = 'BtnsTools';
+        FORTE.nameButtonsTools = 'ButtonsTools';
         var imgSrcsTools = [FORTE.ICONDRAW, FORTE.ICONERASER];
         var labelsTools = [];
         FORTE.editMode = FORTE.DRAW;
         for (src of imgSrcsTools) labelsTools.push('<img class="icon" src="' + src + '"></img>');
-        FORTE.checkedBtnTool = XAC.makeRadioButtons(FORTE.nameBtnsTools, labelsTools, [FORTE.DRAW, FORTE.ERASE],
+        FORTE.checkedBtnTool = XAC.makeRadioButtons(FORTE.nameButtonsTools, labelsTools, [FORTE.DRAW, FORTE.ERASE],
             $('#tdTools'), FORTE.editMode, false);
-        $('[name="' + FORTE.nameBtnsTools + '"]').on("click", function (e) {
+        $('[name="' + FORTE.nameButtonsTools + '"]').on("click", function (e) {
             FORTE.editMode = parseInt($(e.target).val());
             for (layer of FORTE.layers) layer._toErase = FORTE.editMode;
         });
-        
+
 
         //  similarity slider
         FORTE.similarityRatio = 5;
@@ -174,13 +169,18 @@ $(document).ready(function () {
             }
         });
 
-        $('#divMoreCtrl').css('background-color', FORTE.BGCOLORCANVAS); //'rgba(255, 255, 255, 0.75)');
+        $('#divMoreCtrl').css('background-color', 'rgba(255, 255, 255, 0.75)');
         $('#divMoreCtrl').css('z-index', ++FORTE.MAXZINDEX);
         $('#divMoreCtrl').css('position', 'absolute');
         var _parentOffset = $('#tdCanvas').offset();
         $('#divMoreCtrl').css('left', _parentOffset.left);
         $('#divMoreCtrl').css('top', _parentOffset.top);
         $('#divMoreCtrl').hide();
+
+        // notification
+        $('#divNotification').css('position', 'absolute');
+        $('#divNotification').width($('#tdCanvas').width());
+        $('#divNotification').css('top', _parentOffset.top + 5);
 
         // resolution
         $('#tbWidth').attr('value', FORTE.width);
@@ -261,7 +261,12 @@ $(document).ready(function () {
             FORTE.sandbox();
 
             time('ready');
+
+            FORTE.notify('welcome to forte!');
+
+            if (FORTE.outDir == undefined) FORTE.notify('topopt server unavailable.');
         }, 100);
+
     });
 });
 
@@ -270,14 +275,14 @@ $(document).ready(function () {
 //
 FORTE.resetRadioButtons = function (idx) {
     // remove and re-add all the radio buttons 
-    $('[name="' + FORTE.nameBtnsInputLayer + '"]').remove();
-    $('[name="lb' + FORTE.nameBtnsInputLayer + '"]').remove();
+    $('[name="' + FORTE.nameButtonsInputLayer + '"]').remove();
+    $('[name="lb' + FORTE.nameButtonsInputLayer + '"]').remove();
     var imgSrcs = [FORTE.ICONDESIGN, FORTE.ICONVOID, FORTE.ICONLOAD, FORTE.ICONBOUNDARY];
     var labels = [];
     for (src of imgSrcs) labels.push('<img class="icon" src="' + src + '"></img>');
-    FORTE.checkedBtnInputLayer = XAC.makeRadioButtons('BtnsInputLayer', labels, [0, 1, 2, 3, 4],
+    FORTE.checkedBtnInputLayer = XAC.makeRadioButtons('ButtonsInputLayer', labels, [0, 1, 2, 3, 4],
         $('#tdInputLayers'), idx, false);
-    $('[name="' + FORTE.nameBtnsInputLayer + '"]').on("click", function (e) {
+    $('[name="' + FORTE.nameButtonsInputLayer + '"]').on("click", function (e) {
         var checked = $(e.target).attr('checked');
         if (checked == 'checked') {
             FORTE.switchLayer(-1);
@@ -504,4 +509,26 @@ XAC.updateSlider = function (sldr, value, mapFunc) {
     var sldrValue = sldr.slider('option', 'value');
     value = mapFunc(value, sldr);
     if (sldrValue != value) sldr.slider('value', value);
+}
+
+//
+//
+//
+FORTE.notify = function (msg) {
+    if(msg == undefined) return;
+    var isFading = $('#divNotification').attr('isFading')
+    if($('#divNotification').attr('isFading') == 'true') {
+        FORTE.notifications.push(msg);
+        return;
+    }
+
+    log(msg)
+    $('#divNotification').html(msg);
+    $('#divNotification').attr('isFading', true);
+    $('#divNotification').fadeIn(500, function () {
+        $('#divNotification').fadeOut(1500, function(){
+            $('#divNotification').attr('isFading', false);
+            FORTE.notify(FORTE.notifications.pop());
+        });
+    });
 }

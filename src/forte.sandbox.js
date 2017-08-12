@@ -26,6 +26,7 @@ FORTE.sandbox = function () {
     //     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
     // });
 
+    FORTE.notifications = [];
 };
 
 //
