@@ -1,9 +1,8 @@
 function xPhys = top88(trial, args)
-%% [forte] const variables
+
 ADDSTRUCTS = 0;
 GETVARIATION = 1;
 OPTIMIZEWITHIN = 2;
-MAXEDITWEIGHT = 128;
 
 %% [forte] input data cleansing
 disp(args)
@@ -19,30 +18,32 @@ maxloop = str2double(args(8));
 fixeddofs = str2num(char(args(9)));
 loadnodes = str2num(char(args(10)));
 loadvalues = str2num(char(args(11)));
+
 % [forte] mixed-initiative optimization
 type = str2num(char(args(19)));
 actvelms = str2num(char(args(12)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
 lambda = str2double(args(16));
+
 % [forte] continuous user editing
 lastoutput = char(args(18));
 favelms = str2num(char(args(13)));
 slimelms = str2num(char(args(17)));
 editweight = str2num(char(args(20)));
+
 % [forte] for debugging in matlab
 debugging = str2num(char(args(21)));
 
-%% [forte] variables for mixed-initiative design optimization
+%% v
 niters = 64;
 decay = 0.95;
 eps = 0.001;
 kernelsize = floor(log(max(nelx, nely))) * 2 + 1; %floor(min(nelx, nely)/2);%
 sigma=1;
 gaussian = fspecial('gaussian', [kernelsize,kernelsize], sigma);
-margindecay = 0.5;
-telapsed = 0;
 
+maxeditweight = 128;
 %% MATERIAL PROPERTIES
 E0 = 1;
 Emin = 1e-9;
@@ -105,13 +106,16 @@ elseif type == OPTIMIZEWITHIN
     highend = lowend + 0.03 ^ (1+lambda)
     disp('optimizing within ...');
 end
+
+margindecay = 0.5;
+
 %% [forte] set xPhys to be the original design
 xPhys = repmat(eps, nely,nelx);
 xPhys(actvelms) = 1;
 loop = 0;
 change = 1;
 
-%% [forte] see if this is a continuous optimization
+%%
 try
     fileid = fopen(lastoutput, 'r');
     filestr = fread(fileid, inf, 'uint8=>char')';
@@ -124,7 +128,7 @@ catch
 end
 
 %% [forte] mask for removing material by the user
-editweight = MAXEDITWEIGHT;
+editweight = maxeditweight;
 matmask = ones(nely,nelx);
 alpha = 0.75 * editweight;
 beta = 1.25 * editweight;
@@ -134,6 +138,7 @@ gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
 matmask = conv2(matmask, gaussianmask, 'same');
 matmask = matmask * nely * nelx / sum(matmask(:));
 
+telapsed = 0;
 %% START ITERATION [forte] added maxloop
 while change > 0.05 && (loop <= maxloop)
     tic
@@ -206,7 +211,7 @@ while change > 0.05 && (loop <= maxloop)
     x(pasvelms) = eps;
     
     %% [forte] with max edit weight, set the element to 'one' / 'zero'
-    if editweight >= MAXEDITWEIGHT
+    if editweight >= maxeditweight
         x(slimelms) = eps;
         x(favelms) = 1;
     
@@ -234,7 +239,6 @@ while change > 0.05 && (loop <= maxloop)
         drawnow;
     end
     
-    %% [forte] log data
     try dlmwrite(strcat(trial, '_', num2str(loop-1), '.out'), smoothed);
     catch ME
         if debugging == true
