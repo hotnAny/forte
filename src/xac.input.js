@@ -217,12 +217,13 @@ XAC.enableDragDrop = function (filesHandler) {
 //
 //  make sliders
 //
-XAC.makeSlider = function (id, label, min, max, value, parent) {
-    var sldrRow = $('<tr></tr>');
-    var sldrCell = $('<td><label class="ui-widget">' + label + '&nbsp;&nbsp;' + '</label></td><td width="200px"></td>');
+XAC.makeSlider = function (id, label, min, max, value, parent, width) {
+    var tr = $('<tr></tr>');
+    tr.append($('<td><label class="ui-widget">' + label + '&nbsp;&nbsp;' + '</label></td>'));
+    var tdSldr = $('<td width="' + width + '"></td>');
     var sldr = $('<div id="' + id + '"></div>');
-    sldrCell.append(sldr);
-    sldrRow.append(sldrCell);
+    tdSldr.append(sldr);
+    tr.append(tdSldr);
 
     sldr.slider({
         max: max,
@@ -232,8 +233,8 @@ XAC.makeSlider = function (id, label, min, max, value, parent) {
 
     sldr.slider('value', value);
 
-    parent.append(sldrRow);
-    sldr.row = sldrRow;
+    parent.append(tr);
+    sldr.row = tr;
     return sldr;
 
 }

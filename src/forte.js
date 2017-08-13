@@ -80,9 +80,9 @@ $(document).ready(function () {
         FORTE.materialRatio = FORTE.INITMATERIALRATIO;
         var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
-        $('#tdMaterial').width(FORTE.WIDTHMATERIALSLIDER);
+        // $('#tdMaterial').width(FORTE.WIDTHMATERIALSLIDER);
         FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
-            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMaterial'));
+            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMaterial'), FORTE.WIDTHMATERIALSLIDER);
         FORTE.sldrMaterial.slider({
             change: function (e, ui) {
                 var value = FORTE._normalizeSliderValue($(e.target), ui.value);
@@ -107,15 +107,14 @@ $(document).ready(function () {
             for (layer of FORTE.layers) layer._toErase = FORTE.editMode;
         });
 
-
         //  similarity slider
         FORTE.similarityRatio = 5;
         var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
             (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
-        $('#tdSimilarity').width('180px');
+        // $('#tdSimilarity').width(FORTE.WIDTHSIMILARITYSLIDER);
         FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', 'similarity',
-            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdSimilarity'));
+            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdSimilarity'), FORTE.WIDTHSIMILARITYSLIDER);
         FORTE.sldrSimilarity.slider({
             change: function (e, ui) {
                 var value = FORTE._normalizeSliderValue($(e.target), ui.value);
@@ -147,13 +146,6 @@ $(document).ready(function () {
             FORTE.toShowStress = !FORTE.toShowStress;
             $(this).toggleClass('ui-state-active');
             FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-        });
-
-        // save
-        $('#btnSave').attr('src', FORTE.ICONSAVE);
-        $('#btnSave').button();
-        $('#btnSave').click(function (e) {
-            FORTE.saveForteToFile();
         });
 
         // more controls
@@ -192,6 +184,29 @@ $(document).ready(function () {
         }
         $('#tbWidth').keydown(_keydown);
         $('#tbHeight').keydown(_keydown);
+
+        // edit weight
+        FORTE.editWeightRatio = 2;
+        var ratio = (FORTE.editWeightRatio - FORTE.MINEDITWEIGHTRATIO) /
+            (FORTE.MAXEDITWEIGHTRATIO - FORTE.MINEDITWEIGHTRATIO);
+        var valueSlider = FORTE._getSliderValue(ratio);
+        FORTE.sldrEditWeight = XAC.makeSlider('sldrEditWeight', 'edit weight',
+            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdEditWeight'), FORTE.WIDTHEDITWEIGHTSLIDER);
+        // $('#tdEditWeight').width(FORTE.WIDTHEDITWEIGHTSLIDER);
+        FORTE.sldrEditWeight.slider({
+            change: function (e, ui) {
+                var value = FORTE._normalizeSliderValue($(e.target), ui.value);
+                FORTE.editWeightRatio = FORTE.MINEDITWEIGHTRATIO * (1 - value) +
+                    FORTE.MAXEDITWEIGHTRATIO * value;
+            }
+        });
+
+        // save
+        $('#btnSave').attr('src', FORTE.ICONSAVE);
+        $('#btnSave').button();
+        $('#btnSave').click(function (e) {
+            FORTE.saveForteToFile();
+        });
 
         setTimeout(function () {
             //
@@ -422,7 +437,7 @@ FORTE.finishOptimization = function () {
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', ['stop'], ['true']);
     FORTE.state = 'finished';
     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
-    
+
     $("body").css("cursor", "default");
 }
 
