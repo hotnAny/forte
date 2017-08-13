@@ -140,7 +140,6 @@ FORTE.Design.prototype.getData = function () {
     // str += '\n'
     // log(str)
 
-    // FORTE.bbox = bbox;
     this.bbox = bbox;
 
     return {

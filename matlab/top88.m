@@ -124,15 +124,17 @@ catch
 end
 
 %% [forte] mask for removing material by the user
-editweight = MAXEDITWEIGHT;
+% editweight = MAXEDITWEIGHT;
 matmask = ones(nely,nelx);
-alpha = 0.75 * editweight;
-beta = 1.25 * editweight;
-matmask(slimelms) = 1 - alpha;
-matmask(favelms) = 1 + beta;
-gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
-matmask = conv2(matmask, gaussianmask, 'same');
-matmask = matmask * nely * nelx / sum(matmask(:));
+if editweight < MAXEDITWEIGHT
+    alpha = 0.75 * editweight;
+    beta = 1.25 * editweight;
+    matmask(slimelms) = 1 - alpha;
+    matmask(favelms) = 1 + beta;
+    gaussianmask = fspecial('gaussian', [kernelsize,kernelsize], 1);
+    matmask = conv2(matmask, gaussianmask, 'same');
+    matmask = matmask * nely * nelx / sum(matmask(:));
+end
 
 %% START ITERATION [forte] added maxloop
 while change > 0.05 && (loop <= maxloop)
@@ -209,6 +211,7 @@ while change > 0.05 && (loop <= maxloop)
     if editweight >= MAXEDITWEIGHT
         x(slimelms) = eps;
         x(favelms) = 1;
+    end
     
     %% [forte] avoid boundary effects
     x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;

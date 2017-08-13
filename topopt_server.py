@@ -199,6 +199,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _favpoints = safe_retrieve_all(_designobj, 'favpoints', None)
     _slimpoints = safe_retrieve_all(_designobj, 'slimpoints', None)
     _lastoutput = str(safe_retrieve_all(_designobj, 'lastoutput', None))
+    _editweight = float(safe_retrieve_one(post_data, 'editweight', 1))
 
     #
     #   convert to matlab input
@@ -286,6 +287,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         matinput['LAMBDA'] = MINLAMBDAOPTIN + (MAXLAMBDAOPTIN-MINLAMBDAOPTIN) * (1-_similarity / MAXSIMILARITY)
         _similarity = -1
 
+    matinput['EDITWEIGHT'] = 2**_editweight
 
     df = get_distance_field(matinput['ACTVELMS'], nelx, nely, 2**_similarity, 1)
     s = material * nelx * nely / sum([sum(x) for x in df])    
@@ -296,7 +298,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
         matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
         matinput['DISTFIELD'], matinput['LAMBDA'], matinput['SLIMELMS'], matinput['LASTOUTPUT'],\
-        matinput['TYPE']]
+        matinput['TYPE'], matinput['EDITWEIGHT']]
 
     input_file = open(INPUTFILE, 'w')
     input_file.write('&'.join([str(x) for x in matargs]))

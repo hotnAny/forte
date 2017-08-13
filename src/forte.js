@@ -80,7 +80,6 @@ $(document).ready(function () {
         FORTE.materialRatio = FORTE.INITMATERIALRATIO;
         var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
-        // $('#tdMaterial').width(FORTE.WIDTHMATERIALSLIDER);
         FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMaterial'), FORTE.WIDTHMATERIALSLIDER);
         FORTE.sldrMaterial.slider({
@@ -112,7 +111,6 @@ $(document).ready(function () {
         var ratio = (FORTE.similarityRatio - FORTE.MINSIMILARITYRATIO) /
             (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
-        // $('#tdSimilarity').width(FORTE.WIDTHSIMILARITYSLIDER);
         FORTE.sldrSimilarity = XAC.makeSlider('sldrSimilarity', 'similarity',
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdSimilarity'), FORTE.WIDTHSIMILARITYSLIDER);
         FORTE.sldrSimilarity.slider({
@@ -150,7 +148,6 @@ $(document).ready(function () {
 
         // more controls
         $('#btnMore').html(FORTE.HTMLCODETRIANGLEDOWN);
-        // $('#btnMore').css('font-size', 'x-small');
         $('#btnMore').click(function (e) {
             e.preventDefault();
             if ($('#divMoreCtrl').is(":visible")) {
@@ -192,7 +189,6 @@ $(document).ready(function () {
         var valueSlider = FORTE._getSliderValue(ratio);
         FORTE.sldrEditWeight = XAC.makeSlider('sldrEditWeight', 'edit weight',
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdEditWeight'), FORTE.WIDTHEDITWEIGHTSLIDER);
-        // $('#tdEditWeight').width(FORTE.WIDTHEDITWEIGHTSLIDER);
         FORTE.sldrEditWeight.slider({
             change: function (e, ui) {
                 var value = FORTE._normalizeSliderValue($(e.target), ui.value);
@@ -413,9 +409,11 @@ FORTE.startOptimization = function () {
     var data = JSON.stringify(dataObject);
     var started = false;
     if (data != undefined) {
-        var fields = ['trial', 'forte', 'material', 'similarity', 'type'];
+        var fields = ['trial', 'forte', 'material', 'similarity', 'editweight', 'type'];
         FORTE.trial = 'forte_' + Date.now();
-        var values = [FORTE.trial, data, FORTE.materialRatio, FORTE.similarityRatio, type];
+        var values = [FORTE.trial, data, FORTE.materialRatio,
+            FORTE.similarityRatio, FORTE.editWeightRatio, type
+        ];
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'started';
         time();
@@ -425,6 +423,9 @@ FORTE.startOptimization = function () {
         started = true;
 
         $("body").css("cursor", "progress");
+        FORTE.notify('optimization started ...')
+    } else {
+        
     }
 
     return started;
@@ -439,6 +440,7 @@ FORTE.finishOptimization = function () {
     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
     $("body").css("cursor", "default");
+    FORTE.notify('optimization finished ...')
 }
 
 //
@@ -501,7 +503,6 @@ jQuery.fn.extend({
 //  set button for optimization (changes to 'finish', pulses, disables others, etc.)
 //
 FORTE.setButtonForOptimization = function (button) {
-    // button.html('finish');
     button.attr('pulsing', true);
     button.pulse(button.css('background-color'), FORTE.COLORBLUE, 1000);
     button.attr('bg-original', button.css('background-color'));
@@ -532,10 +533,8 @@ XAC.updateSlider = function (sldr, value, mapFunc) {
 //
 FORTE.notify = function (msg) {
     if (msg == undefined) return;
-    // var isFading = $('#divNotification').attr('isFading')
     if ($('#divNotification').attr('isFading') == 'true') {
         FORTE.notifications.push(msg);
-        log(FORTE.notifications)
         return;
     }
 
@@ -545,7 +544,6 @@ FORTE.notify = function (msg) {
     $('#divNotification').fadeIn(500, function () {
         $('#divNotification').fadeOut(1500, function () {
             $('#divNotification').attr('isFading', false);
-            log(FORTE.notifications)
             FORTE.notify(FORTE.notifications.pop());
         });
     });
