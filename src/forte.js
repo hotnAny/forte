@@ -374,8 +374,6 @@ FORTE.showOptimizedLayer = function (tag, label) {
 FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
 
-    FORTE.notify('rendering iteration #' + pointer);
-    
     // if fetching data is not finished, add extrapolated bitmaps
     if (FORTE.state != 'finished' &&
         FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
@@ -395,6 +393,7 @@ FORTE.render = function (pointer) {
         if (FORTE.renderStarted) {
             FORTE.updateStressAcrossLayers(FORTE.toShowStress);
             log('rendering stopped.');
+            FORTE.notify('optimization finished ...');
         }
     }
 }
@@ -456,7 +455,7 @@ FORTE.finishOptimization = function () {
     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
     $("body").css("cursor", "default");
-    FORTE.notify('optimization finished ...')
+    // FORTE.notify('optimization finished ...');
 }
 
 //
@@ -547,20 +546,30 @@ XAC.updateSlider = function (sldr, value, mapFunc) {
 //
 //  show notification
 //
-FORTE.notify = function (msg) {
+FORTE.notify = function (msg, toFade) {
     if (msg == undefined) return;
-    if ($('#divNotification').attr('isFading') == 'true') {
-        FORTE.notifications.push(msg);
+    if (toFade != false && $('#divNotification').attr('isFading') == 'true') {
+        FORTE.notifications.push([msg, toFade]);
         return;
     }
 
     log(msg)
     $('#divNotification').html(msg);
+
+    if(toFade == false) {
+        $('#divNotification').stop();
+        $('#divNotification').attr('isFading', false);
+        $('#divNotification').fadeIn(5);
+        return;
+    }
+
     $('#divNotification').attr('isFading', true);
     $('#divNotification').fadeIn(500, function () {
         $('#divNotification').fadeOut(1500, function () {
             $('#divNotification').attr('isFading', false);
-            FORTE.notify(FORTE.notifications.pop());
+            var params = FORTE.notifications.pop();
+            if(params == undefined) return;
+            FORTE.notify(params[0], params[1]);
         });
     });
 }

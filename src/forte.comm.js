@@ -179,6 +179,7 @@ FORTE.readOptimizationOutput = function () {
 
             time('fetched data for itr# ' + (FORTE.itrCounter + 1) +
                 ' after failing ' + FORTE.failureCounter + ' time(s)');
+            FORTE.notify('rendering trial #' + (FORTE.itrCounter + 1), false);
             FORTE.itrCounter += 1;
             FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
             FORTE.failureCounter = 0;
@@ -199,7 +200,7 @@ FORTE.readOptimizationOutput = function () {
 
                     // update tags
                     var numLayers = Object.keys(FORTE.htOptimizedLayers).length;
-                    var label = 'iteration ' + (numLayers + 1);
+                    var label = 'trial ' + (numLayers + 1);
                     FORTE.htOptimizedLayers[label] = FORTE.optimizedLayer;
                     FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
                     FORTE.optimizedLayer._lastMaterialRatio = FORTE.materialRatio;
