@@ -40,7 +40,6 @@ eps = 0.001;
 kernelsize = floor(log(max(nelx, nely))) * 2 + 1; %floor(min(nelx, nely)/2);%
 sigma=1;
 gaussian = fspecial('gaussian', [kernelsize,kernelsize], sigma);
-margin = 0;
 margindecay = 0.01;
 telapsed = 0;
 
@@ -194,6 +193,7 @@ while change > 0.05 && (loop <= maxloop)
             lambda = lambda * decay;
             % keep original sketch
             x(actvelms) = 1;
+            margin = floor((nelx+nely) * 0.025);
         end
         % get varation
     elseif type == GETVARIATION
@@ -203,6 +203,7 @@ while change > 0.05 && (loop <= maxloop)
         % optimize within
         x = min(1, x + (lowend<distfield & distfield<=highend));
         x = max(eps, x - (distfield > highend));
+        margin = 0;
     end
     
     %% [forte] set void element to 'zero'

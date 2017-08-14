@@ -339,7 +339,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
     }
 
     // if it's the tag that's already selected, do not re-select it
-    if (FORTE.selectedTag != undefined && FORTE.selectedTag[0] == tag[0]) {
+    if (tag == undefined || FORTE.selectedTag != undefined && FORTE.selectedTag[0] == tag[0]) {
         FORTE.selectedTag = undefined;
         return;
     }

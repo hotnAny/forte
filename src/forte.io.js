@@ -48,9 +48,8 @@ FORTE.loadForteFile = function (e) {
         FORTE.design.maxStress = Math.max(layer._stressInfo.maxStress);
         FORTE.htOptimizedLayers[trial.key] = layer;
         var tag = FORTE.optimizedLayerList.tagit('createTag', trial.key);
-        
-        // FORTE.showOptimizedLayer(tag, trial.key);
     }
+    FORTE.showOptimizedLayer();
 }
 
 //
