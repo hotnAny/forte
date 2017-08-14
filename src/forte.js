@@ -413,7 +413,10 @@ FORTE.startOptimization = function () {
     FORTE.design.boundaryPoints = FORTE.boundaryLayer.package();
 
     var dataObject = FORTE.design.getData();
-    if (dataObject == undefined) return false;
+    if (dataObject == undefined) {
+        FORTE.notify('missing loads and/or boundary ...');
+        return false;
+    }
 
     FORTE.resolution = dataObject.resolution;
 
@@ -436,7 +439,7 @@ FORTE.startOptimization = function () {
         $("body").css("cursor", "progress");
         FORTE.notify('optimization started ...');
     } else {
-        FORTE.notify('missing loads and/or boundary ...');
+        FORTE.notify('problems for generating data ...');
     }
 
     return started;
@@ -515,7 +518,7 @@ jQuery.fn.extend({
 //
 FORTE.setButtonForOptimization = function (button) {
     button.attr('pulsing', true);
-    button.pulse(button.css('background-color'), FORTE.COLORBLUE, 1000);
+    // button.pulse(button.css('background-color'), FORTE.COLORBLUE, 1000);
     button.attr('bg-original', button.css('background-color'));
 }
 

@@ -103,7 +103,7 @@ elseif type == OPTIMIZEWITHIN
     mindf = min(distfield(:));
     maxdf = max(distfield(:)) / 2;
     lowend = mindf+(maxdf-mindf)*max(0.001, lambda)
-    highend = lowend + 0.05 ^ (1+lambda)
+    highend = lowend + 0.03 ^ (1+lambda)
     disp('optimizing within ...');
 end
 %% [forte] set xPhys to be the original design

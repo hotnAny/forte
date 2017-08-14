@@ -281,7 +281,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     optinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
 
     optargs = [sdir + '//' + optinput['TRIAL'], optinput['NELX'], optinput['NELY'],\
-        optinput['VOLFRAC'], 3, 1.5, 1, 64, optinput['FIXEDDOFS'], optinput['LOADNODES'],\
+        optinput['VOLFRAC'], 3, 1.5, 1, 40, optinput['FIXEDDOFS'], optinput['LOADNODES'],\
         optinput['LOADVALUES'], optinput['ACTVELMS'], optinput['FAVELMS'], optinput['PASVELMS'],\
         optinput['DISTFIELD'], optinput['LAMBDA'], optinput['SLIMELMS'], optinput['LASTOUTPUT'],\
         optinput['TYPE'], optinput['EDITWEIGHT']]
