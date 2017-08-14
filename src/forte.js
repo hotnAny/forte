@@ -30,7 +30,7 @@ $(document).ready(function () {
                 if (FORTE.outputDir == undefined) {
                     FORTE.outputDir = outDir;
                     log('server output directory: ' + FORTE.outputDir);
-                    FORTE.notify('topopt server ready.');
+                    FORTE.notify('optimization server ready.');
                 }
 
             }
@@ -169,7 +169,6 @@ $(document).ready(function () {
         // notification
         $('#divNotification').width($('#tdCanvas').width());
         $('#divNotification').css('top', _parentOffset.top + 5);
-        FORTE.notify('welcome to forte!');
 
         // resolution
         $('#tbWidth').attr('value', FORTE.width);
@@ -213,6 +212,8 @@ $(document).ready(function () {
             FORTE.eraserLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.BGCOLORCANVAS);
             FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
             FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
+
+            // $('#divNotification').width(FORTE.designLayer._canvas.width());
 
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
@@ -272,7 +273,13 @@ $(document).ready(function () {
 
             time('ready');
 
-            if (FORTE.outputDir == undefined) FORTE.notify('topopt server unavailable.');
+            if (FORTE.outputDir == undefined) {
+                $('#divNotification').css('background', 'rgba(255, 0, 0, 0.75)');
+                $('#divNotification').css('color', '#ffffff');
+                $('#divNotification').html('optimization server unavailable.');
+            } else {
+                FORTE.notify('welcome to forte!');
+            }
         }, 100);
 
     });
@@ -394,6 +401,10 @@ FORTE.render = function (pointer) {
 //  start the optimization
 //
 FORTE.startOptimization = function () {
+    if (FORTE.outputDir == undefined) {
+        FORTE.notify('optimization server unavailable');
+        return;
+    }
     var type = $('#ddOptType :selected').val();
 
     FORTE.design.designPoints = FORTE.designLayer.package();
@@ -423,9 +434,9 @@ FORTE.startOptimization = function () {
         started = true;
 
         $("body").css("cursor", "progress");
-        FORTE.notify('optimization started ...')
+        FORTE.notify('optimization started ...');
     } else {
-        
+        FORTE.notify('missing loads and/or boundary ...');
     }
 
     return started;

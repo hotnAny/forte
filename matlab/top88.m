@@ -40,7 +40,8 @@ eps = 0.001;
 kernelsize = floor(log(max(nelx, nely))) * 2 + 1; %floor(min(nelx, nely)/2);%
 sigma=1;
 gaussian = fspecial('gaussian', [kernelsize,kernelsize], sigma);
-margindecay = 0.5;
+margin = 2;
+margindecay = 0.01;
 telapsed = 0;
 
 %% MATERIAL PROPERTIES
@@ -214,8 +215,10 @@ while change > 0.05 && (loop <= maxloop)
     end
     
     %% [forte] avoid boundary effects
-    x(1,:) = x(1,:) * margindecay; x(end,:) = x(end,:) * margindecay;
-    x(:,1) = x(:,1) * margindecay; x(:,end) = x(:,end) * margindecay;
+    x([1, margin],:) = x([1, margin],:) * margindecay; 
+    x([end-margin, end],:) = x([end-margin, end],:) * margindecay;
+    x(:,[1, margin]) = x(:,[1, margin]) * margindecay; 
+    x(:,[end-margin, end]) = x(:,[end-margin, end]) * margindecay;
     
     %% [forte] update xPhys
     xPhys = x;
