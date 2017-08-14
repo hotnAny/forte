@@ -2,7 +2,7 @@
 //
 //  a grid-like canvas for drawing topology optimization compatible design
 //
-//  by xiangchen@acm.org, v0.0, 05/2017
+//  by xiangchen@acm.org, v0.1, 08/2017
 //
 // ......................................................................................................
 
@@ -10,12 +10,12 @@ var FORTE = FORTE || {};
 
 FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._id = (100 + Math.random() * 900 | 0).toString();
-
     this._parent = parent;
 
     this._strokeRadius = 1;
     this._strokeColor = strokeColor == undefined ? '#000000' : strokeColor;
 
+    // canvas
     this._canvas = $('<canvas id="canvas"></canvas>');
     var parentOffset = this._parent.offset();
     this._canvas.css('position', 'absolute');
@@ -23,19 +23,19 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._canvas.css('top', parentOffset.top);
     this._canvas[0].width = this._parent.width();
     this.setResolution(width, height);
-    this._parent.append(this._canvas);
-
-    this._context = this._canvas[0].getContext('2d');
-    this._context.fillStyle = this._strokeColor;
+    this._defaultAlpha = 1;
+    this._canvas.css('opacity', this._defaultAlpha);
 
     this._canvas.mousedown(this.drawDown.bind(this));
     this._canvas.mousemove(this.drawMove.bind(this));
     this._canvas.mouseup(this.drawUp.bind(this));
 
-    this._enabled = true;
+    this._parent.append(this._canvas);
 
-    this._defaultAlpha = 1;
-    this._canvas.css('opacity', this._defaultAlpha);
+    this._context = this._canvas[0].getContext('2d');
+    this._context.fillStyle = this._strokeColor;
+
+    this._enabled = true;
 
     this._inputEvents = [];
 };

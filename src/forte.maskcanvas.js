@@ -14,6 +14,7 @@ FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
     this._nregions = 0;
     this._regions = {};
     this._strokeRadius = 1;
+
     //
     //  override to package mask data
     //
@@ -60,7 +61,6 @@ FORTE.MaskCanvas.prototype.drawDown = function (e) {
     this._strokePoints = [];
     this._markPoints = [];
     this._doDraw(e);
-    // this._context.beginPath();
     var canvasOffset = this._canvas.offset();
     var x = e.clientX - canvasOffset.left;
     var y = e.clientY - canvasOffset.top;
@@ -68,7 +68,6 @@ FORTE.MaskCanvas.prototype.drawDown = function (e) {
         x: x,
         y: y
     });
-    // this._context.moveTo(x, y);
 };
 
 //
@@ -87,8 +86,6 @@ FORTE.MaskCanvas.prototype.drawMove = function (e) {
         x: x,
         y: y
     });
-    // this._context.lineTo(x, y);
-    // this._context.fill();
     this._doDraw(e);
 };
 
@@ -99,8 +96,6 @@ FORTE.MaskCanvas.prototype.drawUp = function (e) {
     if (!this._enabled) return;
     this._isDown = false;
 
-    // this._context.closePath();
-    // this._context.fill();
     var idRegion = this._id + '_' + this._nregions++;
     this._context.addHitRegion({
         id: idRegion
@@ -118,7 +113,6 @@ FORTE.MaskCanvas.prototype.drawUp = function (e) {
 //
 FORTE.MaskCanvas.prototype._update = function (e) {
     var regionInfo = this._regions[this._hitRegion];
-    // e == undefined means force update everything
     if (regionInfo != undefined || e == undefined) {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         var keys = Object.keys(this._regions);

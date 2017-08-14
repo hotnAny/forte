@@ -1,8 +1,8 @@
 // ......................................................................................................
 //
-//  a class of forte design, primarily data/parameters for topology optimization, v0.2
+//  a class of forte design, primarily data/parameters for topology optimization, v0.3
 //
-//  by xiangchen@acm.org, 07/2017
+//  by xiangchen@acm.org, 08/2017
 //
 // ......................................................................................................
 
