@@ -374,6 +374,8 @@ FORTE.showOptimizedLayer = function (tag, label) {
 FORTE.render = function (pointer) {
     FORTE.pointer = FORTE.pointer || pointer;
 
+    FORTE.notify('rendering iteration #' + pointer);
+    
     // if fetching data is not finished, add extrapolated bitmaps
     if (FORTE.state != 'finished' &&
         FORTE.pointer >= FORTE.design.bitmaps.length - 1 - FORTE.DELAYEDSTART) {
