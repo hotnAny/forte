@@ -13,31 +13,52 @@ var FORTE = FORTE || {};
 //
 FORTE.loadForteFile = function (e) {
     var dataObject = JSON.parse(e.target.result);
-    $(tbWidth).val(dataObject.width);
-    $(tbHeight).val(dataObject.height);
+
+    // set up canvas
+    $(tbWidth).val(dataObject.design.width);
+    $(tbHeight).val(dataObject.design.height);
     FORTE.changeResolution();
     FORTE.btnNew.trigger('click');
 
-    FORTE.designLayer.drawFromBitmap(dataObject.designBitmap, 0, 0);
-    FORTE.loadLayer.drawFromBitmap(dataObject.loadBitmap, 0, 0);
+    // show initial design
+    FORTE.designLayer.drawFromBitmap(dataObject.design.designBitmap, 0, 0);
+    FORTE.loadLayer.drawFromBitmap(dataObject.design.loadBitmap, 0, 0);
     FORTE.loadLayer._arrows = [];
-    for (arrowNormalized of dataObject.loadArrows) {
+    for (arrowNormalized of dataObject.design.loadArrows) {
         var w = FORTE.loadLayer._canvas[0].width;
         var h = FORTE.loadLayer._canvas[0].height;
         var arrow = [arrowNormalized[0] * w, arrowNormalized[1] * h, arrowNormalized[2] * w, arrowNormalized[3] * h];
         FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
         FORTE.loadLayer._arrows.push(arrow);
     }
-    FORTE.design.loadPoints = dataObject.loadPoints;
-    FORTE.design.loadValues = dataObject.loadValues;
-    FORTE.boundaryLayer.drawFromBitmap(dataObject.boundaryBitmap, 0, 0);
+    FORTE.design.loadPoints = dataObject.design.loadPoints;
+    FORTE.design.loadValues = dataObject.design.loadValues;
+    FORTE.boundaryLayer.drawFromBitmap(dataObject.design.boundaryBitmap, 0, 0);
+
+    // show trials (if there's any)
+    FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
+    FORTE.design.maxStress = 0;
+    for (trial of dataObject.trials) {
+        var layer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
+        layer.drawFromBitmap(trial.designBitmap, 0, 0);
+        layer.type = trial.type;
+        layer._lastMaterialRatio = trial.materialRatio;
+        layer._lastSimilarityRatio = trial.similarityRatio;
+        layer._stressInfo = trial.stressInfo;
+        FORTE.design.maxStress = Math.max(layer._stressInfo.maxStress);
+        FORTE.htOptimizedLayers[trial.key] = layer;
+        var tag = FORTE.optimizedLayerList.tagit('createTag', trial.key);
+        
+        // FORTE.showOptimizedLayer(tag, trial.key);
+    }
 }
 
 //
 //  routine to save forte design file
 //
 FORTE.saveForteToFile = function () {
-    var dataObject = {
+    // save forte design file
+    var design = {
         width: FORTE.width,
         height: FORTE.height,
         designBitmap: FORTE.designLayer._bitmap,
@@ -46,13 +67,32 @@ FORTE.saveForteToFile = function () {
         loadPoints: FORTE.design.loadPoints,
         loadValues: FORTE.design.loadValues,
         boundaryBitmap: FORTE.boundaryLayer._bitmap
-    }
-    var data = JSON.stringify(dataObject);
-    if (data != undefined) {
-        var blob = new Blob([data], {
-            type: 'text/plain'
+    };
+
+    var trials = [];
+    var keys = Object.keys(FORTE.htOptimizedLayers);
+    for (key of keys) {
+        var layer = FORTE.htOptimizedLayers[key];
+        trials.push({
+            key: key,
+            designBitmap: layer._bitmap,
+            stressInfo: layer._stressInfo,
+            type: layer.type,
+            materialRatio: layer._lastMaterialRatio,
+            similarityRatio: layer._lastSimilarityRatio
         });
-        saveAs(blob, 'design.forte');
+    }
+
+    var project = {
+        design: design,
+        trials: trials
+    }
+
+    var dataProject = JSON.stringify(project);
+    if (dataProject != undefined) {
+        saveAs(new Blob([dataProject], {
+            type: 'text/plain'
+        }), 'design.forte');
     }
 }
 
@@ -170,7 +210,7 @@ FORTE.readOptimizationOutput = function () {
                     var layer = FORTE.htOptimizedLayers[key];
                     if (layer != undefined) layer._canvas.remove();
                 }
-                FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, '#666666');
+                FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
                 FORTE.optimizedLayer._strokeRadius = FORTE.designLayer._strokeRadius;
                 FORTE.render(0);
                 FORTE.renderStarted = true;
@@ -224,4 +264,25 @@ FORTE.readOptimizationOutput = function () {
                 }
             }
         });
+}
+
+//
+//  add blob to a dropdown list for later download
+//
+FORTE.addToDownloadDropdown = function (itemName, blob, fileName) {
+    FORTE.downloadableInfo = FORTE.downloadableInfo || [];
+
+    var downloadItem = $('<option value=' + FORTE.downloadableInfo.length + '>' + itemName + '</option>');
+    FORTE.downloadableInfo.push({
+        blob: blob,
+        fileName: fileName
+    });
+    $('#ddlExports').append(downloadItem);
+}
+
+//
+//
+//
+FORTE.saveResults = function () {
+
 }

@@ -203,6 +203,13 @@ $(document).ready(function () {
             FORTE.saveForteToFile();
         });
 
+        // exports drop down list
+        $('#ddlExports').change(function () {
+            var idx = $('#ddlExports :selected').val();
+            var info = MEDLEY.downloadableInfo[idx];
+            saveAs(info.blob, info.fileName);
+        })
+
         setTimeout(function () {
             //
             // layers of editing
@@ -465,7 +472,8 @@ FORTE.updateStressAcrossLayers = function (toShow) {
     var layers = [];
     var keys = Object.keys(FORTE.htOptimizedLayers);
     for (key of keys) layers.push(FORTE.htOptimizedLayers[key]);
-    var layerCurrent = FORTE.htOptimizedLayers[FORTE.selectedTag[0].innerText];
+    var layerCurrent = FORTE.selectedTag == undefined ? undefined :
+        FORTE.htOptimizedLayers[FORTE.selectedTag[0].innerText];
     for (layer of layers) {
         if (layer == undefined) continue;
         if (toShow) {
@@ -556,7 +564,7 @@ FORTE.notify = function (msg, toFade) {
     log(msg)
     $('#divNotification').html(msg);
 
-    if(toFade == false) {
+    if (toFade == false) {
         $('#divNotification').stop();
         $('#divNotification').attr('isFading', false);
         $('#divNotification').fadeIn(5);
@@ -568,7 +576,7 @@ FORTE.notify = function (msg, toFade) {
         $('#divNotification').fadeOut(1500, function () {
             $('#divNotification').attr('isFading', false);
             var params = FORTE.notifications.pop();
-            if(params == undefined) return;
+            if (params == undefined) return;
             FORTE.notify(params[0], params[1]);
         });
     });
