@@ -2,26 +2,23 @@
 
 ##########################################################################
 #
-#   server for writting input to top88, v0.1
+#   server for writting input to top88, v0.2
 #
-#   by xiangchen@acm.org, 05/2017
+#   by xiangchen@acm.org, 08/2017
 #
 ##########################################################################
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from urlparse import urlparse, parse_qs
-# import sys
 from sys import argv
-# import os
 import time
 import subprocess
 import json
-# import traceback
 from math import sqrt, floor, cos, pi, exp
 from numpy import array, empty
 
 # default input file path/name
-INPUTFILE = '~matinput'
+INPUTFILE = '~optinput'
 MAXSIMILARITY = 10
 DEFAULTLAMBDA = 0.1
 MINLAMBDAOPTIN = 0.001
@@ -56,12 +53,6 @@ def elm_num_2d(nelx, nely, mpx, mpy):
 #   get 2d node number
 #
 def node_nums_2d(nelx, nely, mpx, mpy):
-    # debug
-    if mpx > nelx:
-        print mpx, nelx
-    if mpy > nely:
-        print mpy, nely
-
     inn = array([0, 1, nely + 1, nely + 2]) #  initial node numbers
     en = nely * (mpx - 1) + mpy #  element number
     nn = inn + en + mpx - 1 #  node numbers
@@ -162,10 +153,6 @@ def get_distance_field(elms, nelx, nely, m, alpha):
 
     return df
 
-# 1 - (1/(1+e^(64*(0.1-x)))-0.039)/(1-0.039)
-def sigmoid(self, t, slope, gradient):
-    return 1 / (1 + exp(slope * (gradient - t)))
-
 #
 #   processing incoming data
 #
@@ -210,11 +197,10 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # resolution, material & trial
     nelx = _resolution[0]
     nely = _resolution[1]
-    # material = _material * 1.0 * len(_design) / (nelx * nely)
     material = _material
     print nelx, nely, material
 
-    matinput = {'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
+    optinput = {'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
      'FIXEDDOFS':[], 'LOADNODES':[], 'LOADVALUES':[]}
     
     # boundary
@@ -227,7 +213,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
             tb_boundary[dof*(idx-1)+1] = 1
     for idx in xrange(0, len(tb_boundary)):
         if tb_boundary[idx] == 1:
-            matinput['FIXEDDOFS'].append(idx+1)
+            optinput['FIXEDDOFS'].append(idx+1)
 
     # load
     tb_loadnodes = []
@@ -245,17 +231,17 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
             tb_loadvalues.append(v[0]/vsum)
             tb_loadvalues.append(v[1]/vsum)
     
-    matinput['LOADNODES'] = tb_loadnodes
-    matinput['LOADVALUES'] = tb_loadvalues
+    optinput['LOADNODES'] = tb_loadnodes
+    optinput['LOADVALUES'] = tb_loadvalues
 
     # active/passive/favored(obselete)/less-material elements
-    matinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
-    matinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
-    matinput['FAVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _favpoints]
+    optinput['ACTVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _design]
+    optinput['PASVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _emptiness]
+    optinput['FAVELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _favpoints]
 
-    matinput['SLIMELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _slimpoints]
+    optinput['SLIMELMS'] = [elm_num_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _slimpoints]
 
-    matinput['LASTOUTPUT'] = _lastoutput
+    optinput['LASTOUTPUT'] = _lastoutput
 
     # [debug] do NOT remove
     # vis_str = ''
@@ -266,43 +252,44 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     #             vis_str += ' x '
     #         elif dof*idx in tb_loadnodes and dof*idx+1 in tb_loadnodes:
     #             vis_str += ' O '
-    #         elif elm_num_2d(nelx, nely, i + 1, j + 1) in matinput['LESSELMS']:
+    #         elif elm_num_2d(nelx, nely, i + 1, j + 1) in optinput['LESSELMS']:
     #             vis_str += ' # '
     #         else:
     #             vis_str += ' . '
     #     vis_str += '\n'
     # print vis_str
 
-    matinput['TYPE'] = _type
+    # type of optimization
+    optinput['TYPE'] = _type
     
     if _type == ADDSTRUCTS:
         # use similarity to set lambda for mass transport
-        matinput['LAMBDA'] = MINLAMBDAVARIATION + (MAXLAMBDAVARIATION-MINLAMBDAVARIATION) * _similarity / MAXSIMILARITY
+        optinput['LAMBDA'] = MINLAMBDAVARIATION + (MAXLAMBDAVARIATION-MINLAMBDAVARIATION) * _similarity / MAXSIMILARITY
         # then set it to max so to use a constant max distance field
         _similarity = MAXSIMILARITY
     elif _type == GETVARIATION:
-        matinput['LAMBDA'] = 0
+        optinput['LAMBDA'] = 0
         _similarity = _similarity
     elif _type == OPTIMIZEWITHIN:
-        matinput['LAMBDA'] = MINLAMBDAOPTIN + (MAXLAMBDAOPTIN-MINLAMBDAOPTIN) * (1-_similarity / MAXSIMILARITY)
+        optinput['LAMBDA'] = MINLAMBDAOPTIN + (MAXLAMBDAOPTIN-MINLAMBDAOPTIN) * (1-_similarity / MAXSIMILARITY)
         _similarity = -1
 
-    matinput['EDITWEIGHT'] = 2**_editweight
+    optinput['EDITWEIGHT'] = 2**_editweight
 
-    df = get_distance_field(matinput['ACTVELMS'], nelx, nely, 2**_similarity, 1)
+    df = get_distance_field(optinput['ACTVELMS'], nelx, nely, 2**_similarity, 1)
     s = material * nelx * nely / sum([sum(x) for x in df])    
-    print 's = ', s
-    matinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
+    optinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
 
-    matargs = [sdir + '//' + matinput['TRIAL'], matinput['NELX'], matinput['NELY'],\
-        matinput['VOLFRAC'], 3, 1.5, 1, 64, matinput['FIXEDDOFS'], matinput['LOADNODES'],\
-        matinput['LOADVALUES'], matinput['ACTVELMS'], matinput['FAVELMS'], matinput['PASVELMS'],\
-        matinput['DISTFIELD'], matinput['LAMBDA'], matinput['SLIMELMS'], matinput['LASTOUTPUT'],\
-        matinput['TYPE'], matinput['EDITWEIGHT']]
+    optargs = [sdir + '//' + optinput['TRIAL'], optinput['NELX'], optinput['NELY'],\
+        optinput['VOLFRAC'], 3, 1.5, 1, 64, optinput['FIXEDDOFS'], optinput['LOADNODES'],\
+        optinput['LOADVALUES'], optinput['ACTVELMS'], optinput['FAVELMS'], optinput['PASVELMS'],\
+        optinput['DISTFIELD'], optinput['LAMBDA'], optinput['SLIMELMS'], optinput['LASTOUTPUT'],\
+        optinput['TYPE'], optinput['EDITWEIGHT']]
 
     input_file = open(INPUTFILE, 'w')
-    input_file.write('&'.join([str(x) for x in matargs]))
+    input_file.write('&'.join([str(x) for x in optargs]))
     input_file.close()
+
     # [debug] copy it to matlab dir to debug in matlab
     subprocess.call('cp ' + INPUTFILE + ' matlab/', shell=True)
 
@@ -324,11 +311,9 @@ class S(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self._set_headers()
-        # do something
 
     def do_HEAD(self):
         self._set_headers()
-        # do something
 
     def do_POST(self):
     	# prepare for response

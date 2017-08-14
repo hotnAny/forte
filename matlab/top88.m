@@ -40,7 +40,7 @@ eps = 0.001;
 kernelsize = floor(log(max(nelx, nely))) * 2 + 1; %floor(min(nelx, nely)/2);%
 sigma=1;
 gaussian = fspecial('gaussian', [kernelsize,kernelsize], sigma);
-margin = 2;
+margin = 0;
 margindecay = 0.01;
 telapsed = 0;
 
@@ -103,7 +103,7 @@ elseif type == OPTIMIZEWITHIN
     mindf = min(distfield(:));
     maxdf = max(distfield(:)) / 2;
     lowend = mindf+(maxdf-mindf)*max(0.001, lambda)
-    highend = lowend + 0.03 ^ (1+lambda)
+    highend = lowend + 0.05 ^ (1+lambda)
     disp('optimizing within ...');
 end
 %% [forte] set xPhys to be the original design
@@ -205,7 +205,7 @@ while change > 0.05 && (loop <= maxloop)
         x = max(eps, x - (distfield > highend));
     end
     
-     %% [forte] set void element to 'zero'
+    %% [forte] set void element to 'zero'
     x(pasvelms) = eps;
     
     %% [forte] with max edit weight, set the element to 'one' / 'zero'
@@ -215,10 +215,12 @@ while change > 0.05 && (loop <= maxloop)
     end
     
     %% [forte] avoid boundary effects
-    x([1, margin],:) = x([1, margin],:) * margindecay; 
-    x([end-margin, end],:) = x([end-margin, end],:) * margindecay;
-    x(:,[1, margin]) = x(:,[1, margin]) * margindecay; 
-    x(:,[end-margin, end]) = x(:,[end-margin, end]) * margindecay;
+    if margin > 0
+        x([1, margin],:) = x([1, margin],:) * margindecay;
+        x([end-margin, end],:) = x([end-margin, end],:) * margindecay;
+        x(:,[1, margin]) = x(:,[1, margin]) * margindecay;
+        x(:,[end-margin, end]) = x(:,[end-margin, end]) * margindecay;
+    end
     
     %% [forte] update xPhys
     xPhys = x;
