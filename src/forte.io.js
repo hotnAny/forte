@@ -36,7 +36,7 @@ FORTE.loadForteFile = function (e) {
     FORTE.boundaryLayer.drawFromBitmap(dataObject.design.boundaryBitmap, 0, 0);
 
     // show trials (if there's any)
-    FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
+    // FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
     FORTE.design.maxStress = 0;
     for (trial of dataObject.trials) {
         var layer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
@@ -72,6 +72,7 @@ FORTE.saveForteToFile = function () {
     var keys = Object.keys(FORTE.htOptimizedLayers);
     for (key of keys) {
         var layer = FORTE.htOptimizedLayers[key];
+        if (layer == undefined) continue;
         trials.push({
             key: key,
             designBitmap: layer._bitmap,
@@ -218,7 +219,7 @@ FORTE.readOptimizationOutput = function () {
 
             time('fetched data for itr# ' + (FORTE.itrCounter + 1) +
                 ' after failing ' + FORTE.failureCounter + ' time(s)');
-            FORTE.notify('rendering trial #' + (FORTE.itrCounter + 1), false);
+            FORTE.notify('rendering trial #' + (FORTE.itrCounter + 1) + ' ...', false);
             FORTE.itrCounter += 1;
             FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
             FORTE.failureCounter = 0;

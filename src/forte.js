@@ -30,14 +30,17 @@ $(document).ready(function () {
                 if (FORTE.outputDir == undefined) {
                     FORTE.outputDir = outDir;
                     log('server output directory: ' + FORTE.outputDir);
+                    $('#divNotification').css('background', 'rgba(0, 0, 0, 0)');
+                    $('#divNotification').css('color', '#000000');
                     FORTE.notify('optimization server ready.');
                 }
-
             }
+
         }
     }
     // initial ping to get the output directory
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
+    // FORTE.nudgeServer();
 
     // enable drag and drop
     XAC.enableDragDrop(function (files) {
@@ -352,7 +355,11 @@ FORTE.showOptimizedLayer = function (tag, label) {
         FORTE.addEraser(layer);
 
         // set to type
-        FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
+        // FORTE.optimizedLayer.type = $('#ddOptType :selected').val();
+        // $('#ddOptType[value='+ layer.type + ']').attr('selected', true);
+        $('#ddOptType option:selected').attr('selected', false);
+
+        $('#ddOptType option[value=' + layer.type + ']').attr('selected', true);
 
         // set to material ratio
         XAC.updateSlider(FORTE.sldrMaterial, layer._lastMaterialRatio, function (valMat) {
