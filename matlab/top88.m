@@ -195,12 +195,11 @@ while change > 0.05 && (loop <= maxloop)
             x(actvelms) = 1;
             margin = floor((nelx+nely) * 0.025);
         end
-        % get varation
+    % get varation
     elseif type == GETVARIATION
-        % do nothing
-        % optimize within
+        margin = 0;
+    % optimize within
     elseif type == OPTIMIZEWITHIN
-        % optimize within
         x = min(1, x + (lowend<distfield & distfield<=highend));
         x = max(eps, x - (distfield > highend));
         margin = 0;
