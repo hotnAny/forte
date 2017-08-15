@@ -25,7 +25,7 @@ FORTE.changeResolution = function () {
     // roughly adjust stroke radius based on resolution
     for (layer of FORTE.layers)
         layer._strokeRadius = FORTE.width / 96 | 0;
-    FORTE.emptyLayer._strokeRadius = 0;
+    // FORTE.emptyLayer._strokeRadius = 0;
 
     // special treatments
     FORTE.loadLayer._context.lineWidth = 8;

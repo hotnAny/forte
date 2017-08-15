@@ -115,6 +115,13 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
 
+    // this._context.beginPath();
+    // this._context.arc(xcenter * this._cellSize, ycenter * this._cellSize,
+    //     this._cellSize * 0.5, 0, Math.PI * 2);
+    // this._context.fill();
+    // this._context.closePath();
+    // return;
+
     var alphaDescent = 0.5 / this._strokeRadius;
     for (var dx = -this._strokeRadius; dx <= this._strokeRadius; dx += 1) {
         var alphas = [];
@@ -130,6 +137,8 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
             } else {
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
+                // this._context.arc(x * this._cellSize, y * this._cellSize,
+                //     this._cellSize * 0.5, 0, Math.PI * 2);
                 this._context.fill();
                 this._bitmap[y][x] = 1;
             }
@@ -189,6 +198,8 @@ FORTE.GridCanvas.prototype.forceRedraw = function (colorMap) {
             this._context.beginPath();
             this._context.rect((i * this._cellSize) | 0, (j * this._cellSize) | 0,
                 (this._cellSize + 1) | 0, (this._cellSize + 1) | 0);
+            // this._context.arc((i * this._cellSize) | 0, (j * this._cellSize) | 0,
+            //     ((this._cellSize + 1) / 2) | 0, 0, Math.PI * 2);
             if (colorMap != undefined && colorMap[j][i] != undefined)
                 this._context.fillStyle = colorMap[j][i];
             this._context.fill();
