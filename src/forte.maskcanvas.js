@@ -43,7 +43,7 @@ FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
     //
     //  override clearing method
     //
-    this.clear = function(){
+    this.clear = function () {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         this._regions = {};
     };
@@ -60,7 +60,8 @@ FORTE.MaskCanvas.prototype.drawDown = function (e) {
 
     this._strokePoints = [];
     this._markPoints = [];
-    this._doDraw(e);
+    this._hitRegionOnDown = e.originalEvent.region;
+    this._doDraw(e, this._toErase);
     var canvasOffset = this._canvas.offset();
     var x = e.clientX - canvasOffset.left;
     var y = e.clientY - canvasOffset.top;
@@ -86,7 +87,7 @@ FORTE.MaskCanvas.prototype.drawMove = function (e) {
         x: x,
         y: y
     });
-    this._doDraw(e);
+    this._doDraw(e, this._toErase);
 };
 
 //
@@ -96,14 +97,21 @@ FORTE.MaskCanvas.prototype.drawUp = function (e) {
     if (!this._enabled) return;
     this._isDown = false;
 
-    var idRegion = this._id + '_' + this._nregions++;
-    this._context.addHitRegion({
-        id: idRegion
-    });
-    this._regions[idRegion] = {
-        points: this._markPoints.clone(),
-        alpha: this._context.globalAlpha
-    };
+    if (this._toErase) {
+        var keys = Object.keys(this._regions);
+        for (key of keys) {
+            if (key == this._hitRegionOnDown) this._regions[key] = undefined;
+        }
+    } else {
+        var idRegion = this._id + '_' + this._nregions++;
+        this._context.addHitRegion({
+            id: idRegion
+        });
+        this._regions[idRegion] = {
+            points: this._markPoints.clone(),
+            alpha: this._context.globalAlpha
+        };
+    }
 
     this._update();
 };
@@ -118,6 +126,7 @@ FORTE.MaskCanvas.prototype._update = function (e) {
         var keys = Object.keys(this._regions);
         for (key of keys) {
             regionInfo = this._regions[key];
+            if (regionInfo == undefined) continue;
             var originalAlpha = this._context.globalAlpha;
             if (key == this._hitRegion && e != undefined) {
                 var alphaDelta = e.originalEvent.wheelDelta / 3600.0;
