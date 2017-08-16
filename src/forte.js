@@ -45,7 +45,10 @@ $(document).ready(function () {
     XAC.enableDragDrop(function (files) {
         if (files.length <= 0) return;
         var reader = new FileReader();
-        if (files[0].name.endsWith('forte')) reader.onload = FORTE.loadForteFile;
+        if (files[0].name.endsWith('forte'))
+            reader.onload = FORTE.loadForteFile;
+        else if (files[0].name.endsWith('svg'))
+            FORTE.designLayer.loadSVG(FORTE.DIRDESIGNDATA + '/' + files[0].name);
         reader.readAsBinaryString(files[0]);
     });
 

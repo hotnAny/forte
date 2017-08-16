@@ -114,9 +114,6 @@ FORTE.GridCanvas.prototype.drawUp = function (e) {
     this._isDown = false;
 
     if (FORTE.shiftPressed) {
-        // this._canvas.remove();
-        // this._canvas = this._canvasOriginal;
-        // this._parent.append(this._canvas);
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         this._context.drawImage(this._canvasOriginal[0], 0, 0);
         var circleInfo = makeCircle(this._mousePoints);
@@ -241,4 +238,22 @@ FORTE.GridCanvas.prototype.package = function () {
         }
     }
     return points;
+}
+
+FORTE.GridCanvas.prototype.loadSVG = function (path) {
+    var img = new Image;
+    img.onload = function () {
+        this._context.drawImage(img, 0, 0);
+        var imgData = this._context.getImageData(0, 0, this._canvas[0].width, this._canvas[0].height);
+        for (var idx = 0; idx < imgData.data.length; idx += 4) {
+            if (imgData.data[idx + 3] > 0) {
+                var x = (idx / 4) % this._canvas[0].width;
+                var y = (idx / 4 - x) / this._canvas[0].width;
+                var i = (x / this._cellSize) | 0;
+                var j = (y / this._cellSize) | 0;
+                this._bitmap[j][i] = 1;
+            }
+        }
+    }.bind(this);
+    img.src = path;
 }

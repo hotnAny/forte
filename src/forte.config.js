@@ -36,6 +36,7 @@ FORTE.THRESDENSITY = 0.01;
 FORTE.WIDTHDEFAULT = 400;
 FORTE.HEIGHTDEFAULT = 280;
 
+FORTE.DIRDESIGNDATA = 'design_data';
 FORTE.ICONNEW = 'assets/new.svg';
 FORTE.ICONDESIGN = 'assets/design.svg';
 FORTE.ICONVOID = 'assets/void.svg';
