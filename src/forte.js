@@ -366,7 +366,7 @@ FORTE.showOptimizedLayer = function (tag, label) {
     if (layer != undefined) {
         if (layer._needsUpdate) layer.forceRedraw(layer._heatmap);
         layer._parent.append(layer._canvas);
-        FORTE.addEraser(layer);
+        FORTE.addEditingLayer(layer);
 
         // set to type
         $('#ddOptType option[value=' + layer.type + ']').prop('selected', true);
@@ -469,6 +469,11 @@ FORTE.startOptimization = function () {
 
         $("body").css("cursor", "progress");
         FORTE.notify('optimization started ...');
+        var keys = Object.keys(FORTE.htOptimizedLayers);
+        for (key of keys) {
+            var layer = FORTE.htOptimizedLayers[key];
+            layer.disable(1.0);
+        }
     } else {
         FORTE.notify('problems for generating data ...');
     }

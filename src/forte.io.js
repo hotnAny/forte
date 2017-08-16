@@ -21,7 +21,11 @@ FORTE.loadForteFile = function (e) {
     FORTE.btnNew.trigger('click');
 
     // show initial design
-    FORTE.designLayer.drawFromBitmap(dataObject.design.designBitmap, 0, 0);
+    if (dataObject.design.srcPath != undefined)
+        FORTE.designLayer.loadSVG(dataObject.design.srcPath);
+    else
+        FORTE.designLayer.drawFromBitmap(dataObject.design.designBitmap, 0, 0);
+
     FORTE.loadLayer.drawFromBitmap(dataObject.design.loadBitmap, 0, 0);
     FORTE.loadLayer._arrows = [];
     for (arrowNormalized of dataObject.design.loadArrows) {
@@ -65,7 +69,8 @@ FORTE.saveForteToFile = function () {
         loadArrows: FORTE.loadLayer.normalizedArrows(),
         loadPoints: FORTE.design.loadPoints,
         loadValues: FORTE.design.loadValues,
-        boundaryBitmap: FORTE.boundaryLayer._bitmap
+        boundaryBitmap: FORTE.boundaryLayer._bitmap,
+        srcPath: FORTE.designLayer._srcPath
     };
 
     var trials = [];

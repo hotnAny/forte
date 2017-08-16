@@ -231,7 +231,6 @@ FORTE.GridCanvas.prototype.package = function () {
     var points = [];
     for (var j = 0; j < this._gridHeight; j++) {
         for (var i = 0; i < this._gridWidth; i++) {
-            // if (this._bitmap[j][i] == 1) {
             if (this._bitmap[j][i] > FORTE.THRESDENSITY) {
                 points.push([i, j]);
             }
@@ -240,6 +239,9 @@ FORTE.GridCanvas.prototype.package = function () {
     return points;
 }
 
+//
+//  load svg from file path
+//
 FORTE.GridCanvas.prototype.loadSVG = function (path) {
     var img = new Image;
     img.onload = function () {
@@ -254,6 +256,7 @@ FORTE.GridCanvas.prototype.loadSVG = function (path) {
                 this._bitmap[j][i] = 1;
             }
         }
+        this._srcPath = path;
     }.bind(this);
     img.src = path;
 }

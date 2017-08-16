@@ -295,8 +295,9 @@ FORTE.customizeLoadLayer = function () {
 //
 //  add eraser to an optimized layer to interactively remove material
 //
-FORTE.addEraser = function (layer) {
+FORTE.addEditingLayer = function (layer) {
     layer._canvas.mousedown(function (e) {
+        if (!this._enabled) return;
         // temporarily changing properties of the layer to show eraser
         switch (FORTE.editMode) {
             case FORTE.DRAW:
@@ -312,10 +313,12 @@ FORTE.addEraser = function (layer) {
     }.bind(layer));
 
     layer._canvas.mousemove(function (e) {
+        if (!this._enabled) return;
         this.drawMove(e);
     }.bind(layer));
 
     layer._canvas.mouseup(function (e) {
+        if (!this._enabled) return;
         this.drawUp(e);
         // recover the origiinal proerties
         switch (FORTE.editMode) {
@@ -339,6 +342,9 @@ FORTE.addEraser = function (layer) {
     }.bind(layer));
 }
 
+//
+//
+//
 FORTE.smoothLine = function (points, r) {
     var eps = 10e-4;
     var lambda = 0.382;
