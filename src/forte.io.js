@@ -279,10 +279,3 @@ FORTE.addToDownloadDropdown = function (itemName, blob, fileName) {
     });
     $('#ddlExports').append(downloadItem);
 }
-
-//
-//
-//
-FORTE.saveResults = function () {
-
-}

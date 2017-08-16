@@ -131,7 +131,7 @@ $(document).ready(function () {
                 FORTE.finishOptimization();
                 $('#btnOptCtrl').attr('src', FORTE.ICONRUN);
             } else {
-                if(FORTE.optFrozen) return;
+                if (FORTE.optFrozen) return;
                 if (FORTE.startOptimization()) {
                     FORTE.resetRadioButtons();
                     FORTE.setButtonForOptimization($(this));
@@ -212,6 +212,17 @@ $(document).ready(function () {
             var info = MEDLEY.downloadableInfo[idx];
             saveAs(info.blob, info.fileName);
         })
+
+        $(document).keydown(XAC.keydown);
+        $(document).keyup(XAC.keyup);
+
+        XAC.on(XAC.SHIFT, function () {
+            FORTE.shiftPressed = true;
+        });
+
+        XAC.on(XAC.KEYUP, function () {
+            FORTE.shiftPressed = false;
+        });
 
         setTimeout(function () {
             //
@@ -408,7 +419,7 @@ FORTE.render = function (pointer) {
             FORTE.notify('please wait ...');
             setTimeout(function () {
                 FORTE.optFrozen = false;
-                FORTE.notify('ready!');                
+                FORTE.notify('ready!');
             }, 2000);
         }
     }

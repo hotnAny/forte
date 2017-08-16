@@ -38,6 +38,8 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._enabled = true;
 
     this._inputEvents = [];
+
+    this._smoothRadius = Math.sqrt(width * width + height * height) / 2;
 };
 
 // max canvas height to stay within a normal screen
@@ -85,7 +87,11 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     if (!this._enabled || e.button == XAC.RIGHTMOUSE) return;
     this._isDown = true;
 
+    this._canvasOriginal = this._canvas.clone(true);
+    this._canvasOriginal[0].getContext('2d').drawImage(this._canvas[0], 0, 0);
+
     this._strokePoints = [];
+    this._mousePoints = [new THREE.Vector3(e.clientX, e.clientY, 0)];
     this._doDraw(e, this._toErase);
 };
 
@@ -96,6 +102,7 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
     if (!this._enabled) return;
     if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
 
+    this._mousePoints.push(new THREE.Vector3(e.clientX, e.clientY, 0));
     this._doDraw(e, this._toErase);
 };
 
@@ -105,6 +112,22 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
 FORTE.GridCanvas.prototype.drawUp = function (e) {
     if (!this._enabled) return;
     this._isDown = false;
+
+    if (FORTE.shiftPressed) {
+        // this._canvas.remove();
+        // this._canvas = this._canvasOriginal;
+        // this._parent.append(this._canvas);
+        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+        this._context.drawImage(this._canvasOriginal[0], 0, 0);
+        var circleInfo = makeCircle(this._mousePoints);
+        log(circleInfo)
+        var smoothRadius = circleInfo != undefined ? circleInfo.r * 1.414 : this._smoothRadius;
+        FORTE.smoothLine(this._mousePoints, smoothRadius);
+        for (p of this._mousePoints) this._doDraw({
+            clientX: p.x,
+            clientY: p.y
+        });
+    }
 };
 
 //
@@ -114,13 +137,6 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
     var canvasOffset = this._canvas.offset();
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
-
-    // this._context.beginPath();
-    // this._context.arc(xcenter * this._cellSize, ycenter * this._cellSize,
-    //     this._cellSize * 0.5, 0, Math.PI * 2);
-    // this._context.fill();
-    // this._context.closePath();
-    // return;
 
     var alphaDescent = 0.5 / this._strokeRadius;
     for (var dx = -this._strokeRadius; dx <= this._strokeRadius; dx += 1) {

@@ -1,5 +1,5 @@
 FORTE.sandbox = function () {
-    $(document).keydown(XAC.keydown);
+    
 };
 
 //
