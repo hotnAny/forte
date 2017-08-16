@@ -131,6 +131,7 @@ $(document).ready(function () {
                 FORTE.finishOptimization();
                 $('#btnOptCtrl').attr('src', FORTE.ICONRUN);
             } else {
+                if(FORTE.optFrozen) return;
                 if (FORTE.startOptimization()) {
                     FORTE.resetRadioButtons();
                     FORTE.setButtonForOptimization($(this));
@@ -403,6 +404,12 @@ FORTE.render = function (pointer) {
             FORTE.updateStressAcrossLayers(FORTE.toShowStress);
             log('rendering stopped.');
             FORTE.notify('optimization finished ...');
+            FORTE.optFrozen = true;
+            FORTE.notify('please wait ...');
+            setTimeout(function () {
+                FORTE.optFrozen = false;
+                FORTE.notify('ready!');                
+            }, 2000);
         }
     }
 }

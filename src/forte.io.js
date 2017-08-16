@@ -219,7 +219,7 @@ FORTE.readOptimizationOutput = function () {
 
             time('fetched data for itr# ' + (FORTE.itrCounter + 1) +
                 ' after failing ' + FORTE.failureCounter + ' time(s)');
-            FORTE.notify('rendering trial #' + (FORTE.itrCounter + 1) + ' ...', false);
+            FORTE.notify('rendering iteration #' + (FORTE.itrCounter + 1) + ' ...', false);
             FORTE.itrCounter += 1;
             FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
             FORTE.failureCounter = 0;
