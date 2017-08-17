@@ -48,6 +48,6 @@ a {
 }
 
 #imgLegend {
-	width: 20px;
-	height: 10px;
+	width: 100px;
+	/* height: 10px; */
 }

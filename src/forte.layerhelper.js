@@ -178,8 +178,12 @@ FORTE.customizeLoadLayer = function () {
             // draw or update an arrow between center point and current mouse
             this.__loadValueLayer.clear();
             var canvasOffset = this.__loadValueLayer._canvas.offset();
-            FORTE.drawArrow(this.__loadValueLayer._context,
+            var a = FORTE.drawArrow(this.__loadValueLayer._context,
                 this.__centerLoadPoint.x * this._cellSize, this.__centerLoadPoint.y * this._cellSize, e.clientX - canvasOffset.left, e.clientY - canvasOffset.top);
+            var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
+            var forceValue = FORTE.mapToForce(lengthArrow * FORTE.newtonPerPixel / 9.8);
+            log(forceValue)
+            FORTE.notify(XAC.trim(forceValue, 1) + ' kg', false);
         }
     }.bind(FORTE.loadLayer));
     FORTE.loadLayer._canvas.mouseup(function (e) {
