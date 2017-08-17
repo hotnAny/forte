@@ -202,6 +202,24 @@ $(document).ready(function () {
             }
         });
 
+        // measurements
+        $('#imgLegend').attr('src', 'assets/legend.svg');
+        FORTE.lengthPerPixel = FORTE.INITLENGTHPERPIXEL;
+        var ratio = (FORTE.lengthPerPixel - FORTE.MINLENGTHPERPIXEL) / (FORTE.MAXLENGTHPERPIXEL - FORTE.MINLENGTHPERPIXEL);
+        var valueSlider = FORTE._getSliderValue(ratio);
+        FORTE.sldrMeasurement = XAC.makeSlider('sldrMeasurement', '',
+            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMeasurements'), FORTE.WIDTHMEASUREMENTSLIDER);
+        FORTE.sldrMeasurement.slider({
+            slide: function (e, ui) {
+                var value = FORTE._normalizeSliderValue($(e.target), ui.value);
+                FORTE.lengthPerPixel = FORTE.MINLENGTHPERPIXEL * (1 - value) + FORTE.MAXLENGTHPERPIXEL * value;
+                var widthLegend = parseInt($('#imgLegend').css('width'));
+                $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
+            }
+        });
+        var widthLegend = parseInt($('#imgLegend').css('width'));
+        $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
+
         // save
         $('#btnSave').attr('src', FORTE.ICONSAVE);
         $('#btnSave').button();
@@ -252,8 +270,6 @@ $(document).ready(function () {
             FORTE.eraserLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.BGCOLORCANVAS);
             FORTE.loadLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORRED);
             FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
-
-            // $('#divNotification').width(FORTE.designLayer._canvas.width());
 
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 

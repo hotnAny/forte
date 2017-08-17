@@ -28,7 +28,7 @@ a {
 	color: #999;
 }
 
-#btnMore{
+#btnMore {
 	font-size: x-small;
 }
 
@@ -45,4 +45,9 @@ a {
 	z-index: 99;
 	/* top: 96px; */
 	border: 3px solid rgba(0, 0, 0, 0);
+}
+
+#imgLegend {
+	width: 20px;
+	height: 10px;
 }
