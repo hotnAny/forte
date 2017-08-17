@@ -218,6 +218,8 @@ $(document).ready(function () {
 
         $(document).keydown(XAC.keydown);
         $(document).keyup(XAC.keyup);
+        $(document).mousedown(XAC.mousedown);
+        $(document).bind('mousewheel', XAC.mousewheel);
 
         XAC.on(XAC.SHIFT, function () {
             FORTE.shiftPressed = true;
@@ -225,6 +227,20 @@ $(document).ready(function () {
 
         XAC.on(XAC.KEYUP, function () {
             FORTE.shiftPressed = false;
+        });
+
+        XAC.on(XAC.MOUSEDOWN, function (e) {
+            FORTE.notify('');
+        });
+
+        XAC.on(XAC.MOUSEWHEEL, function (e) {
+            // adjust the brush width of the active layer
+            var w = FORTE.layer._strokeRadius;
+            w += e.originalEvent.wheelDelta * 2 / FORTE.width;
+            log(w);
+            w = Math.min(FORTE.width / 16, Math.max(FORTE.width / 160, w));
+            FORTE.layer._strokeRadius = w;
+            FORTE.notify('stroke width: ' + XAC.trim(FORTE.layer._strokeRadius, 2), false);
         });
 
         setTimeout(function () {
@@ -418,6 +434,13 @@ FORTE.render = function (pointer) {
             FORTE.updateStressAcrossLayers(FORTE.toShowStress);
             log('rendering stopped.');
             FORTE.notify('optimization finished ...');
+            var keys = Object.keys(FORTE.htOptimizedLayers);
+            for (key of keys) {
+                var layer = FORTE.htOptimizedLayers[key];
+                layer.disable(1.0);
+            }
+
+            // freeze optimization to avoid accidential clicking twice
             FORTE.optFrozen = true;
             FORTE.notify('please wait ...');
             setTimeout(function () {

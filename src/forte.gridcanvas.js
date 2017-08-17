@@ -141,6 +141,10 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
         for (var dy = -this._strokeRadius; dy <= this._strokeRadius; dy += 1) {
             var x = Math.max(0, Math.min(this._gridWidth - 1, xcenter + dx));
             var y = Math.max(0, Math.min(this._gridHeight - 1, ycenter + dy));
+
+            x = Math.floor(x + 0.5);
+            y = Math.floor(y + 0.5);
+
             this._context.globalAlpha = 1 - (Math.abs(dx) + Math.abs(dy)) * alphaDescent;
             this._context.beginPath();
             if (toErase) {

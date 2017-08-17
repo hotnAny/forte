@@ -12,7 +12,8 @@ var XAC = XAC || {};
 XAC.MOUSEDOWN = -1;
 XAC.MOUSEMOVE = -2;
 XAC.MOUSEUP = -3;
-XAC.KEYUP = -4;
+XAC.MOUSEWHEEL = -4;
+XAC.KEYUP = -5;
 
 XAC.LEFTMOUSE = 1;
 XAC.RIGHTMOUSE = 2;
@@ -55,9 +56,17 @@ XAC._updateFootprint = function (x, y) {
 }
 
 XAC.mousedown = function (e) {
+    /////////////////////////////////////////////////////////
+    // modify for project forte
     if (e.target.nodeName != 'CANVAS') return;
-    XAC._updateFootprint();
-    XAC._dispatchInputEvents(e, XAC.MOUSEDOWN);
+
+    // XAC._updateFootprint();
+    // XAC._dispatchInputEvents(e, XAC.MOUSEDOWN);
+
+    if (XAC.mousedowns != undefined) {
+        for (handler of XAC.mousedowns) handler(e);
+    }
+    /////////////////////////////////////////////////////////
 };
 
 XAC.mousemove = function (e) {
@@ -69,6 +78,17 @@ XAC.mouseup = function (e) {
     XAC._updateFootprint(e.clientX, e.clientY);
     XAC._dispatchInputEvents(e, XAC.MOUSEUP);
 };
+
+XAC.mousewheel = function (e) {
+    XAC._dispatchInputEvents(e, XAC.MOUSEWHEEL);
+
+    /////////////////////////////////////////////////////////
+    // modify for project forte
+    if (XAC.mousewheels != undefined) {
+        for (handler of XAC.mousewheels) handler(e);
+    }
+    /////////////////////////////////////////////////////////
+}
 
 XAC.keydown = function (e) {
     XAC._dispatchInputEvents(e, XAC.KEYDOWN);
@@ -88,6 +108,8 @@ XAC.keyup = function (e) {
 XAC.on = function (cue, handler) {
     switch (cue) {
         case XAC.MOUSEDOWN:
+            XAC.mousedowns = XAC.mousedowns || [];
+            XAC.mousedowns.push(handler);
             // TODO:
             break;
         case XAC.MOUSEMOVE:
@@ -95,6 +117,10 @@ XAC.on = function (cue, handler) {
             break;
         case XAC.MOUSEUP:
             // TODO
+            break;
+        case XAC.MOUSEWHEEL:
+            XAC.mousewheels = XAC.mousewheels || [];
+            XAC.mousewheels.push(handler);
             break;
         case XAC.KEYUP:
             XAC.keyups = XAC.keyups || [];
@@ -161,6 +187,9 @@ XAC._dispatchInputEvents = function (e, type) {
             case XAC.MOUSEUP:
                 // TODO
                 break;
+            case XAC.MOUSEWHEEL:
+                // TODO
+                break;
             case XAC.KEYDOWN:
                 if (hit.object.keydowns != undefined) {
                     (hit.object.keydowns[e.keyCode] || console.error)();
@@ -183,6 +212,9 @@ XAC._dispatchInputEvents = function (e, type) {
                     case XAC.MOUSEUP:
                         technique.mouseup(e, hit);
                         XAC._activeHits.remove(hit);
+                        break;
+                    case XAC.MOUSEWHEEL:
+                        if (technique.mousewheel != undefined) technique.mousewheel(e, hit);
                         break;
                 }
             }
