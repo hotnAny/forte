@@ -175,6 +175,9 @@ FORTE.readStressData = function () {
 
                 var percentile = 0.99;
                 maxStress = allStresses.median(percentile);
+                log('before conversion maxStress: ' + maxStress);
+                maxStress = FORTE.mapToUnits(maxStress);
+                log('after conversion maxStress: ' + maxStress);
 
                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
                 layer._stressInfo = {

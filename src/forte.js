@@ -15,6 +15,8 @@ $(document).ready(function () {
     time();
 
     // global variables and data structures
+    FORTE.e = 1;
+    FORTE.nu = 0.3;
     FORTE.timeouts = [];
     FORTE.notifications = [];
     FORTE.toShowStress = false;
@@ -205,7 +207,7 @@ $(document).ready(function () {
         // measurements
         $('#imgLegend').attr('src', 'assets/legend2.svg');
         FORTE.lengthPerPixel = FORTE.INITLENGTHPERPIXEL;
-        FORTE.newtonPerPixel = 0.1 * FORTE.lengthPerPixel;
+        FORTE.newtonPerPixel = 0.01 * FORTE.lengthPerPixel;
         var ratio = (FORTE.lengthPerPixel - FORTE.MINLENGTHPERPIXEL) / (FORTE.MAXLENGTHPERPIXEL - FORTE.MINLENGTHPERPIXEL);
         var valueSlider = FORTE._getSliderValue(ratio);
         FORTE.sldrMeasurement = XAC.makeSlider('sldrMeasurement', '',
@@ -251,6 +253,8 @@ $(document).ready(function () {
 
         XAC.on(XAC.MOUSEDOWN, function (e) {
             FORTE.notify('');
+            $('#divMoreCtrl').hide();
+            $('#btnMore').html(FORTE.HTMLCODETRIANGLEDOWN);
         });
 
         XAC.on(XAC.MOUSEWHEEL, function (e) {
@@ -455,7 +459,7 @@ FORTE.render = function (pointer) {
             var keys = Object.keys(FORTE.htOptimizedLayers);
             for (key of keys) {
                 var layer = FORTE.htOptimizedLayers[key];
-                layer.disable(1.0);
+                layer.enable(1.0);
             }
 
             // freeze optimization to avoid accidential clicking twice
@@ -495,10 +499,11 @@ FORTE.startOptimization = function () {
     var data = JSON.stringify(dataObject);
     var started = false;
     if (data != undefined) {
-        var fields = ['trial', 'forte', 'material', 'similarity', 'editweight', 'type'];
+        var fields = ['trial', 'forte', 'material', 'similarity', 'editweight', 'type', 'e', 'nu'];
         FORTE.trial = 'forte_' + Date.now();
         var values = [FORTE.trial, data, FORTE.materialRatio,
-            FORTE.similarityRatio, FORTE.editWeightRatio, type
+            FORTE.similarityRatio, FORTE.editWeightRatio, type,
+            FORTE.e, FORTE.nu
         ];
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'started';
@@ -651,6 +656,19 @@ FORTE.notify = function (msg, toFade) {
     });
 }
 
-FORTE.mapToForce = function(length) {
-    return Math.pow(10, 1 + length) * 0.01;
+//
+//
+//
+FORTE.mapToWeight = function (length) {
+    var gainRatio = 10;
+    return length * FORTE.newtonPerPixel / 9.8 * gainRatio;
+}
+
+//
+//
+//
+FORTE.mapToUnits = function (stress) {
+    var N = FORTE.mapToWeight(1) * 9.8;
+    var mm = Math.pow(FORTE.lengthPerPixel * FORTE.designLayer._cellSize * 1e-3, 2);
+    return stress * N / mm;
 }

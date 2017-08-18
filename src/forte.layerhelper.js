@@ -181,8 +181,8 @@ FORTE.customizeLoadLayer = function () {
             var a = FORTE.drawArrow(this.__loadValueLayer._context,
                 this.__centerLoadPoint.x * this._cellSize, this.__centerLoadPoint.y * this._cellSize, e.clientX - canvasOffset.left, e.clientY - canvasOffset.top);
             var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
-            var forceValue = FORTE.mapToForce(lengthArrow * FORTE.newtonPerPixel / 9.8);
-            log(forceValue)
+            var forceValue = FORTE.mapToWeight(lengthArrow);
+            // log(forceValue)
             FORTE.notify(XAC.trim(forceValue, 1) + ' kg', false);
         }
     }.bind(FORTE.loadLayer));

@@ -7,7 +7,10 @@ MAXEDITWEIGHT = 128;
 
 %% [forte] input data cleansing
 disp(args)
+
 % [forte] basic design info
+E0 = str2double(args(21));
+nu = str2double(args(22));
 nelx = str2double(args(2));
 nely = str2double(args(3));
 volfrac = str2double(args(4));
@@ -15,23 +18,27 @@ penal = str2double(args(5));
 rmin = str2double(args(6));
 ft = str2double(args(7));
 maxloop = str2double(args(8));
+
 % [forte] performance requirements
 fixeddofs = str2num(char(args(9)));
 loadnodes = str2num(char(args(10)));
 loadvalues = str2num(char(args(11)));
+
 % [forte] mixed-initiative optimization
 type = str2num(char(args(19)));
 actvelms = str2num(char(args(12)));
 pasvelms = str2num(char(args(14)));
 distfield = str2num(char(args(15)));
 lambda = str2double(args(16));
+
 % [forte] continuous user editing
 lastoutput = char(args(18));
 favelms = str2num(char(args(13)));
 slimelms = str2num(char(args(17)));
 editweight = str2num(char(args(20)));
+
 % [forte] for debugging in matlab
-debugging = str2num(char(args(21)));
+debugging = str2num(char(args(23)));
 
 %% [forte] variables for mixed-initiative design optimization
 niters = 64;
@@ -44,9 +51,9 @@ margindecay = 0.01;
 telapsed = 0;
 
 %% MATERIAL PROPERTIES
-E0 = 1;
+% E0 = 1;
 Emin = 1e-9;
-nu = 0.3;
+% nu = 0.3;
 %% PREPARE FINITE ELEMENT ANALYSIS
 A11 = [12  3 -6 -3;  3 12  3  0; -6  3 12 -3; -3  0 -3 12];
 A12 = [-6 -3  0  3; -3 -6 -3 -6;  0 -3 -6  3;  3 -6  3 -6];

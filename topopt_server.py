@@ -187,6 +187,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _slimpoints = safe_retrieve_all(_designobj, 'slimpoints', None)
     _lastoutput = str(safe_retrieve_all(_designobj, 'lastoutput', None))
     _editweight = float(safe_retrieve_one(post_data, 'editweight', 1))
+    _e = float(safe_retrieve_one(post_data, 'e', 1))
+    _nu = float(safe_retrieve_one(post_data, 'nu', 0.3))
 
     #
     #   convert to matlab input
@@ -200,7 +202,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     material = _material
     print nelx, nely, material
 
-    optinput = {'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
+    optinput = {'E':_e, 'NU':_nu, 'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
      'FIXEDDOFS':[], 'LOADNODES':[], 'LOADVALUES':[]}
     
     # boundary
@@ -284,7 +286,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         optinput['VOLFRAC'], 3, 1.5, 1, 40, optinput['FIXEDDOFS'], optinput['LOADNODES'],\
         optinput['LOADVALUES'], optinput['ACTVELMS'], optinput['FAVELMS'], optinput['PASVELMS'],\
         optinput['DISTFIELD'], optinput['LAMBDA'], optinput['SLIMELMS'], optinput['LASTOUTPUT'],\
-        optinput['TYPE'], optinput['EDITWEIGHT']]
+        optinput['TYPE'], optinput['EDITWEIGHT'], optinput['E'], optinput['NU']]
 
     input_file = open(INPUTFILE, 'w')
     input_file.write('&'.join([str(x) for x in optargs]))
