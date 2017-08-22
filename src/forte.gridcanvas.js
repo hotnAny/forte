@@ -92,6 +92,17 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
 
     this._strokePoints = [];
     this._mousePoints = [new THREE.Vector3(e.clientX, e.clientY, 0)];
+
+    // [exp]
+    this._min = this._min || {
+        x: this._canvas[0].width,
+        y: this._canvas[0].height
+    };
+    this._max = this._max || {
+        x: 0,
+        y: 0
+    };
+
     this._doDraw(e, this._toErase);
 };
 
@@ -148,10 +159,22 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
             this._context.globalAlpha = 1 - (Math.abs(dx) + Math.abs(dy)) * alphaDescent;
             this._context.beginPath();
             if (toErase) {
+                // [exp]
+                if (x * this._cellSize - this._strokeRadius * 2 * this._cellSize < this._min.x) this._min.x = x * this._cellSize;
+                if (x * this._cellSize + this._strokeRadius * 2 * this._cellSize > this._max.x) this._max.x = x * this._cellSize;
+                if (y * this._cellSize - this._strokeRadius * 2 * this._cellSize < this._min.y) this._min.y = y * this._cellSize;
+                if (y * this._cellSize + this._strokeRadius * 2 * this._cellSize > this._max.y) this._max.y = y * this._cellSize;
+
                 this._context.clearRect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
                 this._bitmap[y][x] = 0;
             } else {
+                // [exp]
+                this._min.x = Math.min(this._min.x, x * this._cellSize);
+                this._min.y = Math.min(this._min.y, y * this._cellSize);
+                this._max.x = Math.max(this._max.x, x * this._cellSize);
+                this._max.y = Math.max(this._max.y, y * this._cellSize);
+
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
                 // this._context.arc(x * this._cellSize, y * this._cellSize,

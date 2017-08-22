@@ -1,0 +1,20 @@
+{
+    "pinewood": {
+        "e": "8.85",
+        "nu": 0.38,
+        "sigma": 40,
+        "ref": "http://www.matweb.com/search/datasheet.aspx?matguid=be613a162b34418bbd65355f5ea8b155&ckck=1"
+    },
+    "pla": {
+        "e": "3.50",
+        "nu": 0.36,
+        "sigma": 60,
+        "ref": "http://www.matweb.com/search/DataSheet.aspx?MatGUID=1e288619764846d2b794bd077e7f1bba"
+    },
+    "abs": {
+        "e": "1825",
+        "nu": 0.36,
+        "sigma": 65,
+        "ref": "http://www.matweb.com/search/DataSheet.aspx?MatGUID=1e288619764846d2b794bd077e7f1bba"
+    }
+}
