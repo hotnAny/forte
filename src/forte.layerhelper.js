@@ -201,7 +201,7 @@ FORTE.customizeLoadLayer = function () {
             var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
             var forceValue = FORTE.mapToWeight(lengthArrow);
             // log(forceValue)
-            FORTE.notify(XAC.trim(forceValue, 1) + ' kg', false);
+            FORTE.notify(XAC.trim(forceValue, 0) + ' kg', false);
         }
     }.bind(FORTE.loadLayer));
     FORTE.loadLayer._canvas.mouseup(function (e) {

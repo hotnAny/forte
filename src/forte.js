@@ -250,6 +250,27 @@ $(document).ready(function () {
             change: updateSldrThickness
         });
 
+        // safety
+        FORTE.safety = 1;
+        var valueSlider = FORTE._getSliderValue((FORTE.safety - FORTE.MINSAFETY) /
+            (FORTE.MAXSAFETY - FORTE.MINSAFETY));
+        FORTE.sldrSafety = XAC.makeSlider('sldrSafety', '', FORTE.MINSLIDER, FORTE.MAXSLIDER,
+            valueSlider, $('#tdSafety'), FORTE.WIDTHSAFETYSLIDER);
+        FORTE.updateSldrSafety = function (e, ui) {
+            var value = FORTE._normalizeSliderValue($(e.target), ui.value);
+            FORTE.safety = (FORTE.MINSAFETY * (1 - value) + FORTE.MAXSAFETY * value);
+            $('#lbSafety').html(XAC.trim(FORTE.safety, 1) + 'x');
+        };
+        FORTE.sldrSafety.slider({
+            slide: FORTE.updateSldrSafety,
+            change: function (e, ui) {
+                FORTE.updateSldrSafety(e, ui);
+                if (FORTE.htOptimizedLayers != undefined) 
+                    FORTE.updateStressAcrossLayers(FORTE.toShowStress);
+            }
+        });
+        FORTE.sldrSafety.slider('value', valueSlider);
+
         // save
         $('#btnSave').attr('src', FORTE.ICONSAVE);
         $('#btnSave').button();
@@ -342,15 +363,15 @@ $(document).ready(function () {
                     if (layer != undefined) layer._canvas.remove();
                     FORTE.htOptimizedLayers[ui.tagLabel] = undefined;
 
-                    FORTE.design.maxStress = 0;
-                    var keys = Object.keys(FORTE.htOptimizedLayers);
-                    for (key of keys) {
-                        var layer2 = FORTE.htOptimizedLayers[key];
-                        if (layer2 != undefined && layer2 != layer && layer2._stressInfo != undefined) {
-                            FORTE.design.maxStress =
-                                Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
-                        }
-                    }
+                    // FORTE.design.maxStress = 0;
+                    // var keys = Object.keys(FORTE.htOptimizedLayers);
+                    // for (key of keys) {
+                    //     var layer2 = FORTE.htOptimizedLayers[key];
+                    //     if (layer2 != undefined && layer2 != layer && layer2._stressInfo != undefined) {
+                    //         FORTE.design.maxStress =
+                    //             Math.max(FORTE.design.maxStress, layer2._stressInfo.maxStress);
+                    //     }
+                    // }
 
                     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
                 }
@@ -590,7 +611,7 @@ FORTE.updateStressAcrossLayers = function (toShow) {
         if (toShow) {
             // [exp] changed to yield stress
             // layer.updateHeatmap(FORTE.design.maxStress);
-            layer.updateHeatmap(FORTE.yieldStress);
+            layer.updateHeatmap(FORTE.yieldStress / FORTE.safety);
             if (layer == layerCurrent) layer.forceRedraw(layer._heatmap);
             layer._needsUpdate = true;
         } else {
@@ -708,7 +729,7 @@ FORTE.mapToWeight = function (length) {
 //
 FORTE.mapToUnits = function (stress) {
     // var E = FORTE.e;
-    var N = FORTE.mapToWeight(1) * 9.8 / FORTE.numElmsThickness;
+    var N = FORTE.mapToWeight(1) * 9.8 / (FORTE.numElmsThickness * 0.1);
     var mm = Math.pow(FORTE.lengthPerPixel * FORTE.designLayer._cellSize, 2);
     return stress * FORTE.e * N / mm;
 }
