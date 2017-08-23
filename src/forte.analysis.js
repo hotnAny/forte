@@ -36,8 +36,9 @@ FORTE.GridCanvas.prototype.updateHeatmap = function (maxStress, map) {
     this._heatmap = XAC.initMDArray([this._gridHeight, this._gridWidth], defaultColor);
     for (var j = 0; j < this._stressInfo.height; j++) {
         for (var i = 0; i < this._stressInfo.width; i++) {
+            var stress = FORTE.mapToUnits(this._stressInfo.stresses[j][i]);
             this._heatmap[j + this._stressInfo.y0][i + this._stressInfo.x0] =
-                XAC.getHeatmapColor(this._stressInfo.stresses[j][i], maxStress);
+                XAC.getHeatmapColor(stress, maxStress);
         }
     }
     return this._heatmap;

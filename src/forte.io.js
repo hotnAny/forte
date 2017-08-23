@@ -155,6 +155,8 @@ FORTE.getBitmap = function (text) {
 //  routine to read stress output from optimization
 //
 FORTE.readStressData = function () {
+    if(FORTE.stressRead) return;
+
     var baseDir = FORTE.outputDir + '/' + FORTE.trial;
     var stressFieldLabels = ['before', 'after'];
     for (var i = 0; i < stressFieldLabels.length; i++) {
@@ -162,21 +164,25 @@ FORTE.readStressData = function () {
         XAC.readTextFile(baseDir + '_' + label + '.vms',
             // success
             function (text) {
+                FORTE.stressRead = true;
+
                 var stresses = FORTE.getBitmap(text);
                 var maxStress = 0;
                 var allStresses = [];
-                var eps = 1e-9;
-                var minStress = Math.log(eps);
-                var logBase = Math.log(1.01);
+                // var eps = 1e-9;
+                // var minStress = Math.log(eps);
+                // var logBase = Math.log(1.01);
                 for (row of stresses)
                     for (value of row) {
+                        value = FORTE.mapToUnits(value)
                         allStresses.push(value);
+                        maxStress = Math.max(maxStress, value);
                     }
 
-                var percentile = 0.99;
-                maxStress = allStresses.median(percentile);
-                log('before conversion maxStress: ' + maxStress);
-                maxStress = FORTE.mapToUnits(maxStress);
+                // var percentile = 0.9;
+                // maxStress = allStresses.median(percentile);
+                // log('before conversion maxStress: ' + maxStress);
+                // maxStress = FORTE.mapToUnits(maxStress);
                 log('after conversion maxStress: ' + maxStress);
 
                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
@@ -186,10 +192,13 @@ FORTE.readStressData = function () {
                     width: FORTE.resolution[0],
                     height: FORTE.resolution[1],
                     stresses: stresses,
-                    maxStress: maxStress
+                    // maxStress: maxStress
                 }
 
-                if (label == 'after') FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
+                // if (label == 'after') FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
+
+                // keep reading until read after
+                if (label == 'before') FORTE.stressRead = false;
             },
             // failure
             function () {

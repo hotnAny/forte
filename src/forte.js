@@ -17,9 +17,9 @@ $(document).ready(function () {
     // global variables and data structures
 
     // [debug] testing PLA properties
-    FORTE.e = 3.50; //1;
-    FORTE.nu = 0.36; //0.3;
-    FORTE.yieldStress = 60;
+    FORTE.e = 3.45e3; //MPa
+    FORTE.nu = 0.36; //
+    FORTE.yieldStress = 60 //MPa
 
     FORTE.timeouts = [];
     FORTE.notifications = [];
@@ -209,7 +209,7 @@ $(document).ready(function () {
         });
 
         // measurements
-        $('#imgLegend').attr('src', 'assets/legend2.svg');
+        $('#imgLegend').attr('src', 'assets/legend.svg');
         FORTE.lengthPerPixel = FORTE.INITLENGTHPERPIXEL;
         FORTE.newtonPerPixel = 0.01 * FORTE.lengthPerPixel;
         var ratio = (FORTE.lengthPerPixel - FORTE.MINLENGTHPERPIXEL) / (FORTE.MAXLENGTHPERPIXEL - FORTE.MINLENGTHPERPIXEL);
@@ -223,13 +223,32 @@ $(document).ready(function () {
                 FORTE.newtonPerPixel = 0.1 * FORTE.lengthPerPixel;
                 var widthLegend = parseInt($('#imgLegend').css('width'));
                 $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
+
+                if (FORTE.designLayer._lbBoundingWidth != undefined) {
+                    FORTE.designLayer._lbBoundingWidth.html(XAC.trim(
+                        (FORTE.designLayer._max.x - FORTE.designLayer._min.x) * FORTE.lengthPerPixel, 0) + ' mm');
+                    FORTE.designLayer._lbBoundingHeight.html(XAC.trim(
+                        (FORTE.designLayer._max.y - FORTE.designLayer._min.y) * FORTE.lengthPerPixel, 0) + ' mm');
+                }
             }
         });
         var widthLegend = parseInt($('#imgLegend').css('width'));
         $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
 
         // thickness
-
+        var valueSlider = FORTE._getSliderValue(0);
+        FORTE.sldrThickness = XAC.makeSlider('sldrThickness', '', FORTE.MINSLIDER, FORTE.MAXSLIDER,
+            valueSlider, $('#tdThickness'), FORTE.WIDTHTHICKNESSSLIDER);
+        var updateSldrThickness = function (e, ui) {
+            var value = FORTE._normalizeSliderValue($(e.target), ui.value);
+            FORTE.numElmsThickness = (FORTE.minElmsThickness * (1 - value) + FORTE.maxElmsThickness * value) | 0;
+            FORTE.actualThickness = FORTE.numElmsThickness * FORTE.designLayer._cellSize * FORTE.lengthPerPixel;
+            $('#lbThickness').html(XAC.trim(FORTE.actualThickness, 0) + ' mm');
+        };
+        FORTE.sldrThickness.slider({
+            slide: updateSldrThickness,
+            change: updateSldrThickness
+        });
 
         // save
         $('#btnSave').attr('src', FORTE.ICONSAVE);
@@ -511,16 +530,26 @@ FORTE.startOptimization = function () {
         FORTE.trial = 'forte_' + Date.now();
         var values = [FORTE.trial, data, FORTE.materialRatio,
             FORTE.similarityRatio, FORTE.editWeightRatio, type,
-            FORTE.e, FORTE.nu
+            1.0, FORTE.nu
         ];
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'started';
+
+        // start profiling
         time();
+
+        // clear pending timeouts
         for (id of FORTE.timeouts) clearTimeout(id);
         FORTE.timeouts = [];
+
+        // start fetching data
         FORTE.fetchData();
         started = true;
 
+        // reset stress read mark
+        FORTE.stressRead = false;
+
+        // update ui to indicate start of optimization
         $("body").css("cursor", "progress");
         FORTE.notify('optimization started ...');
         var keys = Object.keys(FORTE.htOptimizedLayers);
@@ -559,7 +588,9 @@ FORTE.updateStressAcrossLayers = function (toShow) {
     for (layer of layers) {
         if (layer == undefined) continue;
         if (toShow) {
-            layer.updateHeatmap(FORTE.design.maxStress);
+            // [exp] changed to yield stress
+            // layer.updateHeatmap(FORTE.design.maxStress);
+            layer.updateHeatmap(FORTE.yieldStress);
             if (layer == layerCurrent) layer.forceRedraw(layer._heatmap);
             layer._needsUpdate = true;
         } else {
@@ -668,13 +699,8 @@ FORTE.notify = function (msg, toFade) {
 //
 //
 FORTE.mapToWeight = function (length) {
-    var gainRatio = 100;
-    
-    // [debug]
-    var numElmThickness = 10;
-    //
-    
-    return length * FORTE.newtonPerPixel / 9.8 * gainRatio / numElmThickness;
+    var gainRatio = 0.01;
+    return Math.pow(length, 3) * FORTE.newtonPerPixel / 9.8 * gainRatio;
 }
 
 //
@@ -682,7 +708,7 @@ FORTE.mapToWeight = function (length) {
 //
 FORTE.mapToUnits = function (stress) {
     // var E = FORTE.e;
-    var N = FORTE.mapToWeight(1) * 9.8;
+    var N = FORTE.mapToWeight(1) * 9.8 / FORTE.numElmsThickness;
     var mm = Math.pow(FORTE.lengthPerPixel * FORTE.designLayer._cellSize, 2);
-    return stress * N / mm;
+    return stress * FORTE.e * N / mm;
 }

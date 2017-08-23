@@ -9,7 +9,7 @@ MAXEDITWEIGHT = 128;
 disp(args)
 
 % [forte] basic design info
-E0 = str2double(args(21));
+% E0 = str2double(args(21));
 nu = str2double(args(22));
 nelx = str2double(args(2));
 nely = str2double(args(3));
@@ -51,7 +51,7 @@ margindecay = 0.01;
 telapsed = 0;
 
 %% MATERIAL PROPERTIES
-% E0 = 1;
+E0 = 1;
 Emin = 1e-9;
 % nu = 0.3;
 %% PREPARE FINITE ELEMENT ANALYSIS
