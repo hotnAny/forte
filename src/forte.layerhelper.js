@@ -203,6 +203,10 @@ FORTE.customizeLoadLayer = function () {
             var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
             var forceValue = FORTE.mapToWeight(lengthArrow);
             FORTE.notify(XAC.trim(forceValue, 0) + ' kg', false);
+            this._loadLabel.html(XAC.trim(forceValue, 0) + ' kg');
+            this.labelOffset = 16;
+            this._loadLabel.css('left', e.clientX + this.labelOffset);
+            this._loadLabel.css('top', e.clientY + this.labelOffset);
         }
     }.bind(FORTE.loadLayer));
     FORTE.loadLayer._canvas.mouseup(function (e) {
@@ -224,9 +228,11 @@ FORTE.customizeLoadLayer = function () {
 
                             FORTE.loadLayer.eraseArrow(i);
 
-                            for (p of points)
-                                this._context.clearRect(p[0] * this._cellSize - margin, p[1] * this._cellSize - margin,
-                                    this._cellSize + margin * 2, this._cellSize + margin * 2);
+                            FORTE.loadLabels[i].remove();
+
+                            // for (p of points)
+                            //     this._context.clearRect(p[0] * this._cellSize - margin, p[1] * this._cellSize - margin,
+                            //         this._cellSize + margin * 2, this._cellSize + margin * 2);
 
                             done = true;
                             break;
@@ -245,6 +251,13 @@ FORTE.customizeLoadLayer = function () {
         else {
             this.specifyingLoad = !this.specifyingLoad;
             if (this.specifyingLoad) {
+                this._loadLabel = $('<label class="ui-widget" style="position:absolute;"></label>');
+                this._loadLabel.css('opacity', FORTE.OPACITYDIMLABEL);
+                this._loadLabel.css('color', this._strokeColor);
+                FORTE.loadLabels = FORTE.loadLabels || [];
+                FORTE.loadLabels.push(this._loadLabel);
+                $(document.body).append(this._loadLabel);
+
                 // resample
                 var minSqDistApart = Math.pow(this._strokeRadius * this._cellSize, 2);
                 var points = [];
@@ -252,9 +265,8 @@ FORTE.customizeLoadLayer = function () {
                     var p = this._strokePoints[i];
                     if (points.length == 0 || this.getSqDist(p, points.last()) > minSqDistApart)
                         points.push(p);
-                    // else log('point #' + i + ' removed!')
                 }
-
+                
                 this._strokePoints = points;
 
                 // find the center point of last stroke

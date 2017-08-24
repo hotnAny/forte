@@ -41,7 +41,7 @@ FORTE.loadForteFile = function (e) {
     var w = h > 0 ? bitmap[0].length : 0;
     for (var j = 0; j < h; j++) {
         for (var i = 0; i < w; i++) {
-            if(bitmap[j][i] > 0) {
+            if (bitmap[j][i] > 0) {
                 layer._min.x = Math.min(layer._min.x, i * layer._cellSize);
                 layer._min.y = Math.min(layer._min.y, j * layer._cellSize);
                 layer._max.x = Math.max(layer._max.x, i * layer._cellSize);
@@ -58,6 +58,21 @@ FORTE.loadForteFile = function (e) {
         var arrow = [arrowNormalized[0] * w, arrowNormalized[1] * h, arrowNormalized[2] * w, arrowNormalized[3] * h];
         FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
         FORTE.loadLayer._arrows.push(arrow);
+
+        var loadLabel = $('<label class="ui-widget" style="position:absolute;"></label>');
+        loadLabel.css('opacity', FORTE.OPACITYDIMLABEL);
+        loadLabel.css('color', FORTE.loadLayer._strokeColor);
+        FORTE.loadLabels = FORTE.loadLabels || [];
+        FORTE.loadLabels.push(loadLabel);
+        $(document.body).append(loadLabel);
+        var a = arrow;
+        var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
+        var forceValue = FORTE.mapToWeight(lengthArrow);
+        log(forceValue)
+        loadLabel.html(XAC.trim(forceValue, 0) + ' kg');
+        var labelOffset = 16;
+        loadLabel.css('left', a[2] + labelOffset);
+        loadLabel.css('top', a[3] + labelOffset);
     }
     FORTE.design.loadPoints = dataObject.design.loadPoints;
     FORTE.design.loadValues = dataObject.design.loadValues;
