@@ -532,7 +532,7 @@ FORTE.render = function (pointer) {
             var keys = Object.keys(FORTE.htOptimizedLayers);
             for (key of keys) {
                 var layer = FORTE.htOptimizedLayers[key];
-                layer.enable(1.0);
+                if (layer != undefined) layer.enable(1.0);
             }
 
             // freeze optimization to avoid accidential clicking twice
