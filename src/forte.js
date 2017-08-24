@@ -311,7 +311,7 @@ $(document).ready(function () {
         $(document).keydown(XAC.keydown);
         $(document).keyup(XAC.keyup);
         $(document).mousedown(XAC.mousedown);
-        $(document).bind('mousewheel', XAC.mousewheel);
+        // $(document).bind('mousewheel', XAC.mousewheel);
 
         XAC.on(XAC.SHIFT, function () {
             FORTE.shiftPressed = true;

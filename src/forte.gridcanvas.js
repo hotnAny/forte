@@ -229,11 +229,12 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0) {
 //
 //  force to redraw everything
 //
-FORTE.GridCanvas.prototype.forceRedraw = function (colorMap) {
+FORTE.GridCanvas.prototype.forceRedraw = function (colorMap, cutOff) {
     var originalStyle = this._context.fillStyle;
     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     for (var j = 0; j < this._gridHeight; j++) {
         for (var i = 0; i < this._gridWidth; i++) {
+            if (cutOff != undefined && this._bitmap[j][i] < cutOff) continue;
             this._context.globalAlpha = Math.min(1, this._bitmap[j][i] / FORTE.PSEUDOMAXALPHA);
             this._context.beginPath();
             this._context.rect((i * this._cellSize) | 0, (j * this._cellSize) | 0,
@@ -289,6 +290,10 @@ FORTE.GridCanvas.prototype.loadSVG = function (path) {
 }
 
 FORTE.GridCanvas.prototype.saveToImage = function () {
+    // var maxAlpha = FORTE.PSEUDOMAXALPHA;
+    // FORTE.PSEUDOMAXALPHA = 1;
+    this.forceRedraw(undefined, 0.5);
     var imgURL = this._canvas[0].toDataURL('image/png');
     $('#imgToSave').attr('src', imgURL);
+    // FORTE.PSEUDOMAXALPHA = maxAlpha;
 }
