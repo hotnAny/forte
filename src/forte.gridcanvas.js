@@ -287,3 +287,8 @@ FORTE.GridCanvas.prototype.loadSVG = function (path) {
     }.bind(this);
     img.src = path;
 }
+
+FORTE.GridCanvas.prototype.saveToImage = function () {
+    var imgURL = this._canvas[0].toDataURL('image/png');
+    $('#imgToSave').attr('src', imgURL);
+}

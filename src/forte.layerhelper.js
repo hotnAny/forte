@@ -473,7 +473,7 @@ FORTE.addInfoLayer = function (layer) {
         this._lbBoundingWidth.css('left', offset.left + (this._min.x + this._max.x) / 2);
         // this._lbBoundingWidth.css('top', offset.top + this._max.y + this._boundingMargin * 2);
         this._lbBoundingWidth.css('top', offset.top + this._canvas[0].height - this._boundingMargin * 3);
-        
+
         // displaying actual height
         if (this._lbBoundingHeight == undefined) {
             this._lbBoundingHeight = $('<label class="ui-widget" style="position:absolute;opacity:0.25;"></label>');
@@ -499,10 +499,12 @@ FORTE.addInfoLayer = function (layer) {
     layer.clear = function () {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         this._bitmap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
-        this._lbBoundingWidth.css('opacity', 0);
-        this._lbBoundingWidth.html('');
-        this._lbBoundingHeight.css('opacity', 0);
-        this._lbBoundingHeight.html('');
+        if (this._lbBoundingWidth != undefined) {
+            // this._lbBoundingWidth.css('opacity', 0);
+            this._lbBoundingWidth.html('');
+            // this._lbBoundingHeight.css('opacity', 0);
+            this._lbBoundingHeight.html('');
+        }
         this._min = undefined;
         this._max = undefined;
     }
