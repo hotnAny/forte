@@ -115,20 +115,11 @@ $(document).ready(function () {
 
         // brushes for design, load and boundary
         FORTE.nameButtonsInputLayer = 'ButtonsInputLayer';
-        FORTE.resetRadioButtons(0);
+        FORTE.resetLayerButtons(0);
 
         // tools: brush vs. eraser
         FORTE.nameButtonsTools = 'ButtonsTools';
-        var imgSrcsTools = [FORTE.ICONDRAW, FORTE.ICONERASER];
-        var labelsTools = [];
-        FORTE.editMode = FORTE.DRAW;
-        for (src of imgSrcsTools) labelsTools.push('<img class="icon" src="' + src + '"></img>');
-        FORTE.checkedBtnTool = XAC.makeRadioButtons(FORTE.nameButtonsTools, labelsTools, [FORTE.DRAW, FORTE.ERASE],
-            $('#tdTools'), FORTE.editMode, false);
-        $('[name="' + FORTE.nameButtonsTools + '"]').on("click", function (e) {
-            FORTE.editMode = parseInt($(e.target).val());
-            for (layer of FORTE.layers) layer._toErase = FORTE.editMode;
-        });
+        FORTE.resetEditModeButtons();
 
         //  similarity slider
         FORTE.similarityRatio = 5;
@@ -155,7 +146,7 @@ $(document).ready(function () {
             } else {
                 if (FORTE.optFrozen) return;
                 if (FORTE.startOptimization()) {
-                    FORTE.resetRadioButtons();
+                    FORTE.resetLayerButtons();
                     FORTE.setButtonForOptimization($(this));
                     $('#btnOptCtrl').attr('src', FORTE.ICONSTOP);
                 }
@@ -235,14 +226,6 @@ $(document).ready(function () {
             FORTE.newtonPerPixel = 0.1 * FORTE.lengthPerPixel;
             var widthLegend = parseInt($('#imgLegend').css('width'));
             $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
-
-            // // if (FORTE.designLayer._lbBoundingWidth != undefined) {
-            //     FORTE.designLayer._lbBoundingWidth.html(XAC.trim(
-            //         (FORTE.designLayer._max.x - FORTE.designLayer._min.x) * FORTE.lengthPerPixel, 0) + ' mm');
-            //     FORTE.designLayer._lbBoundingHeight.html(XAC.trim(
-            //         (FORTE.designLayer._max.y - FORTE.designLayer._min.y) * FORTE.lengthPerPixel, 0) + ' mm');
-            // // }
-
             FORTE.designLayer.updateDimInfo();
         };
         FORTE.sldrMeasurement.slider({
@@ -313,7 +296,7 @@ $(document).ready(function () {
         $(document).keydown(XAC.keydown);
         $(document).keyup(XAC.keyup);
         $(document).mousedown(XAC.mousedown);
-        // $(document).bind('mousewheel', XAC.mousewheel);
+        // $(document).bind('mouseup', XAC.mouseup);
 
         XAC.on(XAC.SHIFT, function () {
             FORTE.shiftPressed = true;
@@ -340,6 +323,13 @@ $(document).ready(function () {
             $('#divMoreCtrl').hide();
             $('#btnMore').html(FORTE.HTMLCODETRIANGLEDOWN);
         });
+
+        // XAC.on(XAC.MOUSEUP, function (e) {
+        //     if (FORTE.editMode == FORTE.ERASE && FORTE.shiftPressed != true) {
+        //         $('input[type="radio"][name=' + FORTE.nameButtonsTools +
+        //             '][value=' + FORTE.DRAW + ']').trigger('click')
+        //     }
+        // });
 
         XAC.on(XAC.MOUSEWHEEL, function (e) {
             // adjust the brush width of the active layer
@@ -430,7 +420,7 @@ $(document).ready(function () {
 //
 //  routine to reset radio button for each selection/deselection
 //
-FORTE.resetRadioButtons = function (idx) {
+FORTE.resetLayerButtons = function (idx) {
     // remove and re-add all the radio buttons 
     $('[name="' + FORTE.nameButtonsInputLayer + '"]').remove();
     $('[name="lb' + FORTE.nameButtonsInputLayer + '"]').remove();
@@ -443,7 +433,7 @@ FORTE.resetRadioButtons = function (idx) {
         var checked = $(e.target).attr('checked');
         if (checked == 'checked') {
             FORTE.switchLayer(-1);
-            FORTE.resetRadioButtons();
+            FORTE.resetLayerButtons();
         } else {
             FORTE.switchLayer(parseInt($(e.target).val()));
             if (FORTE.checkedBtnInputLayer != undefined) FORTE.checkedBtnInputLayer.attr('checked', false);
@@ -454,6 +444,21 @@ FORTE.resetRadioButtons = function (idx) {
 
     // reset all corresponding layers
     if (FORTE.layers != undefined) FORTE.switchLayer(-1);
+}
+
+FORTE.resetEditModeButtons = function () {
+    $('[name="' + FORTE.nameButtonsTools + '"]').remove();
+    $('[name="lb' + FORTE.nameButtonsTools + '"]').remove();
+    var imgSrcsTools = [FORTE.ICONDRAW, FORTE.ICONERASER];
+    var labelsTools = [];
+    FORTE.editMode = FORTE.DRAW;
+    for (src of imgSrcsTools) labelsTools.push('<img class="icon" src="' + src + '"></img>');
+    FORTE.checkedBtnTool = XAC.makeRadioButtons(FORTE.nameButtonsTools, labelsTools, [FORTE.DRAW, FORTE.ERASE],
+        $('#tdTools'), FORTE.editMode, false);
+    $('[name="' + FORTE.nameButtonsTools + '"]').on("click", function (e) {
+        FORTE.editMode = parseInt($(e.target).val());
+        for (layer of FORTE.layers) layer._toErase = FORTE.editMode;
+    });
 }
 
 //

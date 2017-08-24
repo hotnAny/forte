@@ -80,6 +80,13 @@ XAC.mousemove = function (e) {
 XAC.mouseup = function (e) {
     XAC._updateFootprint(e.clientX, e.clientY);
     XAC._dispatchInputEvents(e, XAC.MOUSEUP);
+
+    /////////////////////////////////////////////////////////
+    // modify for project forte
+    if (XAC.mouseups != undefined) {
+        for (handler of XAC.mouseups) handler(e);
+    }
+    /////////////////////////////////////////////////////////
 };
 
 XAC.mousewheel = function (e) {
@@ -119,7 +126,8 @@ XAC.on = function (cue, handler) {
             // TODO
             break;
         case XAC.MOUSEUP:
-            // TODO
+            XAC.mouseups = XAC.mouseups || [];
+            XAC.mouseups.push(handler);
             break;
         case XAC.MOUSEWHEEL:
             XAC.mousewheels = XAC.mousewheels || [];

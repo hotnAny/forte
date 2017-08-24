@@ -147,7 +147,7 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
         // point.y *= FORTE.loadLayer._cellSize;
         // FORTE.loadLayer._context.lineWidth = 1;
         // FORTE.drawArrow(FORTE.loadLayer._context,
-        //     point.x, point.y, point.x + varr[0] * 50, point.y + varr[1] * 50);
+        //     point.x, point.y, point.x + varr[0] * 10, point.y + varr[1] * 10);
         // FORTE.loadLayer._context.lineWidth = 8;
     }
 
@@ -161,7 +161,9 @@ FORTE.customizeLoadLayer = function () {
     // interaction on the load layer
     FORTE.loadLayer.specifyingLoad = false;
     FORTE.loadLayer._loadInputs = [];
-
+    FORTE.loadLayer.getSqDist = function (p, q) {
+        return Math.pow(p.x - q.x, 2) + Math.pow(p.y - q.y, 2);
+    };
     FORTE.loadLayer._canvas.mousedown(function (e) {
         if (this.specifyingLoad) {
             // compute distributed record load information
@@ -200,7 +202,6 @@ FORTE.customizeLoadLayer = function () {
                 this.__centerLoadPoint.x * this._cellSize, this.__centerLoadPoint.y * this._cellSize, e.clientX - canvasOffset.left, e.clientY - canvasOffset.top);
             var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
             var forceValue = FORTE.mapToWeight(lengthArrow);
-            // log(forceValue)
             FORTE.notify(XAC.trim(forceValue, 0) + ' kg', false);
         }
     }.bind(FORTE.loadLayer));
@@ -244,6 +245,18 @@ FORTE.customizeLoadLayer = function () {
         else {
             this.specifyingLoad = !this.specifyingLoad;
             if (this.specifyingLoad) {
+                // resample
+                var minSqDistApart = Math.pow(this._strokeRadius * this._cellSize, 2);
+                var points = [];
+                for (var i = 0; i < this._strokePoints.length; i++) {
+                    var p = this._strokePoints[i];
+                    if (points.length == 0 || this.getSqDist(p, points.last()) > minSqDistApart)
+                        points.push(p);
+                    // else log('point #' + i + ' removed!')
+                }
+
+                this._strokePoints = points;
+
                 // find the center point of last stroke
                 var footprint = 0;
                 for (var i = 1; i < this._strokePoints.length; i++) {
@@ -416,6 +429,9 @@ FORTE.smoothLine = function (points, r) {
     // MEDLEY.showInfo('fit after ' + nitr + ' iterations');
 }
 
+//
+//
+//
 FORTE.addInfoLayer = function (layer) {
     layer._boundingMargin = 16; //px
     layer.updateDimInfo = function () {

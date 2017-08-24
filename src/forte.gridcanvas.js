@@ -137,6 +137,11 @@ FORTE.GridCanvas.prototype.drawUp = function (e) {
             clientY: p.y
         });
     }
+
+    if (FORTE.editMode == FORTE.ERASE && FORTE.shiftPressed != true) {
+        $('input[type="radio"][name=' + FORTE.nameButtonsTools +
+            '][value=' + FORTE.DRAW + ']').trigger('click')
+    }
 };
 
 //
