@@ -40,6 +40,15 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
     this._inputEvents = [];
 
     this._smoothRadius = Math.sqrt(width * width + height * height) / 2;
+
+    this._min = this._min || {
+        x: this._canvas[0].width,
+        y: this._canvas[0].height
+    };
+    this._max = this._max || {
+        x: 0,
+        y: 0
+    };
 };
 
 // max canvas height to stay within a normal screen
@@ -93,15 +102,7 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     this._strokePoints = [];
     this._mousePoints = [new THREE.Vector3(e.clientX, e.clientY, 0)];
 
-    // [exp]
-    this._min = this._min || {
-        x: this._canvas[0].width,
-        y: this._canvas[0].height
-    };
-    this._max = this._max || {
-        x: 0,
-        y: 0
-    };
+
 
     this._doDraw(e, this._toErase);
 };
@@ -239,8 +240,6 @@ FORTE.GridCanvas.prototype.forceRedraw = function (colorMap, cutOff) {
             this._context.beginPath();
             this._context.rect((i * this._cellSize) | 0, (j * this._cellSize) | 0,
                 (this._cellSize + 1) | 0, (this._cellSize + 1) | 0);
-            // this._context.arc((i * this._cellSize) | 0, (j * this._cellSize) | 0,
-            //     ((this._cellSize + 1) / 2) | 0, 0, Math.PI * 2);
             if (colorMap != undefined && colorMap[j][i] != undefined)
                 this._context.fillStyle = colorMap[j][i];
             this._context.fill();
@@ -290,10 +289,12 @@ FORTE.GridCanvas.prototype.loadSVG = function (path) {
 }
 
 FORTE.GridCanvas.prototype.saveToImage = function () {
-    // var maxAlpha = FORTE.PSEUDOMAXALPHA;
-    // FORTE.PSEUDOMAXALPHA = 1;
-    this.forceRedraw(undefined, 0.5);
+    if (FORTE.toShowStress) {
+        this.updateHeatmap(FORTE.yieldStress / FORTE.safety);
+        this.forceRedraw(this._heatmap);
+    } else {
+        this.forceRedraw(undefined, 0.5);
+    }
     var imgURL = this._canvas[0].toDataURL('image/png');
     $('#imgToSave').attr('src', imgURL);
-    // FORTE.PSEUDOMAXALPHA = maxAlpha;
 }

@@ -236,12 +236,14 @@ $(document).ready(function () {
             var widthLegend = parseInt($('#imgLegend').css('width'));
             $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
 
-            if (FORTE.designLayer._lbBoundingWidth != undefined) {
-                FORTE.designLayer._lbBoundingWidth.html(XAC.trim(
-                    (FORTE.designLayer._max.x - FORTE.designLayer._min.x) * FORTE.lengthPerPixel, 0) + ' mm');
-                FORTE.designLayer._lbBoundingHeight.html(XAC.trim(
-                    (FORTE.designLayer._max.y - FORTE.designLayer._min.y) * FORTE.lengthPerPixel, 0) + ' mm');
-            }
+            // // if (FORTE.designLayer._lbBoundingWidth != undefined) {
+            //     FORTE.designLayer._lbBoundingWidth.html(XAC.trim(
+            //         (FORTE.designLayer._max.x - FORTE.designLayer._min.x) * FORTE.lengthPerPixel, 0) + ' mm');
+            //     FORTE.designLayer._lbBoundingHeight.html(XAC.trim(
+            //         (FORTE.designLayer._max.y - FORTE.designLayer._min.y) * FORTE.lengthPerPixel, 0) + ' mm');
+            // // }
+
+            FORTE.designLayer.updateDimInfo();
         };
         FORTE.sldrMeasurement.slider({
             slide: FORTE.updateMeasurements,
@@ -318,11 +320,11 @@ $(document).ready(function () {
         });
 
         XAC.on(XAC.CTRL, function () {
-            FORTE.cmdPressed = true;
+            FORTE.ctrlPressed = true;
         });
 
         XAC.on('S', function () {
-            if (FORTE.cmdPressed) {
+            if (FORTE.ctrlPressed) {
                 // FORTE.saveToImage(FORTE.focusedDesignLayer);
                 FORTE.focusedDesignLayer.saveToImage();
             }
@@ -330,7 +332,7 @@ $(document).ready(function () {
 
         XAC.on(XAC.KEYUP, function () {
             FORTE.shiftPressed = false;
-            FORTE.cmdPressed = false;
+            FORTE.ctrlPressed = false;
         });
 
         XAC.on(XAC.MOUSEDOWN, function (e) {
@@ -343,7 +345,6 @@ $(document).ready(function () {
             // adjust the brush width of the active layer
             var w = FORTE.layer._strokeRadius;
             w += e.originalEvent.wheelDelta * 2 / FORTE.width;
-            log(w);
             w = Math.min(FORTE.width / 16, Math.max(FORTE.width / 160, w));
             FORTE.layer._strokeRadius = w;
             FORTE.notify('stroke width: ' + XAC.trim(FORTE.layer._strokeRadius, 2), false);
@@ -361,6 +362,12 @@ $(document).ready(function () {
             FORTE.boundaryLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLORBLUE);
 
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
+
+            // show dimension info
+            FORTE._lbBoundingWidth = $('<label class="ui-widget" style="position:absolute;opacity:0.25;"></label>');
+            $(document.body).append(FORTE._lbBoundingWidth);
+            FORTE._lbBoundingHeight = $('<label class="ui-widget" style="position:absolute;opacity:0.25;"></label>');
+            $(document.body).append(FORTE._lbBoundingHeight);
 
             FORTE.layers = [FORTE.designLayer, FORTE.emptyLayer, FORTE.loadLayer, FORTE.boundaryLayer];
             FORTE.layer = FORTE.designLayer;

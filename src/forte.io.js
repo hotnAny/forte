@@ -26,6 +26,30 @@ FORTE.loadForteFile = function (e) {
     else
         FORTE.designLayer.drawFromBitmap(dataObject.design.designBitmap, 0, 0);
 
+    // update min/max
+    var layer = FORTE.designLayer;
+    layer._min = {
+        x: layer._canvas[0].width,
+        y: layer._canvas[0].height
+    };
+    layer._max = {
+        x: 0,
+        y: 0
+    };
+    var bitmap = FORTE.designLayer._bitmap;
+    var h = bitmap.length;
+    var w = h > 0 ? bitmap[0].length : 0;
+    for (var j = 0; j < h; j++) {
+        for (var i = 0; i < w; i++) {
+            if(bitmap[j][i] > 0) {
+                layer._min.x = Math.min(layer._min.x, i * layer._cellSize);
+                layer._min.y = Math.min(layer._min.y, j * layer._cellSize);
+                layer._max.x = Math.max(layer._max.x, i * layer._cellSize);
+                layer._max.y = Math.max(layer._max.y, j * layer._cellSize);
+            }
+        }
+    }
+
     FORTE.loadLayer.drawFromBitmap(dataObject.design.loadBitmap, 0, 0);
     FORTE.loadLayer._arrows = [];
     for (arrowNormalized of dataObject.design.loadArrows) {
@@ -49,7 +73,6 @@ FORTE.loadForteFile = function (e) {
     ));
 
     // show trials (if there's any)
-    // FORTE.optimizedLayer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
     FORTE.design.maxStress = 0;
     for (trial of dataObject.trials) {
         var layer = new FORTE.GridCanvas($('#tdCanvas'), FORTE.width, FORTE.height, FORTE.COLOROPTLAYER);
@@ -185,9 +208,6 @@ FORTE.readStressData = function () {
                 var stresses = FORTE.getBitmap(text);
                 var maxStress = 0;
                 var allStresses = [];
-                // var eps = 1e-9;
-                // var minStress = Math.log(eps);
-                // var logBase = Math.log(1.01);
                 for (row of stresses)
                     for (value of row) {
                         // value = FORTE.mapToUnits(value);
@@ -314,6 +334,6 @@ FORTE.addToDownloadDropdown = function (itemName, blob, fileName) {
     $('#ddlExports').append(downloadItem);
 }
 
-FORTE.saveToImage = function(layer){
-    
+FORTE.saveToImage = function (layer) {
+
 }

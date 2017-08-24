@@ -418,6 +418,22 @@ FORTE.smoothLine = function (points, r) {
 
 FORTE.addInfoLayer = function (layer) {
     layer._boundingMargin = 16; //px
+    layer.updateDimInfo = function () {
+        var offset = this._parent.offset();
+        // displaying actual width
+        this._actualWidth = (this._max.x - this._min.x) * FORTE.lengthPerPixel;
+        FORTE._lbBoundingWidth.css('opacity', FORTE.OPACITYDIMLABEL);
+        FORTE._lbBoundingWidth.html(XAC.trim(this._actualWidth, 0) + ' mm');
+        FORTE._lbBoundingWidth.css('left', offset.left + (this._min.x + this._max.x) / 2);
+        FORTE._lbBoundingWidth.css('top', offset.top + this._canvas[0].height - this._boundingMargin * 3);
+
+        // displaying actual height
+        this._actualHeight = (this._max.y - this._min.y) * FORTE.lengthPerPixel;
+        FORTE._lbBoundingHeight.css('opacity', FORTE.OPACITYDIMLABEL);
+        FORTE._lbBoundingHeight.html(XAC.trim(this._actualHeight, 0) + ' mm');
+        FORTE._lbBoundingHeight.css('left', offset.left + this._boundingMargin * 2);
+        FORTE._lbBoundingHeight.css('top', offset.top + (this._min.y + this._max.y) / 2);
+    }
     layer._canvas.mousemove(function (e) {
         if (!this._enabled) return;
         if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
@@ -425,13 +441,7 @@ FORTE.addInfoLayer = function (layer) {
         var originalStyle = this._context.strokeStyle;
         this._context.strokeStyle = 'rgba(0, 0, 0, 0.25)';
         this._context.lineWidth = 1;
-        var offset = this._parent.offset();
         if (this._minPrev != undefined && this._maxPrev != undefined) {
-
-            // this._context.clearRect(this._minPrev.x - this._context.lineWidth,
-            //     this._maxPrev.y + layer._boundingMargin - this._context.lineWidth,
-            //     this._maxPrev.x - this._minPrev.x + this._context.lineWidth * 2,
-            //     this._context.lineWidth * 2);
 
             this._context.clearRect(this._minPrev.x - this._context.lineWidth,
                 this._canvas[0].height - this._boundingMargin - this._context.lineWidth,
@@ -444,47 +454,17 @@ FORTE.addInfoLayer = function (layer) {
                 this._maxPrev.y - this._minPrev.y + this._context.lineWidth * 2);
         }
 
-
-
         this._context.beginPath();
-        // this._context.moveTo(this._min.x, this._max.y + layer._boundingMargin);
-        // this._context.lineTo(this._max.x, this._max.y + layer._boundingMargin);
-        // this._context.moveTo(this._min.x - layer._boundingMargin, this._min.y);
-        // this._context.lineTo(this._min.x - layer._boundingMargin, this._max.y);
         this._context.moveTo(this._min.x, this._canvas[0].height - this._boundingMargin);
         this._context.lineTo(this._max.x, this._canvas[0].height - this._boundingMargin);
         this._context.moveTo(this._boundingMargin, this._min.y);
         this._context.lineTo(this._boundingMargin, this._max.y);
 
-
         this._context.stroke();
         this._context.closePath();
         this._context.strokeStyle = originalStyle;
 
-
-        // displaying actual width
-        if (this._lbBoundingWidth == undefined) {
-            this._lbBoundingWidth = $('<label class="ui-widget" style="position:absolute;opacity:0.25;"></label>');
-            $(document.body).append(this._lbBoundingWidth);
-        }
-        this._actualWidth = (this._max.x - this._min.x) * FORTE.lengthPerPixel;
-        this._lbBoundingWidth.css('opacity', FORTE.OPACITYDIMLABEL);
-        this._lbBoundingWidth.html(XAC.trim(this._actualWidth, 0) + ' mm');
-        this._lbBoundingWidth.css('left', offset.left + (this._min.x + this._max.x) / 2);
-        // this._lbBoundingWidth.css('top', offset.top + this._max.y + this._boundingMargin * 2);
-        this._lbBoundingWidth.css('top', offset.top + this._canvas[0].height - this._boundingMargin * 3);
-
-        // displaying actual height
-        if (this._lbBoundingHeight == undefined) {
-            this._lbBoundingHeight = $('<label class="ui-widget" style="position:absolute;opacity:0.25;"></label>');
-            $(document.body).append(this._lbBoundingHeight);
-        }
-        this._actualHeight = (this._max.y - this._min.y) * FORTE.lengthPerPixel;
-        this._lbBoundingHeight.css('opacity', FORTE.OPACITYDIMLABEL);
-        this._lbBoundingHeight.html(XAC.trim(this._actualHeight, 0) + ' mm');
-        // this._lbBoundingHeight.css('left', offset.left + this._min.x - this._boundingMargin * 3);
-        this._lbBoundingHeight.css('left', offset.left + this._boundingMargin * 2);
-        this._lbBoundingHeight.css('top', offset.top + (this._min.y + this._max.y) / 2);
+        this.updateDimInfo();
 
         this._minPrev = {
             x: this._min.x,
@@ -499,11 +479,9 @@ FORTE.addInfoLayer = function (layer) {
     layer.clear = function () {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         this._bitmap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
-        if (this._lbBoundingWidth != undefined) {
-            // this._lbBoundingWidth.css('opacity', 0);
-            this._lbBoundingWidth.html('');
-            // this._lbBoundingHeight.css('opacity', 0);
-            this._lbBoundingHeight.html('');
+        if (FORTE._lbBoundingWidth != undefined) {
+            FORTE._lbBoundingWidth.html('');
+            FORTE._lbBoundingHeight.html('');
         }
         this._min = undefined;
         this._max = undefined;
