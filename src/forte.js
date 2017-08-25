@@ -29,8 +29,9 @@ $(document).ready(function () {
     FORTE.autoSave = function () {
         setTimeout(function () {
             try {
-                FORTE.saveForteToFile();
+                if (!FORTE.renderStarted) FORTE.saveForteToFile();
             } catch (e) {
+                log(e)
                 log('did not save');
             }
             FORTE.autoSave();
@@ -206,7 +207,7 @@ $(document).ready(function () {
         $('#tbHeight').keydown(_keydown);
 
         // edit weight
-        FORTE.editWeightRatio = 2;
+        FORTE.editWeightRatio = 3;
         var ratio = (FORTE.editWeightRatio - FORTE.MINEDITWEIGHTRATIO) /
             (FORTE.MAXEDITWEIGHTRATIO - FORTE.MINEDITWEIGHTRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
@@ -275,7 +276,7 @@ $(document).ready(function () {
         FORTE.updateSldrSafety = function (e, ui) {
             var value = FORTE._normalizeSliderValue($(e.target), ui.value);
             FORTE.safety = (FORTE.MINSAFETY * (1 - value) + FORTE.MAXSAFETY * value);
-            $('#lbSafety').html(XAC.trim(FORTE.safety, 1) + 'x');
+            $('#lbSafety').html(XAC.trim(FORTE.safety, 0) + 'x');
         };
         FORTE.sldrSafety.slider({
             slide: FORTE.updateSldrSafety,
@@ -548,6 +549,7 @@ FORTE.render = function (pointer) {
         if (FORTE.renderStarted) {
             FORTE.updateStressAcrossLayers(FORTE.toShowStress);
             log('rendering stopped.');
+            FORTE.renderStarted = false;
             FORTE.notify('optimization finished ...');
             var keys = Object.keys(FORTE.htOptimizedLayers);
             for (key of keys) {
@@ -775,7 +777,8 @@ FORTE.mapToWeight = function (length) {
 //
 FORTE.mapToUnits = function (stress) {
     // var E = FORTE.e;
-    var N = FORTE.mapToWeight(1) * 9.8 / Math.max(1, FORTE.numElmsThickness * 0.1);
+    // var N = FORTE.mapToWeight(1) * 9.8 / Math.max(1, FORTE.numElmsThickness * 0.1);
+    var N = FORTE.mapToWeight(1) * 9.8; // FORTE.numElmsThickness;
     var mm = Math.pow(FORTE.lengthPerPixel * FORTE.designLayer._cellSize, 2);
     return stress * FORTE.e * N / mm;
 }

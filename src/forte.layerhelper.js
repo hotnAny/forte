@@ -347,7 +347,7 @@ FORTE.customizeLoadLayer = function () {
 //
 FORTE.addEditingLayer = function (layer) {
     layer._canvas.mousedown(function (e) {
-        if (!this._enabled) return;
+        if (!this._enabled || !FORTE.shiftPressed) return;
         // temporarily changing properties of the layer to show eraser
         switch (FORTE.editMode) {
             case FORTE.DRAW:
@@ -363,12 +363,12 @@ FORTE.addEditingLayer = function (layer) {
     }.bind(layer));
 
     layer._canvas.mousemove(function (e) {
-        if (!this._enabled) return;
+        if (!this._enabled || !FORTE.shiftPressed) return;
         this.drawMove(e);
     }.bind(layer));
 
     layer._canvas.mouseup(function (e) {
-        if (!this._enabled) return;
+        if (!this._enabled || !FORTE.shiftPressed) return;
         this.drawUp(e);
         // recover the origiinal proerties
         switch (FORTE.editMode) {
@@ -387,7 +387,7 @@ FORTE.addEditingLayer = function (layer) {
                 break;
         }
         FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
-        log(FORTE.design.lastOutputFile)
+        log(FORTE.design.lastOutputFile);
         $('#btnOptCtrl').trigger('click');
     }.bind(layer));
 }
@@ -441,7 +441,6 @@ FORTE.smoothLine = function (points, r) {
         }
     }
 
-    // MEDLEY.showInfo('fit after ' + nitr + ' iterations');
 }
 
 //

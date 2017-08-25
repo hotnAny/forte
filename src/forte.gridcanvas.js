@@ -96,13 +96,11 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     if (!this._enabled || e.button == XAC.RIGHTMOUSE) return;
     this._isDown = true;
 
-    this._canvasOriginal = this._canvas.clone(true);
-    this._canvasOriginal[0].getContext('2d').drawImage(this._canvas[0], 0, 0);
+    // this._canvasOriginal = this._canvas.clone(true);
+    // this._canvasOriginal[0].getContext('2d').drawImage(this._canvas[0], 0, 0);
 
     this._strokePoints = [];
     this._mousePoints = [new THREE.Vector3(e.clientX, e.clientY, 0)];
-
-
 
     this._doDraw(e, this._toErase);
 };
@@ -125,23 +123,23 @@ FORTE.GridCanvas.prototype.drawUp = function (e) {
     if (!this._enabled) return;
     this._isDown = false;
 
-    if (FORTE.shiftPressed) {
-        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-        this._context.drawImage(this._canvasOriginal[0], 0, 0);
-        var circleInfo = makeCircle(this._mousePoints);
-        log(circleInfo)
-        var smoothRadius = circleInfo != undefined ? circleInfo.r * 1.414 : this._smoothRadius;
-        FORTE.smoothLine(this._mousePoints, smoothRadius);
-        for (p of this._mousePoints) this._doDraw({
-            clientX: p.x,
-            clientY: p.y
-        });
-    }
+    // if (FORTE.shiftPressed) {
+    //     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+    //     this._context.drawImage(this._canvasOriginal[0], 0, 0);
+    //     var circleInfo = makeCircle(this._mousePoints);
+    //     log(circleInfo)
+    //     var smoothRadius = circleInfo != undefined ? circleInfo.r * 1.414 : this._smoothRadius;
+    //     FORTE.smoothLine(this._mousePoints, smoothRadius);
+    //     for (p of this._mousePoints) this._doDraw({
+    //         clientX: p.x,
+    //         clientY: p.y
+    //     });
+    // }
 
-    if (FORTE.editMode == FORTE.ERASE && FORTE.shiftPressed) {
-        $('input[type="radio"][name=' + FORTE.nameButtonsTools +
-            '][value=' + FORTE.DRAW + ']').trigger('click')
-    }
+    // if (FORTE.editMode == FORTE.ERASE && FORTE.shiftPressed) {
+    //     $('input[type="radio"][name=' + FORTE.nameButtonsTools +
+    //         '][value=' + FORTE.DRAW + ']').trigger('click')
+    // }
 };
 
 //
