@@ -127,3 +127,16 @@ XAC.trim = function (value, ndigits) {
 	var divider = Math.pow(10, ndigits);
 	return ((value * divider) | 0) / (divider * 1.0);
 }
+
+//
+//
+//
+XAC.getJsonFromUrl = function() {
+  var query = location.search.substr(1);
+  var result = {};
+  query.split("&").forEach(function(part) {
+    var item = part.split("=");
+    result[item[0]] = decodeURIComponent(item[1]);
+  });
+  return result;
+}

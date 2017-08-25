@@ -55,6 +55,9 @@ FORTE.switchLayer = function (idx) {
     if (!isNaN(idx) && idx >= 0) {
         FORTE.layer = FORTE.layers[idx];
         FORTE.layer.enable();
+        $('.info-label').show();
+    } else {
+        $('.info-label').hide();
     }
 
     // adjust z-index accordingly
@@ -251,7 +254,7 @@ FORTE.customizeLoadLayer = function () {
         else {
             this.specifyingLoad = !this.specifyingLoad;
             if (this.specifyingLoad) {
-                this._loadLabel = $('<label class="ui-widget" style="position:absolute;"></label>');
+                this._loadLabel = $('<label class="ui-widget info-label" style="position:absolute;"></label>');
                 this._loadLabel.css('opacity', FORTE.OPACITYDIMLABEL);
                 this._loadLabel.css('color', this._strokeColor);
                 FORTE.loadLabels = FORTE.loadLabels || [];

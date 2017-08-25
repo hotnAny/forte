@@ -36,7 +36,15 @@ $(document).ready(function () {
             FORTE.autoSave();
         }, 300000);
     };
-    // FORTE.autoSave();
+
+    var urlParams = XAC.getJsonFromUrl(window.location.href);
+    log(urlParams)
+    if (urlParams['study'] == 'true') {
+        log('study mode');
+        FORTE.autoSave();
+    } else {
+        log('dry run mode');
+    }
 
     // client-server setup
     FORTE.xmlhttp = new XMLHttpRequest();
@@ -331,14 +339,14 @@ $(document).ready(function () {
         //     }
         // });
 
-        XAC.on(XAC.MOUSEWHEEL, function (e) {
-            // adjust the brush width of the active layer
-            var w = FORTE.layer._strokeRadius;
-            w += e.originalEvent.wheelDelta * 2 / FORTE.width;
-            w = Math.min(FORTE.width / 16, Math.max(FORTE.width / 160, w));
-            FORTE.layer._strokeRadius = w;
-            FORTE.notify('stroke width: ' + XAC.trim(FORTE.layer._strokeRadius, 2), false);
-        });
+        // XAC.on(XAC.MOUSEWHEEL, function (e) {
+        //     // adjust the brush width of the active layer
+        //     var w = FORTE.layer._strokeRadius;
+        //     w += e.originalEvent.wheelDelta * 2 / FORTE.width;
+        //     w = Math.min(FORTE.width / 16, Math.max(FORTE.width / 160, w));
+        //     FORTE.layer._strokeRadius = w;
+        //     FORTE.notify('stroke width: ' + XAC.trim(FORTE.layer._strokeRadius, 2), false);
+        // });
 
         setTimeout(function () {
             //
@@ -354,9 +362,9 @@ $(document).ready(function () {
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
             // show dimension info
-            FORTE._lbBoundingWidth = $('<label class="ui-widget" style="position:absolute;opacity:0.25;"></label>');
+            FORTE._lbBoundingWidth = $('<label class="ui-widget info-label" style="position:absolute;opacity:0.25;"></label>');
             $(document.body).append(FORTE._lbBoundingWidth);
-            FORTE._lbBoundingHeight = $('<label class="ui-widget" style="position:absolute;opacity:0.25;"></label>');
+            FORTE._lbBoundingHeight = $('<label class="ui-widget info-label" style="position:absolute;opacity:0.25;"></label>');
             $(document.body).append(FORTE._lbBoundingHeight);
 
             FORTE.layers = [FORTE.designLayer, FORTE.emptyLayer, FORTE.loadLayer, FORTE.boundaryLayer];
@@ -615,6 +623,7 @@ FORTE.startOptimization = function () {
             var layer = FORTE.htOptimizedLayers[key];
             if (layer != undefined) layer.disable(1.0);
         }
+        $('.info-label').hide();
     } else {
         FORTE.notify('problems for generating data ...');
     }
