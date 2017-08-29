@@ -35,9 +35,6 @@ FORTE.changeResolution = function () {
     FORTE.maxElmsThickness = Math.min(FORTE.width, FORTE.height) / 2;
     FORTE.minElmsThickness = (FORTE.maxElmsThickness * 0.05) | 0;
     var valueSlider = FORTE._getSliderValue(0.25);
-    // FORTE.numElmsThickness = (FORTE.minElmsThickness * (1 - valueSlider) + FORTE.maxElmsThickness * valueSlider) | 0;
-    // FORTE.actualThickness = FORTE.numElmsThickness * FORTE.designLayer._cellSize * FORTE.lengthPerPixel;
-    // $('#lbThickness').html(XAC.trim(FORTE.actualThickness, 0) + ' mm');
     FORTE.sldrThickness.slider('value', valueSlider);
 }
 
@@ -232,10 +229,6 @@ FORTE.customizeLoadLayer = function () {
 
                             FORTE.loadLabels[i].remove();
 
-                            // for (p of points)
-                            //     this._context.clearRect(p[0] * this._cellSize - margin, p[1] * this._cellSize - margin,
-                            //         this._cellSize + margin * 2, this._cellSize + margin * 2);
-
                             done = true;
                             break;
                         }
@@ -268,7 +261,7 @@ FORTE.customizeLoadLayer = function () {
                     if (points.length == 0 || this.getSqDist(p, points.last()) > minSqDistApart)
                         points.push(p);
                 }
-                
+
                 this._strokePoints = points;
 
                 // find the center point of last stroke

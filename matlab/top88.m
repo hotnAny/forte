@@ -212,6 +212,8 @@ while change > 0.05 && (loop <= maxloop)
         margin = 0;
     end
     
+    margin = floor((nelx+nely) * 0.025);
+    
     %% [forte] set void element to 'zero'
     x(pasvelms) = eps;
     

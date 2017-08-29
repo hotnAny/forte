@@ -22,10 +22,13 @@ $(document).ready(function () {
     FORTE.nu = 0.36; //
     FORTE.yieldStress = 60 //MPa
 
+    // global variables
     FORTE.timeouts = [];
     FORTE.notifications = [];
     FORTE.toShowStress = false;
+    FORTE.loadLabels = [];
 
+    // auto save
     FORTE.autoSave = function () {
         setTimeout(function () {
             try {
@@ -110,6 +113,8 @@ $(document).ready(function () {
             }
             FORTE.htOptimizedLayers = {};
             FORTE.optimizedLayerList.tagit('removeAll');
+
+            for (lb of FORTE.loadLabels) lb.remove();
         });
 
         // material amount slider
@@ -239,6 +244,7 @@ $(document).ready(function () {
             var widthLegend = parseInt($('#imgLegend').css('width'));
             $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
             FORTE.designLayer.updateDimInfo();
+            log(FORTE.lengthPerPixel)
         };
         FORTE.sldrMeasurement.slider({
             slide: FORTE.updateMeasurements,
@@ -250,6 +256,7 @@ $(document).ready(function () {
         });
         var widthLegend = parseInt($('#imgLegend').css('width'));
         $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
+        log(FORTE.lengthPerPixel)
 
         // thickness
         var valueSlider = FORTE._getSliderValue(0);
@@ -278,7 +285,8 @@ $(document).ready(function () {
             valueSlider, $('#tdSafety'), FORTE.WIDTHSAFETYSLIDER);
         FORTE.updateSldrSafety = function (e, ui) {
             var value = FORTE._normalizeSliderValue($(e.target), ui.value);
-            FORTE.safety = (FORTE.MINSAFETY * (1 - Math.log(value+1)) + FORTE.MAXSAFETY * value);
+            value = Math.pow(value, 3);
+            FORTE.safety = FORTE.MINSAFETY * (1 - value) + FORTE.MAXSAFETY * value;
             // $('#lbSafety').html(XAC.trim(FORTE.safety, 0) + 'x');
         };
         FORTE.sldrSafety.slider({
@@ -336,21 +344,6 @@ $(document).ready(function () {
             $('#btnMore').html(FORTE.HTMLCODETRIANGLEDOWN);
         });
 
-        // XAC.on(XAC.MOUSEUP, function (e) {
-        //     if (FORTE.editMode == FORTE.ERASE && FORTE.shiftPressed != true) {
-        //         $('input[type="radio"][name=' + FORTE.nameButtonsTools +
-        //             '][value=' + FORTE.DRAW + ']').trigger('click')
-        //     }
-        // });
-
-        // XAC.on(XAC.MOUSEWHEEL, function (e) {
-        //     // adjust the brush width of the active layer
-        //     var w = FORTE.layer._strokeRadius;
-        //     w += e.originalEvent.wheelDelta * 2 / FORTE.width;
-        //     w = Math.min(FORTE.width / 16, Math.max(FORTE.width / 160, w));
-        //     FORTE.layer._strokeRadius = w;
-        //     FORTE.notify('stroke width: ' + XAC.trim(FORTE.layer._strokeRadius, 2), false);
-        // });
 
         setTimeout(function () {
             //
@@ -662,6 +655,7 @@ FORTE.updateStressAcrossLayers = function (toShow) {
         if (toShow) {
             // [exp] changed to yield stress
             // layer.updateHeatmap(FORTE.design.maxStress);
+            log(FORTE.safety)
             layer.updateHeatmap(FORTE.yieldStress / FORTE.safety);
             if (layer == layerCurrent) layer.forceRedraw(layer._heatmap);
             layer._needsUpdate = true;
