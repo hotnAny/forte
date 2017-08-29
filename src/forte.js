@@ -47,6 +47,9 @@ $(document).ready(function () {
         log('dry run mode');
     }
 
+    if (urlParams['design'] == 'true') FORTE.__designMode = true;
+    else FORTE.__designMode = false;
+
     // client-server setup
     FORTE.xmlhttp = new XMLHttpRequest();
     FORTE.xmlhttp.timeout = 1e9;
@@ -207,7 +210,7 @@ $(document).ready(function () {
         $('#tbHeight').keydown(_keydown);
 
         // edit weight
-        FORTE.editWeightRatio = 3;
+        FORTE.editWeightRatio = 1;
         var ratio = (FORTE.editWeightRatio - FORTE.MINEDITWEIGHTRATIO) /
             (FORTE.MAXEDITWEIGHTRATIO - FORTE.MINEDITWEIGHTRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
@@ -275,8 +278,8 @@ $(document).ready(function () {
             valueSlider, $('#tdSafety'), FORTE.WIDTHSAFETYSLIDER);
         FORTE.updateSldrSafety = function (e, ui) {
             var value = FORTE._normalizeSliderValue($(e.target), ui.value);
-            FORTE.safety = (FORTE.MINSAFETY * (1 - value) + FORTE.MAXSAFETY * value);
-            $('#lbSafety').html(XAC.trim(FORTE.safety, 0) + 'x');
+            FORTE.safety = (FORTE.MINSAFETY * (1 - Math.log(value+1)) + FORTE.MAXSAFETY * value);
+            // $('#lbSafety').html(XAC.trim(FORTE.safety, 0) + 'x');
         };
         FORTE.sldrSafety.slider({
             slide: FORTE.updateSldrSafety,

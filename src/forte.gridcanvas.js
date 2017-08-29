@@ -41,14 +41,7 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
 
     this._smoothRadius = Math.sqrt(width * width + height * height) / 2;
 
-    this._min = this._min || {
-        x: this._canvas[0].width,
-        y: this._canvas[0].height
-    };
-    this._max = this._max || {
-        x: 0,
-        y: 0
-    };
+
 };
 
 // max canvas height to stay within a normal screen
@@ -96,13 +89,11 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
     if (!this._enabled || e.button == XAC.RIGHTMOUSE) return;
     this._isDown = true;
 
-    // this._canvasOriginal = this._canvas.clone(true);
-    // this._canvasOriginal[0].getContext('2d').drawImage(this._canvas[0], 0, 0);
-
     this._strokePoints = [];
     this._mousePoints = [new THREE.Vector3(e.clientX, e.clientY, 0)];
 
     this._doDraw(e, this._toErase);
+    if (this._toErase) this._strokeRadius *= 2;
 };
 
 //
@@ -122,30 +113,24 @@ FORTE.GridCanvas.prototype.drawMove = function (e) {
 FORTE.GridCanvas.prototype.drawUp = function (e) {
     if (!this._enabled) return;
     this._isDown = false;
-
-    // if (FORTE.shiftPressed) {
-    //     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-    //     this._context.drawImage(this._canvasOriginal[0], 0, 0);
-    //     var circleInfo = makeCircle(this._mousePoints);
-    //     log(circleInfo)
-    //     var smoothRadius = circleInfo != undefined ? circleInfo.r * 1.414 : this._smoothRadius;
-    //     FORTE.smoothLine(this._mousePoints, smoothRadius);
-    //     for (p of this._mousePoints) this._doDraw({
-    //         clientX: p.x,
-    //         clientY: p.y
-    //     });
-    // }
-
-    // if (FORTE.editMode == FORTE.ERASE && FORTE.shiftPressed) {
-    //     $('input[type="radio"][name=' + FORTE.nameButtonsTools +
-    //         '][value=' + FORTE.DRAW + ']').trigger('click')
-    // }
+    if (this._toErase) this._strokeRadius /= 2;
 };
 
 //
 //  actually perform the drawing based on a mouse event
 //
 FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
+    if (this._min == undefined) {
+        this._min = this._min || {
+            x: this._canvas[0].width,
+            y: this._canvas[0].height
+        };
+        this._max = this._max || {
+            x: 0,
+            y: 0
+        };
+    }
+
     var canvasOffset = this._canvas.offset();
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
@@ -296,7 +281,7 @@ FORTE.GridCanvas.prototype.saveToImage = function () {
         this.updateHeatmap(FORTE.yieldStress / FORTE.safety);
         this.forceRedraw(this._heatmap);
     } else {
-        this.forceRedraw(undefined, 0.5);
+        this.forceRedraw(undefined, 0.1);
     }
     var imgURL = this._canvas[0].toDataURL('image/png');
     $('#imgToSave').attr('src', imgURL);

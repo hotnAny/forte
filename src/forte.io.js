@@ -96,7 +96,8 @@ FORTE.loadForteFile = function (e) {
         layer._lastMaterialRatio = trial.materialRatio;
         layer._lastSimilarityRatio = trial.similarityRatio;
         layer._stressInfo = trial.stressInfo;
-        FORTE.design.maxStress = Math.max(layer._stressInfo.maxStress);
+        // if(layer._stressInfo != undefined)
+        //     FORTE.design.maxStress = Math.max(layer._stressInfo.maxStress);
         FORTE.htOptimizedLayers[trial.key] = layer;
         var tag = FORTE.optimizedLayerList.tagit('createTag', trial.key);
     }
@@ -209,7 +210,10 @@ FORTE.getBitmap = function (text) {
 //  routine to read stress output from optimization
 //
 FORTE.readStressData = function () {
-    if (FORTE.stressRead) return;
+    if (FORTE.stressRead) {
+        log('stress already read');
+        return;
+    }
 
     var baseDir = FORTE.outputDir + '/' + FORTE.trial;
     var stressFieldLabels = ['before', 'after'];
@@ -225,16 +229,9 @@ FORTE.readStressData = function () {
                 var allStresses = [];
                 for (row of stresses)
                     for (value of row) {
-                        // value = FORTE.mapToUnits(value);
                         allStresses.push(value);
                         maxStress = Math.max(maxStress, value);
                     }
-
-                // var percentile = 0.9;
-                // maxStress = allStresses.median(percentile);
-                // log('before conversion maxStress: ' + maxStress);
-                // maxStress = FORTE.mapToUnits(maxStress);
-                // log('after conversion maxStress: ' + maxStress);
 
                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
                 layer._stressInfo = {
@@ -243,18 +240,17 @@ FORTE.readStressData = function () {
                     width: FORTE.resolution[0],
                     height: FORTE.resolution[1],
                     stresses: stresses,
-                    // maxStress: maxStress
                 }
 
-                // if (label == 'after') FORTE.design.maxStress = Math.max(maxStress, FORTE.design.maxStress);
-
-                // keep reading until read after
                 if (label == 'before') FORTE.stressRead = false;
-                // else FORTE.saveForteToFile(true);
+                else log('read stress success!');
             },
             // failure
             function () {
-                FORTE.timeouts.push(setTimeout(FORTE.readStressData, 250));
+                if (!FORTE.__designMode && FORTE.numFailuresReadStress < FORTE.MAXNUMREADSTRESS)
+                    FORTE.timeouts.push(setTimeout(FORTE.readStressData, 250));
+                FORTE.numFailuresReadStress++;
+                log('read stress failed for ' + FORTE.numFailuresReadStress + ' time(s).');
             }
         );
     }
@@ -319,6 +315,7 @@ FORTE.readOptimizationOutput = function () {
                     FORTE.showOptimizedLayer(tag, label);
 
                     //  read stresses
+                    FORTE.numFailuresReadStress = 0;
                     FORTE.readStressData();
 
                     log('misses: ' + FORTE.__misses);
