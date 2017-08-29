@@ -216,7 +216,8 @@ FORTE.readStressData = function () {
     }
 
     var baseDir = FORTE.outputDir + '/' + FORTE.trial;
-    var stressFieldLabels = ['before', 'after'];
+    // var stressFieldLabels = ['before', 'after'];
+    var stressFieldLabels = ['after'];
     for (var i = 0; i < stressFieldLabels.length; i++) {
         var label = stressFieldLabels[i];
         XAC.readTextFile(baseDir + '_' + label + '.vms',
@@ -248,7 +249,7 @@ FORTE.readStressData = function () {
             // failure
             function () {
                 if (!FORTE.__designMode && FORTE.numFailuresReadStress < FORTE.MAXNUMREADSTRESS)
-                    FORTE.timeouts.push(setTimeout(FORTE.readStressData, 250));
+                    FORTE.timeouts.push(setTimeout(FORTE.readStressData, 1000));
                 FORTE.numFailuresReadStress++;
                 log('read stress failed for ' + FORTE.numFailuresReadStress + ' time(s).');
             }
