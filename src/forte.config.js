@@ -1,8 +1,8 @@
 // ......................................................................................................
 //
-//  configuration, v0.0
+//  configuration, v0.1
 //
-//  by xiangchen@acm.org, 06/2017
+//  by xiangchen@acm.org, 08/2017
 //
 // ......................................................................................................
 
@@ -23,6 +23,8 @@ FORTE.MAXEDITWEIGHTRATIO = 8;
 FORTE.INITLENGTHPERPIXEL = 1; // mm
 FORTE.MAXLENGTHPERPIXEL = 4;
 FORTE.MINLENGTHPERPIXEL = 0.1;
+FORTE.MINSAFETY = 1;
+FORTE.MAXSAFETY = 1024;
 
 FORTE.ADDSTRUCTS = 0;
 FORTE.GETVARIATION = 1;
@@ -33,14 +35,12 @@ FORTE.ERASE = 1;
 
 FORTE.THRESDENSITY = 0.01;
 
-FORTE.MINSAFETY = 1;
-FORTE.MAXSAFETY = 10;
 
 //
 // control ui related
 //
-FORTE.WIDTHDEFAULT = 320;
-FORTE.HEIGHTDEFAULT = 225;
+FORTE.WIDTHDEFAULT = 480;
+FORTE.HEIGHTDEFAULT = 320;
 
 FORTE.DIRDESIGNDATA = 'design_data';
 FORTE.ICONNEW = 'assets/new.svg';
@@ -94,3 +94,5 @@ FORTE.LABELADDSTRUCTS = 'add structs';
 FORTE.MAXZINDEX = 100;
 
 FORTE.OPACITYDIMLABEL = 0.75;
+
+FORTE.MAXNUMREADSTRESS = 16;
