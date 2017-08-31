@@ -622,6 +622,7 @@ FORTE.startOptimization = function () {
             if (layer != undefined) layer.disable(1.0);
         }
         $('.info-label').hide();
+        $('.tbmenu').css('opacity', '0.25');
     } else {
         FORTE.notify('problems for generating data ...');
     }

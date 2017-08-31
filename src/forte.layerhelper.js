@@ -25,6 +25,7 @@ FORTE.changeResolution = function () {
     // roughly adjust stroke radius based on resolution
     for (layer of FORTE.layers)
         layer._strokeRadius = FORTE.width / 96 | 0;
+    FORTE.emptyLayer._strokeRadius /= 2;
 
     // special treatments
     FORTE.loadLayer._context.lineWidth = 8;
@@ -228,6 +229,7 @@ FORTE.customizeLoadLayer = function () {
                             FORTE.loadLayer.eraseArrow(i);
 
                             FORTE.loadLabels[i].remove();
+                            FORTE.loadLabels.remove(FORTE.loadLabels[i]);
 
                             done = true;
                             break;

@@ -226,13 +226,13 @@ FORTE.readStressData = function () {
                 FORTE.stressRead = true;
 
                 var stresses = FORTE.getBitmap(text);
-                var maxStress = 0;
-                var allStresses = [];
-                for (row of stresses)
-                    for (value of row) {
-                        allStresses.push(value);
-                        maxStress = Math.max(maxStress, value);
-                    }
+                // var maxStress = 0;
+                // var allStresses = [];
+                // for (row of stresses)
+                //     for (value of row) {
+                //         allStresses.push(value);
+                //         maxStress = Math.max(maxStress, value);
+                //     }
 
                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
                 layer._stressInfo = {
@@ -244,7 +244,10 @@ FORTE.readStressData = function () {
                 }
 
                 if (label == 'before') FORTE.stressRead = false;
-                else log('read stress success!');
+                else {
+                    log('read stress success!');
+                    $('.tbmenu').css('opacity', '1');
+                }
             },
             // failure
             function () {
@@ -317,6 +320,7 @@ FORTE.readOptimizationOutput = function () {
 
                     //  read stresses
                     FORTE.numFailuresReadStress = 0;
+                    FORTE.notify('reading stress ...');
                     FORTE.readStressData();
 
                     log('misses: ' + FORTE.__misses);
