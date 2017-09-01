@@ -68,7 +68,6 @@ FORTE.loadForteFile = function (e) {
         var a = arrow;
         var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
         var forceValue = FORTE.mapToWeight(lengthArrow);
-        log(forceValue)
         loadLabel.html(XAC.trim(forceValue, 0) + ' kg');
         var labelOffset = 16;
         loadLabel.css('left', a[2] + labelOffset);
@@ -226,18 +225,13 @@ FORTE.readStressData = function () {
                 FORTE.stressRead = true;
 
                 var stresses = FORTE.getBitmap(text);
-                // var maxStress = 0;
-                // var allStresses = [];
-                // for (row of stresses)
-                //     for (value of row) {
-                //         allStresses.push(value);
-                //         maxStress = Math.max(maxStress, value);
-                //     }
 
                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
                 layer._stressInfo = {
-                    x0: FORTE.design.bbox.xmin,
-                    y0: FORTE.design.bbox.ymin,
+                    // x0: FORTE.design.bbox.xmin,
+                    // y0: FORTE.design.bbox.ymin,
+                    x0: Math.max(FORTE.design.bbox.xmin - FORTE.design._margin, 0),
+                    y0: Math.max(FORTE.design.bbox.ymin - FORTE.design._margin, 0),
                     width: FORTE.resolution[0],
                     height: FORTE.resolution[1],
                     stresses: stresses,

@@ -83,11 +83,14 @@ FORTE.Design.prototype.getData = function () {
     for (p of this.boundaryPoints) __updateBbox(p, bbox);
 
     // log(bbox)
-    var margin = ((width+height) * 0.025) | 0;
+    var margin = ((this.width+this.height) * 0.025) | 0;
+    log('margin: ' + margin);
     var xminNew = Math.max(bbox.xmin - margin, 0);
     var xmaxNew = Math.min(bbox.xmax + margin, this.width);
     var yminNew = Math.max(bbox.ymin - margin, 0);
     var ymaxNew = Math.min(bbox.ymax + margin, this.height);
+
+    this._margin = margin;
 
     var leftMargin = bbox.xmin - xminNew;
     var topMargin = bbox.ymin - yminNew;

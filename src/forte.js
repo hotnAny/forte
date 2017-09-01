@@ -535,7 +535,10 @@ FORTE.render = function (pointer) {
     // render the next availale bitmap
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
-        FORTE.optimizedLayer.drawFromBitmap(bitmap, FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
+        FORTE.optimizedLayer.drawFromBitmap(bitmap, 
+            Math.max(FORTE.design.bbox.xmin - FORTE.design._margin, 0),
+            Math.max(FORTE.design.bbox.ymin - FORTE.design._margin, 0));
+            // FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
         FORTE.pointer++;
 
         setTimeout(function () {
