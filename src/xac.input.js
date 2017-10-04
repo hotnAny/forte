@@ -258,10 +258,11 @@ XAC.enableDragDrop = function (filesHandler) {
 
 //
 //  make sliders
+//  -   hack: will generate a label with an id of "lb<id>"
 //
 XAC.makeSlider = function (id, label, min, max, value, parent, width) {
     var tr = $('<tr></tr>');
-    tr.append($('<td><label class="ui-widget">' + label + '&nbsp;&nbsp;' + '</label></td>'));
+    tr.append($('<td><label id="lb' + id + '" class="ui-widget">' + label + '&nbsp;&nbsp;' + '</label></td>'));
     var tdSldr = $('<td width="' + width + '"></td>');
     var sldr = $('<div id="' + id + '"></div>');
     tdSldr.append(sldr);

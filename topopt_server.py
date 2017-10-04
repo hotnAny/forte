@@ -199,7 +199,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     # resolution, material & trial
     nelx = _resolution[0]
     nely = _resolution[1]
-    material = _material
+    # material = _material
+    material = _material * len(_design) / (nelx * nely)
     print nelx, nely, material
 
     optinput = {'E':_e, 'NU':_nu, 'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\

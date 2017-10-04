@@ -122,14 +122,17 @@ $(document).ready(function () {
         // material amount slider
         FORTE.materialRatio = FORTE.INITMATERIALRATIO;
         var ratio = (FORTE.materialRatio - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
+        ratio = Math.pow(ratio, FORTE.MATSLDRPOWERRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
-        FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material',
+        FORTE.sldrMaterial = XAC.makeSlider('sldrMaterial', 'material: x' + XAC.trim(FORTE.materialRatio, 1),
             FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdMaterial'), FORTE.WIDTHMATERIALSLIDER);
         FORTE.sldrMaterial.slider({
-            change: function (e, ui) {
+            slide: function (e, ui) {
                 var value = FORTE._normalizeSliderValue($(e.target), ui.value);
+                value = Math.pow(value, 1 / FORTE.MATSLDRPOWERRATIO);
                 FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
                 log(FORTE.materialRatio)
+                $('#lbsldrMaterial').html('material: x' + XAC.trim(FORTE.materialRatio, 1));
             }
         })
 
@@ -426,7 +429,7 @@ $(document).ready(function () {
             // set info label visibility
             var opacityInfoLabel = FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0;
             $('.info-label').css('opacity', opacityInfoLabel);
-            
+
             //
             // end of main table onload
             //
@@ -641,7 +644,9 @@ FORTE.startOptimization = function () {
             if (layer != undefined) layer.disable(1.0);
         }
         $('.info-label').hide();
-        // $('.tbmenu').css('opacity', '0.25');
+
+        // set menu semitransparent to alert the users that optimization is running
+        $('.tbmenu').css('opacity', '0.25');
         FORTE.setBackground();
     } else {
         FORTE.notify('problems for generating data ...');
