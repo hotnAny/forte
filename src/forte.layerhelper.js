@@ -202,7 +202,7 @@ FORTE.customizeLoadLayer = function () {
                 this.__centerLoadPoint.x * this._cellSize, this.__centerLoadPoint.y * this._cellSize, e.clientX - canvasOffset.left, e.clientY - canvasOffset.top);
             var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
             var forceValue = FORTE.mapToWeight(lengthArrow);
-            FORTE.notify(XAC.trim(forceValue, 0) + ' kg', false);
+            // FORTE.notify(XAC.trim(forceValue, 0) + ' kg', false);
             this._loadLabel.html(XAC.trim(forceValue, 0) + ' kg');
             this.labelOffset = 16;
             this._loadLabel.css('left', e.clientX + this.labelOffset);
@@ -249,7 +249,7 @@ FORTE.customizeLoadLayer = function () {
             this.specifyingLoad = !this.specifyingLoad;
             if (this.specifyingLoad) {
                 this._loadLabel = $('<label class="ui-widget info-label" style="position:absolute;"></label>');
-                // this._loadLabel.css('opacity', FORTE.OPACITYDIMLABEL);
+                this._loadLabel.css('opacity', FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0);
                 this._loadLabel.css('color', this._strokeColor);
                 FORTE.loadLabels = FORTE.loadLabels || [];
                 FORTE.loadLabels.push(this._loadLabel);
@@ -461,14 +461,14 @@ FORTE.addInfoLayer = function (layer) {
         var offset = this._parent.offset();
         // displaying actual width
         this._actualWidth = (this._max.x - this._min.x) * FORTE.lengthPerPixel;
-        FORTE._lbBoundingWidth.css('opacity', FORTE.OPACITYDIMLABEL);
+        // FORTE._lbBoundingWidth.css('opacity', FORTE.OPACITYDIMLABEL);
         FORTE._lbBoundingWidth.html(XAC.trim(this._actualWidth, 0) + ' mm');
         FORTE._lbBoundingWidth.css('left', offset.left + (this._min.x + this._max.x) / 2);
         FORTE._lbBoundingWidth.css('top', offset.top + this._canvas[0].height - this._boundingMargin * 3);
 
         // displaying actual height
         this._actualHeight = (this._max.y - this._min.y) * FORTE.lengthPerPixel;
-        FORTE._lbBoundingHeight.css('opacity', FORTE.OPACITYDIMLABEL);
+        // FORTE._lbBoundingHeight.css('opacity', FORTE.OPACITYDIMLABEL);
         FORTE._lbBoundingHeight.html(XAC.trim(this._actualHeight, 0) + ' mm');
         FORTE._lbBoundingHeight.css('left', offset.left + this._boundingMargin * 2);
         FORTE._lbBoundingHeight.css('top', offset.top + (this._min.y + this._max.y) / 2);
@@ -478,7 +478,8 @@ FORTE.addInfoLayer = function (layer) {
         if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
 
         var originalStyle = this._context.strokeStyle;
-        this._context.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+        var opacityInfoLabel = FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0;
+        this._context.strokeStyle = 'rgba(0, 0, 0, ' + opacityInfoLabel + ')';
         this._context.lineWidth = 1;
         if (this._minPrev != undefined && this._maxPrev != undefined) {
 

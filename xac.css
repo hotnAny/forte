@@ -52,12 +52,6 @@ a {
 	/* height: 10px; */
 }
 
-.info-label{
-	/* color: rgba(0, 0, 0, 0); */
-	/* opacity: 0; */
-	/* font-size: large; */
-}
-
 canvas {
 	cursor: crosshair;
 }

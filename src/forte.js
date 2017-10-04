@@ -364,9 +364,9 @@ $(document).ready(function () {
             $('#tdCanvas').css('background', FORTE.BGCOLORCANVAS);
 
             // show dimension info
-            FORTE._lbBoundingWidth = $('<label class="ui-widget info-label" style="position:absolute;opacity:0.25;"></label>');
+            FORTE._lbBoundingWidth = $('<label class="ui-widget info-label" style="position:absolute;"></label>');
             $(document.body).append(FORTE._lbBoundingWidth);
-            FORTE._lbBoundingHeight = $('<label class="ui-widget info-label" style="position:absolute;opacity:0.25;"></label>');
+            FORTE._lbBoundingHeight = $('<label class="ui-widget info-label" style="position:absolute;"></label>');
             $(document.body).append(FORTE._lbBoundingHeight);
 
             FORTE.layers = [FORTE.designLayer, FORTE.emptyLayer, FORTE.loadLayer, FORTE.boundaryLayer];
@@ -422,6 +422,14 @@ $(document).ready(function () {
             } else {
                 FORTE.notify('welcome to forte!');
             }
+
+            // set info label visibility
+            var opacityInfoLabel = FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0;
+            $('.info-label').css('opacity', opacityInfoLabel);
+            
+            //
+            // end of main table onload
+            //
         }, 100);
 
     });
