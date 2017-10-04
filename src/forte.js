@@ -34,7 +34,7 @@ $(document).ready(function () {
             try {
                 if (!FORTE.renderStarted) FORTE.saveForteToFile();
             } catch (e) {
-                log(e)
+                log(e);
                 log('did not save');
             }
             FORTE.autoSave();
@@ -42,7 +42,7 @@ $(document).ready(function () {
     };
 
     var urlParams = XAC.getJsonFromUrl(window.location.href);
-    log(urlParams)
+    log(urlParams);
     if (urlParams['study'] == 'true') {
         log('study mode');
         FORTE.autoSave();
@@ -83,6 +83,8 @@ $(document).ready(function () {
             reader.onload = FORTE.loadForteFile;
         else if (files[0].name.endsWith('svg'))
             FORTE.designLayer.loadSVG(FORTE.DIRDESIGNDATA + '/' + files[0].name);
+        else if (files[0].name.endsWith('jpg'))
+            FORTE.setBackground(files[0].name);
         reader.readAsBinaryString(files[0]);
     });
 
@@ -127,6 +129,7 @@ $(document).ready(function () {
             change: function (e, ui) {
                 var value = FORTE._normalizeSliderValue($(e.target), ui.value);
                 FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
+                log(FORTE.materialRatio)
             }
         })
 
@@ -150,6 +153,7 @@ $(document).ready(function () {
                 var value = FORTE._normalizeSliderValue($(e.target), ui.value);
                 FORTE.similarityRatio = FORTE.MINSIMILARITYRATIO * (1 - value) +
                     FORTE.MAXSIMILARITYRATIO * value;
+                log('similarity: ' + FORTE.similarityRatio);
             }
         });
 
@@ -215,7 +219,7 @@ $(document).ready(function () {
         $('#tbHeight').keydown(_keydown);
 
         // edit weight
-        FORTE.editWeightRatio = 1;
+        FORTE.editWeightRatio = 0.1;
         var ratio = (FORTE.editWeightRatio - FORTE.MINEDITWEIGHTRATIO) /
             (FORTE.MAXEDITWEIGHTRATIO - FORTE.MINEDITWEIGHTRATIO);
         var valueSlider = FORTE._getSliderValue(ratio);
@@ -287,6 +291,7 @@ $(document).ready(function () {
             var value = FORTE._normalizeSliderValue($(e.target), ui.value);
             value = Math.pow(value, 3);
             FORTE.safety = FORTE.MINSAFETY * (1 - value) + FORTE.MAXSAFETY * value;
+            log(FORTE.safety);
             // $('#lbSafety').html(XAC.trim(FORTE.safety, 0) + 'x');
         };
         FORTE.sldrSafety.slider({
@@ -500,13 +505,15 @@ FORTE.showOptimizedLayer = function (tag, label) {
         $('#ddOptType option[value=' + layer.type + ']').prop('selected', true);
 
         // set to material ratio
-        XAC.updateSlider(FORTE.sldrMaterial, layer._lastMaterialRatio, function (valMat) {
+        log('material: ' + layer._lastMaterialRatio);
+        FORTE.updateSlider(FORTE.sldrMaterial, layer._lastMaterialRatio, function (valMat) {
             var value = (valMat - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
             return FORTE._getSliderValue(value);
         });
 
         // set to similarity ratio
-        XAC.updateSlider(FORTE.sldrSimilarity, layer._lastSimilarityRatio, function (valMat) {
+        log('similarity: ' + layer._lastSimilarityRatio);
+        FORTE.updateSlider(FORTE.sldrSimilarity, layer._lastSimilarityRatio, function (valMat) {
             var value = (valMat - FORTE.MINSIMILARITYRATIO) / (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
             return FORTE._getSliderValue(value);
         });
@@ -535,10 +542,10 @@ FORTE.render = function (pointer) {
     // render the next availale bitmap
     if (FORTE.pointer < FORTE.design.bitmaps.length) {
         var bitmap = FORTE.design.bitmaps[FORTE.pointer];
-        FORTE.optimizedLayer.drawFromBitmap(bitmap, 
+        FORTE.optimizedLayer.drawFromBitmap(bitmap,
             Math.max(FORTE.design.bbox.xmin - FORTE.design._margin, 0),
             Math.max(FORTE.design.bbox.ymin - FORTE.design._margin, 0));
-            // FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
+        // FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
         FORTE.pointer++;
 
         setTimeout(function () {
@@ -591,6 +598,7 @@ FORTE.startOptimization = function () {
     FORTE.resolution = dataObject.resolution;
 
     var data = JSON.stringify(dataObject);
+    FORTE.editWeightRatio = 0.3;
     var started = false;
     if (data != undefined) {
         var fields = ['trial', 'forte', 'material', 'similarity', 'editweight', 'type', 'e', 'nu'];
@@ -625,7 +633,8 @@ FORTE.startOptimization = function () {
             if (layer != undefined) layer.disable(1.0);
         }
         $('.info-label').hide();
-        $('.tbmenu').css('opacity', '0.25');
+        // $('.tbmenu').css('opacity', '0.25');
+        FORTE.setBackground();
     } else {
         FORTE.notify('problems for generating data ...');
     }
@@ -728,7 +737,7 @@ FORTE.resetButtonFromOptimization = function (button) {
 //
 //  update slider by mapping the value to it using the mapFunc
 //
-XAC.updateSlider = function (sldr, value, mapFunc) {
+FORTE.updateSlider = function (sldr, value, mapFunc) {
     var sldrValue = sldr.slider('option', 'value');
     value = mapFunc(value, sldr);
     if (sldrValue != value) sldr.slider('value', value);
@@ -769,7 +778,7 @@ FORTE.notify = function (msg, toFade) {
 //
 //
 FORTE.mapToWeight = function (length) {
-    var gainRatio = 0.01;
+    var gainRatio = 0.001;
     return Math.pow(length, 3) * FORTE.newtonPerPixel / 9.8 * gainRatio;
 }
 

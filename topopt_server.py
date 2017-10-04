@@ -276,6 +276,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         optinput['LAMBDA'] = MINLAMBDAOPTIN + (MAXLAMBDAOPTIN-MINLAMBDAOPTIN) * (1-_similarity / MAXSIMILARITY)
         _similarity = -1
 
+    print _editweight
     optinput['EDITWEIGHT'] = 2**_editweight
 
     df = get_distance_field(optinput['ACTVELMS'], nelx, nely, 2**_similarity, 1)
@@ -283,7 +284,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     optinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
 
     optargs = [sdir + '//' + optinput['TRIAL'], optinput['NELX'], optinput['NELY'],\
-        optinput['VOLFRAC'], 3, 1.5, 1, 40, optinput['FIXEDDOFS'], optinput['LOADNODES'],\
+        optinput['VOLFRAC'], 3, 1.5, 1, 25, optinput['FIXEDDOFS'], optinput['LOADNODES'],\
         optinput['LOADVALUES'], optinput['ACTVELMS'], optinput['FAVELMS'], optinput['PASVELMS'],\
         optinput['DISTFIELD'], optinput['LAMBDA'], optinput['SLIMELMS'], optinput['LASTOUTPUT'],\
         optinput['TYPE'], optinput['EDITWEIGHT'], optinput['E'], optinput['NU']]

@@ -24,7 +24,7 @@ FORTE.changeResolution = function () {
 
     // roughly adjust stroke radius based on resolution
     for (layer of FORTE.layers)
-        layer._strokeRadius = FORTE.width / 96 | 0;
+        layer._strokeRadius = FORTE.width / 64 | 0;
     FORTE.emptyLayer._strokeRadius /= 2;
 
     // special treatments
@@ -249,7 +249,7 @@ FORTE.customizeLoadLayer = function () {
             this.specifyingLoad = !this.specifyingLoad;
             if (this.specifyingLoad) {
                 this._loadLabel = $('<label class="ui-widget info-label" style="position:absolute;"></label>');
-                this._loadLabel.css('opacity', FORTE.OPACITYDIMLABEL);
+                // this._loadLabel.css('opacity', FORTE.OPACITYDIMLABEL);
                 this._loadLabel.css('color', this._strokeColor);
                 FORTE.loadLabels = FORTE.loadLabels || [];
                 FORTE.loadLabels.push(this._loadLabel);
@@ -341,7 +341,7 @@ FORTE.customizeLoadLayer = function () {
 //
 FORTE.addEditingLayer = function (layer) {
     layer._canvas.mousedown(function (e) {
-        if (!this._enabled || !FORTE.shiftPressed) return;
+        if (!this._enabled) return;
         // temporarily changing properties of the layer to show eraser
         switch (FORTE.editMode) {
             case FORTE.DRAW:
@@ -357,32 +357,47 @@ FORTE.addEditingLayer = function (layer) {
     }.bind(layer));
 
     layer._canvas.mousemove(function (e) {
-        if (!this._enabled || !FORTE.shiftPressed) return;
+        if (!this._enabled) return;
         this.drawMove(e);
     }.bind(layer));
 
     layer._canvas.mouseup(function (e) {
-        if (!this._enabled || !FORTE.shiftPressed) return;
+        if (!this._enabled) return;
         this.drawUp(e);
         // recover the origiinal proerties
         switch (FORTE.editMode) {
             case FORTE.DRAW:
-                FORTE.design.favPoints = [];
+                FORTE.design.favPoints = FORTE.design.favPoints || [];
                 for (p of this._strokePoints) FORTE.design.favPoints.push([p.x, p.y]);
                 break;
             case FORTE.ERASE:
-                this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-                this._context.fillStyle = this._strokeColor;
+                // this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+                // this._context.fillStyle = this._strokeColor;
                 this._strokeRadius /= 1.5;
-                this._bitmap = this._bitmapBackup;
-                this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
-                FORTE.design.slimPoints = [];
+                // this._bitmap = this._bitmapBackup;
+                // this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
+                FORTE.design.slimPoints = FORTE.design.slimPoints || [];
                 for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
                 break;
         }
-        FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
-        log(FORTE.design.lastOutputFile);
-        $('#btnOptCtrl').trigger('click');
+
+        if (FORTE.shiftPressed) {
+            FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
+            log(FORTE.design.lastOutputFile);
+            $('#btnOptCtrl').trigger('click');
+
+            if (FORTE.editMode == FORTE.ERASE) {
+                this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+                this._context.fillStyle = this._strokeColor;
+                // this._strokeRadius /= 1.5;
+                this._bitmap = this._bitmapBackup;
+                this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
+            }
+            
+            FORTE.design.slimPoints = [];
+            FORTE.design.favPoints = [];
+        }
+
     }.bind(layer));
 }
 

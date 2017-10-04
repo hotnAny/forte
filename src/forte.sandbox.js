@@ -52,3 +52,11 @@ FORTE.GridCanvas.prototype.showDisplacements = function (displacements, width, h
 
     return heatmap;
 }
+
+//
+//
+//
+FORTE.setBackground = function(filename) {
+    var urlImg = 'design_data/' + filename;
+    $('#tdCanvas').css('background-image', 'url(' + urlImg + ')');
+}
