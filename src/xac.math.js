@@ -1,8 +1,10 @@
 // .................................................................
 //
-//  math library v0.2
+//  math library
 //
-//  by xiangchen@acm.org, 05/2017
+//  by xiangchen@acm.org, v1.0f, 10/2017
+//
+//  [forte version]
 //
 //  NOTE:
 //  - [dependency] numeric.js (http://www.numericjs.com/)

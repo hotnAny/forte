@@ -2,7 +2,7 @@
 //
 //  routines to customize different interactive layers
 //
-//  by xiangchen@acm.org, v0.3, 08/2017
+//  by xiangchen@acm.org, v1.0, 10/2017
 //
 // ......................................................................................................
 
@@ -12,7 +12,6 @@
 FORTE.changeResolution = function () {
     var width = parseInt($(tbWidth).val());
     var height = parseInt($(tbHeight).val());
-    // log('canvas size: ' + width + ' x ' + height);
     if (!isNaN(width) && !isNaN(height)) {
         for (layer of FORTE.layers) {
             layer.setResolution(width, height);

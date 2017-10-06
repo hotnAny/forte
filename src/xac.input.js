@@ -1,8 +1,10 @@
 // ........................................................................................................
 //
-// handling different object-oriented input techniques by dispatching input events to them
+//  handling different object-oriented input techniques by dispatching input events to them
 //
-// by xiangchen@acm.org, v0.2, 2017/05
+//  [forte version]
+//
+//  by xiangchen@acm.org, v1.0f, 10/2017
 //
 // ........................................................................................................
 

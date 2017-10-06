@@ -1,8 +1,8 @@
 // ......................................................................................................
 //
-//  a class of forte design, primarily data/parameters for topology optimization, v0.3
-//
-//  by xiangchen@acm.org, 08/2017
+//  a class of forte design, primarily data/parameters for topology optimization 
+//  
+//  by xiangchen@acm.org, v1.0. 10/2017
 //
 // ......................................................................................................
 
@@ -81,12 +81,10 @@ FORTE.Design.prototype.getData = function () {
     }
 
     for (p of this.designPoints) __updateBbox(p, bbox);
-    // for (p of this.emptyPoints) __updateBbox(p, bbox);
     for (lps of this.loadPoints)
         for (p of lps) __updateBbox(p, bbox);
     for (p of this.boundaryPoints) __updateBbox(p, bbox);
 
-    // log(bbox)
     var margin = ((this.width+this.height) * 0.025) | 0;
     log('margin: ' + margin);
     var xminNew = Math.max(bbox.xmin - margin, 0);

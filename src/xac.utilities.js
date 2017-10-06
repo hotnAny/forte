@@ -1,8 +1,10 @@
 //	........................................................................................................
 //
-//	useful recurring routines, v0.1
+//	useful recurring routines
 //
-//  by xiangchen@acm.org, 06/2017
+//	[forte version]
+//
+//  by xiangchen@acm.org, v1.0f 06/2017
 //
 //	........................................................................................................
 
@@ -79,7 +81,7 @@ XAC.pingServer = function (xmlhttp, host, port, keys, values) {
 }
 
 //
-//
+//	parse url and get parameter by name
 //
 XAC.getParameterByName = function (name, url) {
 	var match = RegExp('[?&]' + name + '=([^&]*)').exec(url);
@@ -130,7 +132,7 @@ XAC.trim = function (value, ndigits) {
 }
 
 //
-//
+//	parse url into a json object
 //
 XAC.getJsonFromUrl = function() {
   var query = location.search.substr(1);

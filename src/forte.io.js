@@ -2,7 +2,7 @@
 //
 //  routines for communication, e..g, r/w design files, communicate with topopt server
 //
-//  by xiangchen@acm.org, v0.1, 08/2017
+//  by xiangchen@acm.org, v1.0. 08/2017
 //
 // .....................................................................................................
 
@@ -339,8 +339,4 @@ FORTE.addToDownloadDropdown = function (itemName, blob, fileName) {
         fileName: fileName
     });
     $('#ddlExports').append(downloadItem);
-}
-
-FORTE.saveToImage = function (layer) {
-
 }

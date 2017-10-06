@@ -1,8 +1,8 @@
 //	........................................................................................................
 //
-//  extensions for javascript array class, v0.1
+//  extensions for javascript array class
 //
-//	by xiangchen@acm.org, 05/2017
+//	by xiangchen@acm.org, v1.0f, 10/2017
 //
 //	........................................................................................................
 
@@ -255,7 +255,7 @@ Array.prototype.insert = function (elm, idx) {
 }
 
 //
-//
+//	initialize multi-dimensional array with values
 //
 XAC.initMDArray = function (dims, val) {
 	if (dims.length == 1) {
@@ -280,7 +280,7 @@ Array.prototype.trim = function (numDigits) {
 }
 
 //
-//
+//	return mean plus a number of std
 //
 Array.prototype.nsigma = function (n) {
 	var mean = this.mean();

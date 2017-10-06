@@ -2,7 +2,7 @@
 //
 //  an inheritance from gridcanvas for drawing mask (rather than sketching)
 //
-//  by xiangchen@acm.org, v0.0, 07/2017
+//  by xiangchen@acm.org, v1.0, 10/2017
 //
 // ......................................................................................................
 

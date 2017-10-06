@@ -808,3 +808,11 @@ FORTE.mapToUnits = function (stress) {
     var mm = Math.pow(FORTE.lengthPerPixel * FORTE.designLayer._cellSize, 2);
     return stress * FORTE.e * N / mm;
 }
+
+//
+//  set background image from file
+//
+FORTE.setBackground = function(filename) {
+    var urlImg = 'design_data/' + filename;
+    $('#tdCanvas').css('background-image', 'url(' + urlImg + ')');
+}
