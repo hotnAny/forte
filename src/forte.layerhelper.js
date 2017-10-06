@@ -337,20 +337,21 @@ FORTE.customizeLoadLayer = function () {
 }
 
 //
-//  add eraser to an optimized layer to interactively remove material
+//  [suggestive editing] 
+//  add eraser to an optimized layer to interactively add/remove material
 //
 FORTE.addEditingLayer = function (layer) {
     layer._canvas.mousedown(function (e) {
         if (!this._enabled) return;
         // temporarily changing properties of the layer to show eraser
+        this._bitmapBackup = [];
+        for (row of this._bitmap) this._bitmapBackup.push(row.clone());
         switch (FORTE.editMode) {
             case FORTE.DRAW:
                 break;
             case FORTE.ERASE:
                 this._context.fillStyle = FORTE.COLORERASER;
                 this._strokeRadius *= 1.5;
-                this._bitmapBackup = [];
-                for (row of this._bitmap) this._bitmapBackup.push(row.clone());
                 break;
         }
         this.drawDown(e);
@@ -371,89 +372,30 @@ FORTE.addEditingLayer = function (layer) {
                 for (p of this._strokePoints) FORTE.design.favPoints.push([p.x, p.y]);
                 break;
             case FORTE.ERASE:
-                // this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-                // this._context.fillStyle = this._strokeColor;
                 this._strokeRadius /= 1.5;
-                // this._bitmap = this._bitmapBackup;
-                // this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
                 FORTE.design.slimPoints = FORTE.design.slimPoints || [];
                 for (p of this._strokePoints) FORTE.design.slimPoints.push([p.x, p.y]);
                 break;
         }
 
-        if (FORTE.shiftPressed) {
-            FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
-            log(FORTE.design.lastOutputFile);
-            $('#btnOptCtrl').trigger('click');
+        FORTE.design.lastOutputFile = FORTE.focusedDesignLayer.lastOutputFile;
+        log(FORTE.design.lastOutputFile);
+        $('#btnOptCtrl').trigger('click');
 
-            if (FORTE.editMode == FORTE.ERASE) {
-                this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
-                this._context.fillStyle = this._strokeColor;
-                // this._strokeRadius /= 1.5;
-                this._bitmap = this._bitmapBackup;
-                this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
-            }
-            
-            FORTE.design.slimPoints = [];
-            FORTE.design.favPoints = [];
-        }
+        // don't let the editing affect this previous result
+        this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
+        this._context.fillStyle = this._strokeColor;
+        this._bitmap = this._bitmapBackup;
+        this.forceRedraw(FORTE.toShowStress ? this._heatmap : undefined);
+
+        FORTE.design.slimPoints = [];
+        FORTE.design.favPoints = [];
 
     }.bind(layer));
 }
 
 //
-//
-//
-FORTE.smoothLine = function (points, r) {
-    var eps = 10e-4;
-    var lambda = 0.382;
-    var nitr = 0;
-    while (true) {
-        nitr++;
-
-        var pointsNew = [points[0]];
-        var noUpdate = true;
-        for (var i = 1; i < points.length - 1; i++) {
-            var v0 = points[i - 1];
-            var v1 = points[i];
-            var v2 = points[i + 1];
-
-            // find the center from v0, v2, assuming the bend radius
-            var t = v1.clone().sub(v0).cross(v2.clone().sub(v1));
-            var u = v2.clone().sub(v0);
-            var w = t.cross(u).normalize();
-            var height = Math.sqrt(Math.pow(r, 2) - Math.pow(u.length() / 2, 2));
-            var c = v0.clone().add(u.divideScalar(2)).add(w.clone().multiplyScalar(height));
-
-            // if v1 is in this bend-radius-circle, it means a v0-v1-v2 circle has a >r radius
-            if (v1.distanceTo(c) <= r + eps) {
-                pointsNew.push(v1);
-                continue;
-            }
-
-            noUpdate = false;
-
-            // where v1 should be to fit the bend radius
-            var v1target = c.clone().sub(w.clone().multiplyScalar(r));
-
-            // interpret v1 to the target position
-            var lambda1 = lambda * r / v1.distanceTo(c);
-            var v1intrpr = v1.clone().multiplyScalar(lambda1).add(v1target.multiplyScalar(1 - lambda1));
-            pointsNew.push(v1intrpr);
-        }
-        pointsNew.push(points.last());
-
-        if (noUpdate) break;
-
-        for (var i = 1; i < points.length - 1; i++) {
-            points[i].copy(pointsNew[i]);
-        }
-    }
-
-}
-
-//
-//
+//  add a layer that displays the dimensional info
 //
 FORTE.addInfoLayer = function (layer) {
     layer._boundingMargin = 16; //px
@@ -461,14 +403,12 @@ FORTE.addInfoLayer = function (layer) {
         var offset = this._parent.offset();
         // displaying actual width
         this._actualWidth = (this._max.x - this._min.x) * FORTE.lengthPerPixel;
-        // FORTE._lbBoundingWidth.css('opacity', FORTE.OPACITYDIMLABEL);
         FORTE._lbBoundingWidth.html(XAC.trim(this._actualWidth, 0) + ' mm');
         FORTE._lbBoundingWidth.css('left', offset.left + (this._min.x + this._max.x) / 2);
         FORTE._lbBoundingWidth.css('top', offset.top + this._canvas[0].height - this._boundingMargin * 3);
 
         // displaying actual height
         this._actualHeight = (this._max.y - this._min.y) * FORTE.lengthPerPixel;
-        // FORTE._lbBoundingHeight.css('opacity', FORTE.OPACITYDIMLABEL);
         FORTE._lbBoundingHeight.html(XAC.trim(this._actualHeight, 0) + ' mm');
         FORTE._lbBoundingHeight.css('left', offset.left + this._boundingMargin * 2);
         FORTE._lbBoundingHeight.css('top', offset.top + (this._min.y + this._max.y) / 2);
@@ -516,6 +456,7 @@ FORTE.addInfoLayer = function (layer) {
         };
     }.bind(layer));
 
+    // augment the original clear function to clear the info labels
     layer.clear = function () {
         this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
         this._bitmap = XAC.initMDArray([this._gridHeight, this._gridWidth], 0);
