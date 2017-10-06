@@ -97,4 +97,4 @@ FORTE.MAXZINDEX = 100;
 FORTE.OPACITYDIMLABEL = 0.5;
 FORTE.SHOWINFOLABELS = false;
 
-FORTE.MAXNUMREADSTRESS = 16;
+FORTE.MAXNUMREADSTRESS = 8; // max # of times trying to read stress data (sometimes i/o could be slow)

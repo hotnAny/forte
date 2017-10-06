@@ -60,7 +60,7 @@ FORTE.loadForteFile = function (e) {
         FORTE.loadLayer._arrows.push(arrow);
 
         var loadLabel = $('<label class="ui-widget" style="position:absolute;"></label>');
-        loadLabel.css('opacity', FORTE.OPACITYDIMLABEL);
+        loadLabel.css('opacity', FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0);
         loadLabel.css('color', FORTE.loadLayer._strokeColor);
         FORTE.loadLabels = FORTE.loadLabels || [];
         FORTE.loadLabels.push(loadLabel);
@@ -95,8 +95,6 @@ FORTE.loadForteFile = function (e) {
         layer._lastMaterialRatio = trial.materialRatio;
         layer._lastSimilarityRatio = trial.similarityRatio;
         layer._stressInfo = trial.stressInfo;
-        // if(layer._stressInfo != undefined)
-        //     FORTE.design.maxStress = Math.max(layer._stressInfo.maxStress);
         FORTE.htOptimizedLayers[trial.key] = layer;
         var tag = FORTE.optimizedLayerList.tagit('createTag', trial.key);
     }
@@ -215,7 +213,6 @@ FORTE.readStressData = function () {
     }
 
     var baseDir = FORTE.outputDir + '/' + FORTE.trial;
-    // var stressFieldLabels = ['before', 'after'];
     var stressFieldLabels = ['after'];
     for (var i = 0; i < stressFieldLabels.length; i++) {
         var label = stressFieldLabels[i];
@@ -228,8 +225,6 @@ FORTE.readStressData = function () {
 
                 var layer = label == 'before' ? FORTE.designLayer : FORTE.optimizedLayer;
                 layer._stressInfo = {
-                    // x0: FORTE.design.bbox.xmin,
-                    // y0: FORTE.design.bbox.ymin,
                     x0: Math.max(FORTE.design.bbox.xmin - FORTE.design._margin, 0),
                     y0: Math.max(FORTE.design.bbox.ymin - FORTE.design._margin, 0),
                     width: FORTE.resolution[0],
@@ -247,6 +242,7 @@ FORTE.readStressData = function () {
             function () {
                 if (!FORTE.__designMode && FORTE.numFailuresReadStress < FORTE.MAXNUMREADSTRESS)
                     FORTE.timeouts.push(setTimeout(FORTE.readStressData, 1000));
+                else $('.tbmenu').css('opacity', '1');
                 FORTE.numFailuresReadStress++;
                 log('read stress failed for ' + FORTE.numFailuresReadStress + ' time(s).');
             }
