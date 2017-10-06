@@ -2,7 +2,7 @@
 //
 //  a grid-like canvas for drawing topology optimization compatible design
 //
-//  by xiangchen@acm.org, v0.1, 08/2017
+//  by xiangchen@acm.org, v1.0, 10/2017
 //
 // ......................................................................................................
 
@@ -166,8 +166,6 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
 
                 this._context.rect(x * this._cellSize, y * this._cellSize,
                     this._cellSize, this._cellSize);
-                // this._context.arc(x * this._cellSize, y * this._cellSize,
-                //     this._cellSize * 0.5, 0, Math.PI * 2);
                 this._context.fill();
                 this._bitmap[y][x] = 1;
             }
@@ -276,6 +274,9 @@ FORTE.GridCanvas.prototype.loadSVG = function (path) {
     img.src = path;
 }
 
+//
+//  convert bitmap data to an image displayed on the web page for downloading
+//
 FORTE.GridCanvas.prototype.saveToImage = function () {
     if (FORTE.toShowStress) {
         this.updateHeatmap(FORTE.yieldStress / FORTE.safety);
@@ -285,4 +286,23 @@ FORTE.GridCanvas.prototype.saveToImage = function () {
     }
     var imgURL = this._canvas[0].toDataURL('image/png');
     $('#imgToSave').attr('src', imgURL);
+}
+
+//
+//  update a canvas' heatmap based on udpated maximum stress across a set of designs
+//
+FORTE.GridCanvas.prototype.updateHeatmap = function (maxStress, map) {
+    if (this._stressInfo == undefined) return;
+
+    var defaultColor = XAC.getHeatmapColor(0, maxStress);
+    this._heatmap = XAC.initMDArray([this._gridHeight, this._gridWidth], defaultColor);
+    for (var j = 0; j < this._stressInfo.height; j++) {
+        for (var i = 0; i < this._stressInfo.width; i++) {
+            if(this._stressInfo.stresses[j] == undefined)return;
+            var stress = FORTE.mapToUnits(this._stressInfo.stresses[j][i]);
+            this._heatmap[j + this._stressInfo.y0][i + this._stressInfo.x0] =
+                XAC.getHeatmapColor(stress, maxStress);
+        }
+    }
+    return this._heatmap;
 }
