@@ -18,6 +18,7 @@ exp_data/
 fab_data/
 sessions/
 ~optinput
+matlab/~optinput
 server_session*
 sandbox/
 study/
