@@ -16,8 +16,9 @@ $(document).ready(function () {
 
     // global variables and data structures
 
-    // [debug] testing PLA properties
-    // see materials.json for ref
+    //  [debug] testing PLA properties
+    //  currently no support for selecting other materials
+    //  see materials.json for ref
     FORTE.e = 3.45e3; //MPa
     FORTE.nu = 0.36; //
     FORTE.yieldStress = 60 //MPa
@@ -41,6 +42,7 @@ $(document).ready(function () {
         }, 300000);
     };
 
+    // different modes
     var urlParams = XAC.getJsonFromUrl(window.location.href);
     log(urlParams);
     if (urlParams['study'] == 'true') {
@@ -72,6 +74,7 @@ $(document).ready(function () {
 
         }
     }
+
     // initial ping to get the output directory
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
 
@@ -294,13 +297,12 @@ $(document).ready(function () {
             var value = FORTE._normalizeSliderValue($(e.target), ui.value);
             value = Math.pow(value, 3);
             FORTE.safety = FORTE.MINSAFETY * (1 - value) + FORTE.MAXSAFETY * value;
-            log(FORTE.safety);
-            // $('#lbSafety').html(XAC.trim(FORTE.safety, 0) + 'x');
         };
         FORTE.sldrSafety.slider({
             slide: FORTE.updateSldrSafety,
             change: function (e, ui) {
                 FORTE.updateSldrSafety(e, ui);
+                log(FORTE.lengthPerPixel);
                 if (FORTE.htOptimizedLayers != undefined)
                     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
             }
@@ -321,10 +323,10 @@ $(document).ready(function () {
             saveAs(info.blob, info.fileName);
         })
 
+        //  input event handlers
         $(document).keydown(XAC.keydown);
         $(document).keyup(XAC.keyup);
         $(document).mousedown(XAC.mousedown);
-        // $(document).bind('mouseup', XAC.mouseup);
 
         XAC.on(XAC.SHIFT, function () {
             FORTE.shiftPressed = true;
@@ -352,7 +354,7 @@ $(document).ready(function () {
             $('#btnMore').html(FORTE.HTMLCODETRIANGLEDOWN);
         });
 
-
+        //  create and initialize different layers
         setTimeout(function () {
             //
             // layers of editing
@@ -413,9 +415,6 @@ $(document).ready(function () {
             });
             FORTE.optimizationPanel.append(FORTE.optimizedLayerList);
 
-            // [debug] test stuff in the sandbox
-            FORTE.sandbox();
-
             time('ready');
 
             if (FORTE.outputDir == undefined) {
@@ -429,6 +428,9 @@ $(document).ready(function () {
             // set info label visibility
             var opacityInfoLabel = FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0;
             $('.info-label').css('opacity', opacityInfoLabel);
+
+            // [debug] test stuff in the sandbox
+            FORTE.sandbox();
 
             //
             // end of main table onload
@@ -467,6 +469,9 @@ FORTE.resetLayerButtons = function (idx) {
     if (FORTE.layers != undefined) FORTE.switchLayer(-1);
 }
 
+//
+//  routines to reset radio button for switching between eraser and pencil
+//
 FORTE.resetEditModeButtons = function () {
     $('[name="' + FORTE.nameButtonsTools + '"]').remove();
     $('[name="lb' + FORTE.nameButtonsTools + '"]').remove();
@@ -788,7 +793,7 @@ FORTE.notify = function (msg, toFade) {
 }
 
 //
-//
+//  map length of an load arrow to weight
 //
 FORTE.mapToWeight = function (length) {
     var gainRatio = 0.001;
@@ -796,12 +801,10 @@ FORTE.mapToWeight = function (length) {
 }
 
 //
-//
+//  map a unit-less stress to units
 //
 FORTE.mapToUnits = function (stress) {
-    // var E = FORTE.e;
-    // var N = FORTE.mapToWeight(1) * 9.8 / Math.max(1, FORTE.numElmsThickness * 0.1);
-    var N = FORTE.mapToWeight(1) * 9.8; // FORTE.numElmsThickness;
+    var N = FORTE.mapToWeight(1) * 9.8; // assuming only 1 of FORTE.numElmsThickness
     var mm = Math.pow(FORTE.lengthPerPixel * FORTE.designLayer._cellSize, 2);
     return stress * FORTE.e * N / mm;
 }
