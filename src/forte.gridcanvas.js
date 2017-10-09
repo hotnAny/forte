@@ -277,7 +277,7 @@ FORTE.GridCanvas.prototype.loadSVG = function (path) {
 //
 //  convert bitmap data to an image displayed on the web page for downloading
 //
-FORTE.GridCanvas.prototype.saveToImage = function () {
+FORTE.GridCanvas.prototype.showImage = function () {
     if (FORTE.toShowStress) {
         this.updateHeatmap(FORTE.yieldStress / FORTE.safety);
         this.forceRedraw(this._heatmap);

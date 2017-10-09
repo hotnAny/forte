@@ -66,19 +66,20 @@ $(document).ready(function () {
                 if (FORTE.outputDir == undefined) {
                     FORTE.outputDir = outDir;
                     log('server output directory: ' + FORTE.outputDir);
+                    // reset notification label
                     $('#divNotification').css('background', 'rgba(0, 0, 0, 0)');
                     $('#divNotification').css('color', '#000000');
                     FORTE.notify('optimization server ready.');
                 }
             }
-
         }
     }
 
     // initial ping to get the output directory
     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
 
-    // enable drag and drop
+    // enable drag and drop of local files
+    // currently only support single file
     XAC.enableDragDrop(function (files) {
         if (files.length <= 0) return;
         var reader = new FileReader();
@@ -95,7 +96,6 @@ $(document).ready(function () {
     var mainTable = $('<table></table>');
     $(document.body).append(mainTable);
     mainTable.load(FORTE.MAINTABLETEMPLATE, function (e) {
-
         // set font size
         $('*').each(function () {
             $(this).css('font-size', 'small');
@@ -134,7 +134,6 @@ $(document).ready(function () {
                 var value = FORTE._normalizeSliderValue($(e.target), ui.value);
                 value = Math.pow(value, 1 / FORTE.MATSLDRPOWERRATIO);
                 FORTE.materialRatio = FORTE.MINMATERIALRATIO * (1 - value) + FORTE.MAXMATERIALRATIO * value;
-                log(FORTE.materialRatio)
                 $('#lbsldrMaterial').html('material: x' + XAC.trim(FORTE.materialRatio, 1));
             }
         })
@@ -217,9 +216,7 @@ $(document).ready(function () {
         $('#tbWidth').attr('value', FORTE.width);
         $('#tbHeight').attr('value', FORTE.height);
         var _keydown = function (e) {
-            if (e.keyCode == XAC.ENTER) {
-                FORTE.changeResolution();
-            }
+            if (e.keyCode == XAC.ENTER) FORTE.changeResolution();
         }
         $('#tbWidth').keydown(_keydown);
         $('#tbHeight').keydown(_keydown);
@@ -254,7 +251,6 @@ $(document).ready(function () {
             var widthLegend = parseInt($('#imgLegend').css('width'));
             $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
             FORTE.designLayer.updateDimInfo();
-            log(FORTE.lengthPerPixel)
         };
         FORTE.sldrMeasurement.slider({
             slide: FORTE.updateMeasurements,
@@ -264,9 +260,9 @@ $(document).ready(function () {
                     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
             }
         });
+        // one-time initialization
         var widthLegend = parseInt($('#imgLegend').css('width'));
         $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
-        log(FORTE.lengthPerPixel)
 
         // thickness
         var valueSlider = FORTE._getSliderValue(0);
@@ -302,7 +298,6 @@ $(document).ready(function () {
             slide: FORTE.updateSldrSafety,
             change: function (e, ui) {
                 FORTE.updateSldrSafety(e, ui);
-                log(FORTE.lengthPerPixel);
                 if (FORTE.htOptimizedLayers != undefined)
                     FORTE.updateStressAcrossLayers(FORTE.toShowStress);
             }
@@ -338,8 +333,7 @@ $(document).ready(function () {
 
         XAC.on('S', function () {
             if (FORTE.ctrlPressed) {
-                // FORTE.saveToImage(FORTE.focusedDesignLayer);
-                FORTE.focusedDesignLayer.saveToImage();
+                FORTE.focusedDesignLayer.showImage();
             }
         });
 
@@ -561,7 +555,6 @@ FORTE.render = function (pointer) {
         FORTE.optimizedLayer.drawFromBitmap(bitmap,
             Math.max(FORTE.design.bbox.xmin - FORTE.design._margin, 0),
             Math.max(FORTE.design.bbox.ymin - FORTE.design._margin, 0));
-        // FORTE.design.bbox.xmin, FORTE.design.bbox.ymin);
         FORTE.pointer++;
 
         setTimeout(function () {
@@ -596,7 +589,7 @@ FORTE.render = function (pointer) {
 FORTE.startOptimization = function () {
     if (FORTE.outputDir == undefined) {
         FORTE.notify('optimization server unavailable');
-        return;
+        return false;
     }
     var type = $('#ddOptType :selected').val();
 
@@ -652,9 +645,9 @@ FORTE.startOptimization = function () {
 
         // set menu semitransparent to alert the users that optimization is running
         $('.tbmenu').css('opacity', '0.25');
-        FORTE.setBackground();
+        FORTE.setBackground();  // remove background image if there's any
     } else {
-        FORTE.notify('problems for generating data ...');
+        FORTE.notify('problems generating data from sketch ...');
     }
 
     return started;
@@ -669,7 +662,6 @@ FORTE.finishOptimization = function () {
     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
     $("body").css("cursor", "default");
-    // FORTE.notify('optimization finished ...');
 }
 
 //
@@ -684,9 +676,6 @@ FORTE.updateStressAcrossLayers = function (toShow) {
     for (layer of layers) {
         if (layer == undefined) continue;
         if (toShow) {
-            // [exp] changed to yield stress
-            // layer.updateHeatmap(FORTE.design.maxStress);
-            log(FORTE.safety)
             layer.updateHeatmap(FORTE.yieldStress / FORTE.safety);
             if (layer == layerCurrent) layer.forceRedraw(layer._heatmap);
             layer._needsUpdate = true;
@@ -714,30 +703,30 @@ FORTE._normalizeSliderValue = function (slider, value) {
 }
 
 //
+//  [obselete]
 //  extending jquery to do pulsing for buttons
 //
-jQuery.fn.extend({
-    pulse: function (color0, color1, period) {
-        $(this).animate({
-            backgroundColor: color0
-        }, period);
-        $(this).animate({
-            backgroundColor: color1
-        }, period, function () {
-            if ($(this).attr('pulsing') == 'true') $(this).pulse(color0, color1, period);
-            else {
-                $(this).css('background-color', color0);
-            }
-        });
-    }
-});
+// jQuery.fn.extend({
+//     pulse: function (color0, color1, period) {
+//         $(this).animate({
+//             backgroundColor: color0
+//         }, period);
+//         $(this).animate({
+//             backgroundColor: color1
+//         }, period, function () {
+//             if ($(this).attr('pulsing') == 'true') $(this).pulse(color0, color1, period);
+//             else {
+//                 $(this).css('background-color', color0);
+//             }
+//         });
+//     }
+// });
 
 //
-//  set button for optimization (changes to 'finish', pulses, disables others, etc.)
+//  set button for optimization
 //
 FORTE.setButtonForOptimization = function (button) {
     button.attr('pulsing', true);
-    // button.pulse(button.css('background-color'), FORTE.COLORBLUE, 1000);
     button.attr('bg-original', button.css('background-color'));
 }
 
@@ -745,11 +734,10 @@ FORTE.setButtonForOptimization = function (button) {
 //  reset button from optimization (reset to original state)
 //
 FORTE.resetButtonFromOptimization = function (button) {
-    // button.html(label);
     button.attr('src', FORTE.ICONRUN);
-    button.stop();
-    button.attr('pulsing', false);
-    button.css('background-color', button.attr('bg-original'));
+    // button.stop();
+    // button.attr('pulsing', false);
+    // button.css('background-color', button.attr('bg-original'));
 }
 
 //
@@ -766,12 +754,12 @@ FORTE.updateSlider = function (sldr, value, mapFunc) {
 //
 FORTE.notify = function (msg, toFade) {
     if (msg == undefined) return;
+    
     if (toFade != false && $('#divNotification').attr('isFading') == 'true') {
         FORTE.notifications.push([msg, toFade]);
         return;
     }
 
-    // log(msg)
     $('#divNotification').html(msg);
 
     if (toFade == false) {
@@ -812,7 +800,7 @@ FORTE.mapToUnits = function (stress) {
 //
 //  set background image from file
 //
-FORTE.setBackground = function(filename) {
+FORTE.setBackground = function (filename) {
     var urlImg = 'design_data/' + filename;
     $('#tdCanvas').css('background-image', 'url(' + urlImg + ')');
 }
