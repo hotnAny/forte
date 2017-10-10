@@ -222,19 +222,20 @@ $(document).ready(function () {
         $('#tbHeight').keydown(_keydown);
 
         // edit weight
-        FORTE.editWeightRatio = 0.1;
-        var ratio = (FORTE.editWeightRatio - FORTE.MINEDITWEIGHTRATIO) /
-            (FORTE.MAXEDITWEIGHTRATIO - FORTE.MINEDITWEIGHTRATIO);
-        var valueSlider = FORTE._getSliderValue(ratio);
-        FORTE.sldrEditWeight = XAC.makeSlider('sldrEditWeight', 'edit weight',
-            FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdEditWeight'), FORTE.WIDTHEDITWEIGHTSLIDER);
-        FORTE.sldrEditWeight.slider({
-            change: function (e, ui) {
-                var value = FORTE._normalizeSliderValue($(e.target), ui.value);
-                FORTE.editWeightRatio = FORTE.MINEDITWEIGHTRATIO * (1 - value) +
-                    FORTE.MAXEDITWEIGHTRATIO * value;
-            }
-        });
+        // [obselete]
+        // FORTE.editWeightRatio = 0.1;
+        // var ratio = (FORTE.editWeightRatio - FORTE.MINEDITWEIGHTRATIO) /
+        //     (FORTE.MAXEDITWEIGHTRATIO - FORTE.MINEDITWEIGHTRATIO);
+        // var valueSlider = FORTE._getSliderValue(ratio);
+        // FORTE.sldrEditWeight = XAC.makeSlider('sldrEditWeight', 'edit weight',
+        //     FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdEditWeight'), FORTE.WIDTHEDITWEIGHTSLIDER);
+        // FORTE.sldrEditWeight.slider({
+        //     change: function (e, ui) {
+        //         var value = FORTE._normalizeSliderValue($(e.target), ui.value);
+        //         FORTE.editWeightRatio = FORTE.MINEDITWEIGHTRATIO * (1 - value) +
+        //             FORTE.MAXEDITWEIGHTRATIO * value;
+        //     }
+        // });
 
         // measurements
         $('#imgLegend').attr('src', 'assets/legend.svg');
@@ -518,8 +519,12 @@ FORTE.showOptimizedLayer = function (tag, label) {
         log('material: ' + layer._lastMaterialRatio);
         FORTE.updateSlider(FORTE.sldrMaterial, layer._lastMaterialRatio, function (valMat) {
             var value = (valMat - FORTE.MINMATERIALRATIO) / (FORTE.MAXMATERIALRATIO - FORTE.MINMATERIALRATIO);
-            return FORTE._getSliderValue(value);
+            var ratio = Math.pow(value, FORTE.MATSLDRPOWERRATIO);
+            return FORTE._getSliderValue(ratio);
         });
+        // [exp]
+        FORTE.materialRatio = layer._lastMaterialRatio;
+        $('#lbsldrMaterial').html('material: x' + XAC.trim(FORTE.materialRatio, 1));
 
         // set to similarity ratio
         log('similarity: ' + layer._lastSimilarityRatio);
@@ -527,6 +532,8 @@ FORTE.showOptimizedLayer = function (tag, label) {
             var value = (valMat - FORTE.MINSIMILARITYRATIO) / (FORTE.MAXSIMILARITYRATIO - FORTE.MINSIMILARITYRATIO);
             return FORTE._getSliderValue(value);
         });
+        // [exp]
+        FORTE.similarityRatio = layer._lastSimilarityRatio;
 
         FORTE.selectedTag = tag;
         $(FORTE.selectedTag).addClass('ui-state-highlight');
@@ -635,6 +642,7 @@ FORTE.startOptimization = function () {
 
         // update ui to indicate start of optimization
         $("body").css("cursor", "progress");
+        $("canvas").css("cursor", "progress");
         FORTE.notify('optimization started ...');
         var keys = Object.keys(FORTE.htOptimizedLayers);
         for (key of keys) {
@@ -645,7 +653,7 @@ FORTE.startOptimization = function () {
 
         // set menu semitransparent to alert the users that optimization is running
         $('.tbmenu').css('opacity', '0.25');
-        FORTE.setBackground();  // remove background image if there's any
+        FORTE.setBackground(); // remove background image if there's any
     } else {
         FORTE.notify('problems generating data from sketch ...');
     }
@@ -662,6 +670,7 @@ FORTE.finishOptimization = function () {
     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
     $("body").css("cursor", "default");
+    $("canvas").css("cursor", "crosshair");
 }
 
 //
@@ -754,7 +763,7 @@ FORTE.updateSlider = function (sldr, value, mapFunc) {
 //
 FORTE.notify = function (msg, toFade) {
     if (msg == undefined) return;
-    
+
     if (toFade != false && $('#divNotification').attr('isFading') == 'true') {
         FORTE.notifications.push([msg, toFade]);
         return;

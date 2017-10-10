@@ -59,7 +59,7 @@ FORTE.loadForteFile = function (e) {
         FORTE.drawArrow(FORTE.loadLayer._context, arrow[0], arrow[1], arrow[2], arrow[3]);
         FORTE.loadLayer._arrows.push(arrow);
 
-        var loadLabel = $('<label class="ui-widget" style="position:absolute;"></label>');
+        var loadLabel = $('<label class="ui-widget info-label" style="position:absolute;"></label>');
         loadLabel.css('opacity', FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0);
         loadLabel.css('color', FORTE.loadLayer._strokeColor);
         FORTE.loadLabels = FORTE.loadLabels || [];

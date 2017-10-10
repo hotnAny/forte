@@ -104,8 +104,8 @@ FORTE.DELAYEDSTART = 3; // # of frames
 
 // ui/layout
 FORTE.WIDTHOPTIMIZEDPANEL = 96;
-FORTE.LABELGETVARIATION = 'get variation';
-FORTE.LABELADDSTRUCTS = 'add structs';
+// FORTE.LABELGETVARIATION = 'get variation';
+// FORTE.LABELADDSTRUCTS = 'add structures';
 FORTE.MAXZINDEX = 100;
 
 // info labels

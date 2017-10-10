@@ -128,7 +128,7 @@ XAC.trim = function (value, ndigits) {
 	if (ndigits < 0) return value;
 	var divider = Math.pow(10, ndigits);
 	value = ((value * divider) | 0) / (divider * 1.0);
-	return value * 1.0;
+	return (value * 1.0).toFixed(1);
 }
 
 //
