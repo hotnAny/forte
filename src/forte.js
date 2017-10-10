@@ -266,23 +266,24 @@ $(document).ready(function () {
         $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
 
         // thickness
-        var valueSlider = FORTE._getSliderValue(0);
-        FORTE.sldrThickness = XAC.makeSlider('sldrThickness', '', FORTE.MINSLIDER, FORTE.MAXSLIDER,
-            valueSlider, $('#tdThickness'), FORTE.WIDTHTHICKNESSSLIDER);
-        FORTE.updateSldrThickness = function (e, ui) {
-            var value = FORTE._normalizeSliderValue($(e.target), ui.value);
-            FORTE.numElmsThickness = (FORTE.minElmsThickness * (1 - value) + FORTE.maxElmsThickness * value) | 0;
-            FORTE.actualThickness = FORTE.numElmsThickness * FORTE.designLayer._cellSize * FORTE.lengthPerPixel;
-            $('#lbThickness').html(XAC.trim(FORTE.actualThickness, 0) + ' mm');
-        };
-        FORTE.sldrThickness.slider({
-            slide: FORTE.updateSldrThickness,
-            change: function (e, ui) {
-                FORTE.updateSldrThickness(e, ui);
-                if (FORTE.htOptimizedLayers != undefined)
-                    FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-            }
-        });
+        // [obselete]
+        // var valueSlider = FORTE._getSliderValue(0);
+        // FORTE.sldrThickness = XAC.makeSlider('sldrThickness', '', FORTE.MINSLIDER, FORTE.MAXSLIDER,
+        //     valueSlider, $('#tdThickness'), FORTE.WIDTHTHICKNESSSLIDER);
+        // FORTE.updateSldrThickness = function (e, ui) {
+        //     var value = FORTE._normalizeSliderValue($(e.target), ui.value);
+        //     FORTE.numElmsThickness = (FORTE.minElmsThickness * (1 - value) + FORTE.maxElmsThickness * value) | 0;
+        //     FORTE.actualThickness = FORTE.numElmsThickness * FORTE.designLayer._cellSize * FORTE.lengthPerPixel;
+        //     $('#lbThickness').html(XAC.trim(FORTE.actualThickness, 0) + ' mm');
+        // };
+        // FORTE.sldrThickness.slider({
+        //     slide: FORTE.updateSldrThickness,
+        //     change: function (e, ui) {
+        //         FORTE.updateSldrThickness(e, ui);
+        //         if (FORTE.htOptimizedLayers != undefined)
+        //             FORTE.updateStressAcrossLayers(FORTE.toShowStress);
+        //     }
+        // });
 
         // safety
         FORTE.safety = 1;

@@ -1,8 +1,8 @@
 // .....................................................................................................
 //
-//  routines for communication, e..g, r/w design files, communicate with topopt server
+//  routines for communication, e.g., r/w design files, communicate with topopt server
 //
-//  by xiangchen@acm.org, v1.0. 08/2017
+//  by xiangchen@acm.org, v1.0. 10/2017
 //
 // .....................................................................................................
 
@@ -50,7 +50,10 @@ FORTE.loadForteFile = function (e) {
         }
     }
 
+    // draw original sketch
     FORTE.loadLayer.drawFromBitmap(dataObject.design.loadBitmap, 0, 0);
+    
+    // draw loading info
     FORTE.loadLayer._arrows = [];
     for (arrowNormalized of dataObject.design.loadArrows) {
         var w = FORTE.loadLayer._canvas[0].width;
@@ -65,6 +68,7 @@ FORTE.loadForteFile = function (e) {
         FORTE.loadLabels = FORTE.loadLabels || [];
         FORTE.loadLabels.push(loadLabel);
         $(document.body).append(loadLabel);
+
         var a = arrow;
         var lengthArrow = Math.sqrt(Math.pow(a[0] - a[2], 2) + Math.pow(a[1] - a[3], 2));
         var forceValue = FORTE.mapToWeight(lengthArrow);
@@ -75,16 +79,22 @@ FORTE.loadForteFile = function (e) {
     }
     FORTE.design.loadPoints = dataObject.design.loadPoints;
     FORTE.design.loadValues = dataObject.design.loadValues;
+
+    // draw boundary
     FORTE.boundaryLayer.drawFromBitmap(dataObject.design.boundaryBitmap, 0, 0);
 
+    // restore unit scale
     FORTE.sldrMeasurement.slider('value', FORTE._getSliderValue(
         (dataObject.lengthPerPixel - FORTE.MINLENGTHPERPIXEL) / (FORTE.MAXLENGTHPERPIXEL - FORTE.MINLENGTHPERPIXEL)
     ));
-    FORTE.maxElmsThickness = Math.min(FORTE.width, FORTE.height) / 2;
-    FORTE.minElmsThickness = (FORTE.maxElmsThickness * 0.05) | 0;
-    FORTE.sldrThickness.slider('value', FORTE._getSliderValue(
-        (dataObject.numElmsThickness - FORTE.minElmsThickness) / (FORTE.maxElmsThickness - FORTE.minElmsThickness)
-    ));
+
+    // restore thickness
+    // [obselete]
+    // FORTE.maxElmsThickness = Math.min(FORTE.width, FORTE.height) / 2;
+    // FORTE.minElmsThickness = (FORTE.maxElmsThickness * 0.05) | 0;
+    // FORTE.sldrThickness.slider('value', FORTE._getSliderValue(
+    //     (dataObject.numElmsThickness - FORTE.minElmsThickness) / (FORTE.maxElmsThickness - FORTE.minElmsThickness)
+    // ));
 
     // show trials (if there's any)
     FORTE.design.maxStress = 0;
@@ -105,7 +115,7 @@ FORTE.loadForteFile = function (e) {
 //  routine to save forte design file
 //
 FORTE.saveForteToFile = function (toConsole) {
-    // save forte design file
+    // save forte design parameters
     var design = {
         width: FORTE.width,
         height: FORTE.height,
@@ -118,6 +128,7 @@ FORTE.saveForteToFile = function (toConsole) {
         srcPath: FORTE.designLayer._srcPath
     };
 
+    // save the trials
     var trials = [];
     var keys = Object.keys(FORTE.htOptimizedLayers);
     for (key of keys) {
@@ -133,13 +144,13 @@ FORTE.saveForteToFile = function (toConsole) {
         });
     }
 
+    // compile to a project
     var project = {
         design: design,
         lengthPerPixel: FORTE.lengthPerPixel,
         numElmsThickness: FORTE.numElmsThickness,
         trials: trials
     }
-
 
     var dataProject = JSON.stringify(project);
     if (toConsole) log(dataProject)
@@ -150,7 +161,6 @@ FORTE.saveForteToFile = function (toConsole) {
             }), 'design.forte');
         }
     }
-
 }
 
 //
@@ -164,7 +174,7 @@ FORTE.fetchData = function () {
         FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL));
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
-        FORTE.__misses = 0;
+        forte.misses = 0;
         FORTE.design.bitmaps = [];
         FORTE.renderStarted = false;
         FORTE.pointer = 0;
@@ -182,6 +192,7 @@ FORTE.getBitmap = function (text) {
     var rowsep = '\n';
     var colsep = ',';
 
+    // remove idling last line
     if (text.charAt(text.length - 1) == rowsep)
         text = text.substring(0, text.length - 1);
 
@@ -213,11 +224,11 @@ FORTE.readStressData = function () {
     }
 
     var baseDir = FORTE.outputDir + '/' + FORTE.trial;
-    var stressFieldLabels = ['after'];
+    var stressFieldLabels = ['after'];  // it's possible to also read 'before'
     for (var i = 0; i < stressFieldLabels.length; i++) {
         var label = stressFieldLabels[i];
         XAC.readTextFile(baseDir + '_' + label + '.vms',
-            // success
+            // on success
             function (text) {
                 FORTE.stressRead = true;
 
@@ -238,7 +249,7 @@ FORTE.readStressData = function () {
                     $('.tbmenu').css('opacity', '1');
                 }
             },
-            // failure
+            // on failure
             function () {
                 if (!FORTE.__designMode && FORTE.numFailuresReadStress < FORTE.MAXNUMREADSTRESS)
                     FORTE.timeouts.push(setTimeout(FORTE.readStressData, 1000));
@@ -261,9 +272,10 @@ FORTE.readOptimizationOutput = function () {
             FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 0.75, FORTE.fetchInterval * 0.9);
             var bitmap = FORTE.getBitmap(text);
             FORTE.design.bitmaps.push(bitmap);
+
+            // initialize the optimized layer
             if (FORTE.itrCounter >= FORTE.DELAYEDSTART && !FORTE.renderStarted) {
                 FORTE.renderInterval = FORTE.RENDERINTERVAL;
-
                 var keys = Object.keys(FORTE.htOptimizedLayers);
                 for (key of keys) {
                     var layer = FORTE.htOptimizedLayers[key];
@@ -287,7 +299,7 @@ FORTE.readOptimizationOutput = function () {
         },
         // on failure
         function () {
-            FORTE.__misses++;
+            forte.misses++;
             FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 2.5, FORTE.fetchInterval * 1.1);
             if (FORTE.itrCounter == 0) {
                 FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
@@ -313,13 +325,14 @@ FORTE.readOptimizationOutput = function () {
                     FORTE.notify('reading stress ...');
                     FORTE.readStressData();
 
-                    log('misses: ' + FORTE.__misses);
+                    log('misses: ' + forte.misses);
 
                     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
                     XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', [], []);
 
                     $("body").css("cursor", "default");
+                    $("canvas").css("cursor", "crosshair");
                 } else {
                     FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
                 }
@@ -329,14 +342,15 @@ FORTE.readOptimizationOutput = function () {
 
 //
 //  add blob to a dropdown list for later download
+//  [obselete]
 //
-FORTE.addToDownloadDropdown = function (itemName, blob, fileName) {
-    FORTE.downloadableInfo = FORTE.downloadableInfo || [];
+// FORTE.addToDownloadDropdown = function (itemName, blob, fileName) {
+//     FORTE.downloadableInfo = FORTE.downloadableInfo || [];
 
-    var downloadItem = $('<option value=' + FORTE.downloadableInfo.length + '>' + itemName + '</option>');
-    FORTE.downloadableInfo.push({
-        blob: blob,
-        fileName: fileName
-    });
-    $('#ddlExports').append(downloadItem);
-}
+//     var downloadItem = $('<option value=' + FORTE.downloadableInfo.length + '>' + itemName + '</option>');
+//     FORTE.downloadableInfo.push({
+//         blob: blob,
+//         fileName: fileName
+//     });
+//     $('#ddlExports').append(downloadItem);
+// }

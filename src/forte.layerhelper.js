@@ -35,7 +35,7 @@ FORTE.changeResolution = function () {
     FORTE.maxElmsThickness = Math.min(FORTE.width, FORTE.height) / 2;
     FORTE.minElmsThickness = (FORTE.maxElmsThickness * 0.05) | 0;
     var valueSlider = FORTE._getSliderValue(0.25);
-    FORTE.sldrThickness.slider('value', valueSlider);
+    // FORTE.sldrThickness.slider('value', valueSlider);
 }
 
 //
