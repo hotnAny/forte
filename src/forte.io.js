@@ -26,7 +26,7 @@ FORTE.loadForteFile = function (e) {
     else
         FORTE.designLayer.drawFromBitmap(dataObject.design.designBitmap, 0, 0);
 
-    // update min/max
+    // update min/max to decide the bounding box of the design
     var layer = FORTE.designLayer;
     layer._min = {
         x: layer._canvas[0].width,
@@ -50,10 +50,9 @@ FORTE.loadForteFile = function (e) {
         }
     }
 
-    // draw original sketch
+    // draw original loading scenario
     FORTE.loadLayer.drawFromBitmap(dataObject.design.loadBitmap, 0, 0);
-    
-    // draw loading info
+
     FORTE.loadLayer._arrows = [];
     for (arrowNormalized of dataObject.design.loadArrows) {
         var w = FORTE.loadLayer._canvas[0].width;
@@ -87,14 +86,6 @@ FORTE.loadForteFile = function (e) {
     FORTE.sldrMeasurement.slider('value', FORTE._getSliderValue(
         (dataObject.lengthPerPixel - FORTE.MINLENGTHPERPIXEL) / (FORTE.MAXLENGTHPERPIXEL - FORTE.MINLENGTHPERPIXEL)
     ));
-
-    // restore thickness
-    // [obselete]
-    // FORTE.maxElmsThickness = Math.min(FORTE.width, FORTE.height) / 2;
-    // FORTE.minElmsThickness = (FORTE.maxElmsThickness * 0.05) | 0;
-    // FORTE.sldrThickness.slider('value', FORTE._getSliderValue(
-    //     (dataObject.numElmsThickness - FORTE.minElmsThickness) / (FORTE.maxElmsThickness - FORTE.minElmsThickness)
-    // ));
 
     // show trials (if there's any)
     FORTE.design.maxStress = 0;
@@ -152,6 +143,7 @@ FORTE.saveForteToFile = function (toConsole) {
         trials: trials
     }
 
+    // get project read for download
     var dataProject = JSON.stringify(project);
     if (toConsole) log(dataProject)
     else {
@@ -174,7 +166,7 @@ FORTE.fetchData = function () {
         FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.FETCHINTERVAL));
         FORTE.fetchInterval = FORTE.FETCHINTERVAL;
         FORTE.failureCounter = 0;
-        forte.misses = 0;
+        FORTE.misses = 0;
         FORTE.design.bitmaps = [];
         FORTE.renderStarted = false;
         FORTE.pointer = 0;
@@ -224,7 +216,7 @@ FORTE.readStressData = function () {
     }
 
     var baseDir = FORTE.outputDir + '/' + FORTE.trial;
-    var stressFieldLabels = ['after'];  // it's possible to also read 'before'
+    var stressFieldLabels = ['after']; // it's possible to also read 'before'
     for (var i = 0; i < stressFieldLabels.length; i++) {
         var label = stressFieldLabels[i];
         XAC.readTextFile(baseDir + '_' + label + '.vms',
@@ -262,7 +254,7 @@ FORTE.readStressData = function () {
 }
 
 //
-//  routine to read optimization output
+//  routines to read optimization output
 //
 FORTE.readOptimizationOutput = function () {
     FORTE.outputFile = FORTE.outputDir + '/' + FORTE.trial + '_' + (FORTE.itrCounter + 1) + '.out';
@@ -299,7 +291,7 @@ FORTE.readOptimizationOutput = function () {
         },
         // on failure
         function () {
-            forte.misses++;
+            FORTE.misses++;
             FORTE.fetchInterval = Math.max(FORTE.FETCHINTERVAL * 2.5, FORTE.fetchInterval * 1.1);
             if (FORTE.itrCounter == 0) {
                 FORTE.timeouts.push(setTimeout(FORTE.fetchData, FORTE.fetchInterval));
@@ -325,7 +317,7 @@ FORTE.readOptimizationOutput = function () {
                     FORTE.notify('reading stress ...');
                     FORTE.readStressData();
 
-                    log('misses: ' + forte.misses);
+                    log('misses: ' + FORTE.misses);
 
                     FORTE.resetButtonFromOptimization($('#btnOptCtrl'));
 
@@ -339,18 +331,3 @@ FORTE.readOptimizationOutput = function () {
             }
         });
 }
-
-//
-//  add blob to a dropdown list for later download
-//  [obselete]
-//
-// FORTE.addToDownloadDropdown = function (itemName, blob, fileName) {
-//     FORTE.downloadableInfo = FORTE.downloadableInfo || [];
-
-//     var downloadItem = $('<option value=' + FORTE.downloadableInfo.length + '>' + itemName + '</option>');
-//     FORTE.downloadableInfo.push({
-//         blob: blob,
-//         fileName: fileName
-//     });
-//     $('#ddlExports').append(downloadItem);
-// }

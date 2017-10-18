@@ -49,8 +49,8 @@ FORTE.THRESDENSITY = 0.01;  //  min non-ignorable element density
 //
 // control ui related
 //
-FORTE.WIDTHDEFAULT = 480;
-FORTE.HEIGHTDEFAULT = 320;
+FORTE.WIDTHDEFAULT = 640;
+FORTE.HEIGHTDEFAULT = 425;
 
 FORTE.DIRDESIGNDATA = 'design_data';    // all .forte files are put here
 
@@ -110,6 +110,6 @@ FORTE.MAXZINDEX = 100;
 
 // info labels
 FORTE.OPACITYDIMLABEL = 0.5;
-FORTE.SHOWINFOLABELS = true;
+FORTE.SHOWINFOLABELS = false;
 
 FORTE.MAXNUMREADSTRESS = 8; // max # of times trying to read stress data (sometimes i/o could be slow)

@@ -221,22 +221,6 @@ $(document).ready(function () {
         $('#tbWidth').keydown(_keydown);
         $('#tbHeight').keydown(_keydown);
 
-        // edit weight
-        // [obselete]
-        // FORTE.editWeightRatio = 0.1;
-        // var ratio = (FORTE.editWeightRatio - FORTE.MINEDITWEIGHTRATIO) /
-        //     (FORTE.MAXEDITWEIGHTRATIO - FORTE.MINEDITWEIGHTRATIO);
-        // var valueSlider = FORTE._getSliderValue(ratio);
-        // FORTE.sldrEditWeight = XAC.makeSlider('sldrEditWeight', 'edit weight',
-        //     FORTE.MINSLIDER, FORTE.MAXSLIDER, valueSlider, $('#tdEditWeight'), FORTE.WIDTHEDITWEIGHTSLIDER);
-        // FORTE.sldrEditWeight.slider({
-        //     change: function (e, ui) {
-        //         var value = FORTE._normalizeSliderValue($(e.target), ui.value);
-        //         FORTE.editWeightRatio = FORTE.MINEDITWEIGHTRATIO * (1 - value) +
-        //             FORTE.MAXEDITWEIGHTRATIO * value;
-        //     }
-        // });
-
         // measurements
         $('#imgLegend').attr('src', 'assets/legend.svg');
         FORTE.lengthPerPixel = FORTE.INITLENGTHPERPIXEL;
@@ -264,26 +248,6 @@ $(document).ready(function () {
         // one-time initialization
         var widthLegend = parseInt($('#imgLegend').css('width'));
         $('#lbMeasurements').html(XAC.trim(FORTE.lengthPerPixel * widthLegend, 0) + ' mm');
-
-        // thickness
-        // [obselete]
-        // var valueSlider = FORTE._getSliderValue(0);
-        // FORTE.sldrThickness = XAC.makeSlider('sldrThickness', '', FORTE.MINSLIDER, FORTE.MAXSLIDER,
-        //     valueSlider, $('#tdThickness'), FORTE.WIDTHTHICKNESSSLIDER);
-        // FORTE.updateSldrThickness = function (e, ui) {
-        //     var value = FORTE._normalizeSliderValue($(e.target), ui.value);
-        //     FORTE.numElmsThickness = (FORTE.minElmsThickness * (1 - value) + FORTE.maxElmsThickness * value) | 0;
-        //     FORTE.actualThickness = FORTE.numElmsThickness * FORTE.designLayer._cellSize * FORTE.lengthPerPixel;
-        //     $('#lbThickness').html(XAC.trim(FORTE.actualThickness, 0) + ' mm');
-        // };
-        // FORTE.sldrThickness.slider({
-        //     slide: FORTE.updateSldrThickness,
-        //     change: function (e, ui) {
-        //         FORTE.updateSldrThickness(e, ui);
-        //         if (FORTE.htOptimizedLayers != undefined)
-        //             FORTE.updateStressAcrossLayers(FORTE.toShowStress);
-        //     }
-        // });
 
         // safety
         FORTE.safety = 1;
