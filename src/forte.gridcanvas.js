@@ -37,15 +37,13 @@ FORTE.GridCanvas = function (parent, width, height, strokeColor) {
 
     this._enabled = true;
 
-    this._inputEvents = [];
+    // this._inputEvents = [];
 
-    this._smoothRadius = Math.sqrt(width * width + height * height) / 2;
-
-
+    // this._smoothRadius = Math.sqrt(width * width + height * height) / 2;
 };
 
 // max canvas height to stay within a normal screen
-FORTE.GridCanvas.MAXCANVASHEIGHT = 640;
+// FORTE.GridCanvas.MAXCANVASHEIGHT = 640;
 
 FORTE.GridCanvas.prototype = {
     constructor: FORTE.GridCanvas
@@ -100,8 +98,7 @@ FORTE.GridCanvas.prototype.drawDown = function (e) {
 //  mousemove for drawing
 //
 FORTE.GridCanvas.prototype.drawMove = function (e) {
-    if (!this._enabled) return;
-    if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
+    if (!this._enabled || !this._isDown || e.button == XAC.RIGHTMOUSE) return;
 
     this._mousePoints.push(new THREE.Vector3(e.clientX, e.clientY, 0));
     this._doDraw(e, this._toErase);
@@ -135,7 +132,10 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
     var xcenter = ((e.clientX - canvasOffset.left) / this._cellSize) | 0;
     var ycenter = ((e.clientY - canvasOffset.top) / this._cellSize) | 0;
 
+    // how alpha value descreases as further from a given drawn point
     var alphaDescent = 0.5 / this._strokeRadius;
+
+    // draw in the neighborhood of the mouse cursor
     for (var dx = -this._strokeRadius; dx <= this._strokeRadius; dx += 1) {
         var alphas = [];
         for (var dy = -this._strokeRadius; dy <= this._strokeRadius; dy += 1) {
@@ -148,7 +148,6 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
             this._context.globalAlpha = 1 - (Math.abs(dx) + Math.abs(dy)) * alphaDescent;
             this._context.beginPath();
             if (toErase) {
-                // [exp]
                 if (x * this._cellSize - this._strokeRadius * 2 * this._cellSize < this._min.x) this._min.x = x * this._cellSize;
                 if (x * this._cellSize + this._strokeRadius * 2 * this._cellSize > this._max.x) this._max.x = x * this._cellSize;
                 if (y * this._cellSize - this._strokeRadius * 2 * this._cellSize < this._min.y) this._min.y = y * this._cellSize;
@@ -158,7 +157,6 @@ FORTE.GridCanvas.prototype._doDraw = function (e, toErase) {
                     this._cellSize, this._cellSize);
                 this._bitmap[y][x] = 0;
             } else {
-                // [exp]
                 this._min.x = Math.min(this._min.x, x * this._cellSize);
                 this._min.y = Math.min(this._min.y, y * this._cellSize);
                 this._max.x = Math.max(this._max.x, x * this._cellSize);
@@ -194,7 +192,7 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0) {
     var h = bitmap.length;
     var w = h > 0 ? bitmap[0].length : 0;
     if (h <= 0 || w <= 0) return;
-    var originalStyle = this._context.fillStyle;
+    // var originalStyle = this._context.fillStyle;
     this._context.clearRect(0, 0, this._canvas[0].width, this._canvas[0].height);
     for (var j = 0; j < h; j++) {
         for (var i = 0; i < w; i++) {
@@ -210,7 +208,7 @@ FORTE.GridCanvas.prototype.drawFromBitmap = function (bitmap, x0, y0) {
         }
     }
     this._context.globalAlpha = 1;
-    this._context.fillStyle = originalStyle;
+    // this._context.fillStyle = originalStyle;
 }
 
 //
@@ -298,7 +296,7 @@ FORTE.GridCanvas.prototype.updateHeatmap = function (maxStress, map) {
     this._heatmap = XAC.initMDArray([this._gridHeight, this._gridWidth], defaultColor);
     for (var j = 0; j < this._stressInfo.height; j++) {
         for (var i = 0; i < this._stressInfo.width; i++) {
-            if(this._stressInfo.stresses[j] == undefined)return;
+            if (this._stressInfo.stresses[j] == undefined) return;
             var stress = FORTE.mapToUnits(this._stressInfo.stresses[j][i]);
             this._heatmap[j + this._stressInfo.y0][i + this._stressInfo.x0] =
                 XAC.getHeatmapColor(stress, maxStress);
