@@ -112,7 +112,7 @@ FORTE.saveForteToFile = function (toConsole) {
         height: FORTE.height,
         designBitmap: FORTE.designLayer._bitmap,
         loadBitmap: FORTE.loadLayer._bitmap,
-        loadArrows: FORTE.loadLayer.normalizedArrows(),
+        loadArrows: FORTE.loadLayer.getNormalizedArrows(),
         loadPoints: FORTE.design.loadPoints,
         loadValues: FORTE.design.loadValues,
         boundaryBitmap: FORTE.boundaryLayer._bitmap,

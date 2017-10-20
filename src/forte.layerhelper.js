@@ -32,9 +32,9 @@ FORTE.changeResolution = function () {
     FORTE.loadLayer._context.strokeStyle = FORTE.loadLayer._context.fillStyle;
 
     // updating thickness measurements
-    FORTE.maxElmsThickness = Math.min(FORTE.width, FORTE.height) / 2;
-    FORTE.minElmsThickness = (FORTE.maxElmsThickness * 0.05) | 0;
-    var valueSlider = FORTE._getSliderValue(0.25);
+    // FORTE.maxElmsThickness = Math.min(FORTE.width, FORTE.height) / 2;
+    // FORTE.minElmsThickness = (FORTE.maxElmsThickness * 0.05) | 0;
+    // var valueSlider = FORTE._getSliderValue(0.25);
     // FORTE.sldrThickness.slider('value', valueSlider);
 }
 
@@ -83,7 +83,6 @@ FORTE.toggleLayerZindex = function (idxTop) {
 //  draw an arraw
 //
 FORTE.drawArrow = function (context, fromx, fromy, tox, toy) {
-    // log([fromx, fromy, tox, toy])
     var headlen = context.lineWidth * 4; // length of head in pixels
     var angle = Math.atan2(toy - fromy, tox - fromx);
     var theta = Math.PI / 6;
@@ -91,11 +90,9 @@ FORTE.drawArrow = function (context, fromx, fromy, tox, toy) {
     context.moveTo(fromx, fromy);
     context.lineTo(tox, toy);
     context.lineTo(tox - headlen * Math.cos(angle - theta), toy - headlen * Math.sin(angle - theta));
-    // context.lineTo(tox, toy);
     context.moveTo(fromx, fromy);
     context.lineTo(tox, toy);
     context.lineTo(tox - headlen * Math.cos(angle + theta), toy - headlen * Math.sin(angle + theta));
-
     context.stroke();
     context.closePath();
     return [fromx, fromy, tox, toy];
@@ -129,15 +126,14 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
             var u = point.clone().sub(ctr).normalize();
             var angle = umid.angleTo(u);
             var axis = umid.clone().cross(u).normalize();
-
             varr = vector.clone().applyAxisAngle(axis, angle).divideScalar(points.length)
                 .divideScalar(normalizeFactor).toArray().trim(2);
-
         } else {
             varr = vector.clone().divideScalar(points.length)
                 .divideScalar(normalizeFactor).toArray().trim(2);
         }
 
+        // flip y as screen coordinates is upside down
         varr[2] *= -1;
         distrVectors.push(varr);
 
@@ -158,13 +154,15 @@ FORTE.distribute = function (points, vector, midPoint, normalizeFactor) {
 //
 FORTE.customizeLoadLayer = function () {
     // interaction on the load layer
-    FORTE.loadLayer.specifyingLoad = false;
+    FORTE.loadLayer.isSpecifyingLoad = false;
     FORTE.loadLayer._loadInputs = [];
     FORTE.loadLayer.getSqDist = function (p, q) {
         return Math.pow(p.x - q.x, 2) + Math.pow(p.y - q.y, 2);
     };
+    
+    // mouse down
     FORTE.loadLayer._canvas.mousedown(function (e) {
-        if (this.specifyingLoad) {
+        if (this.isSpecifyingLoad) {
             // compute distributed record load information
             this._context.strokeStyle = this.__loadValueLayer._context.strokeStyle;
             this._context.lineWidth = this.__loadValueLayer._context.lineWidth;
@@ -192,8 +190,10 @@ FORTE.customizeLoadLayer = function () {
             this._enabled = true;
         }
     }.bind(FORTE.loadLayer));
+
+    // mouse move
     FORTE.loadLayer._canvas.mousemove(function (e) {
-        if (this.specifyingLoad) {
+        if (this.isSpecifyingLoad) {
             // draw or update an arrow between center point and current mouse
             this.__loadValueLayer.clear();
             var canvasOffset = this.__loadValueLayer._canvas.offset();
@@ -245,8 +245,9 @@ FORTE.customizeLoadLayer = function () {
         // start or finish specifying load value / direction
         //
         else {
-            this.specifyingLoad = !this.specifyingLoad;
-            if (this.specifyingLoad) {
+            this.isSpecifyingLoad = !this.isSpecifyingLoad;
+            if (this.isSpecifyingLoad) {
+                // create label to show load value
                 this._loadLabel = $('<label class="ui-widget info-label" style="position:absolute;"></label>');
                 this._loadLabel.css('opacity', FORTE.SHOWINFOLABELS ? FORTE.OPACITYDIMLABEL : 0);
                 this._loadLabel.css('color', this._strokeColor);
@@ -262,7 +263,6 @@ FORTE.customizeLoadLayer = function () {
                     if (points.length == 0 || this.getSqDist(p, points.last()) > minSqDistApart)
                         points.push(p);
                 }
-
                 this._strokePoints = points;
 
                 // find the center point of last stroke
@@ -287,8 +287,8 @@ FORTE.customizeLoadLayer = function () {
                     }
                 }
 
+                // detect abnormal cases
                 if (this.__centerLoadPoint == undefined) this.__centerLoadPoint = this._strokePoints[0];
-
                 if (this.__centerLoadPoint == undefined) return;
 
                 this._arrows = this._arrows || [];
@@ -308,7 +308,7 @@ FORTE.customizeLoadLayer = function () {
     // 
     //  normalize the magnitude of arrows (indicating loads)
     //
-    FORTE.loadLayer.normalizedArrows = function () {
+    FORTE.loadLayer.getNormalizedArrows = function () {
         var w = this._canvas[0].width;
         var h = this._canvas[0].height;
         var arrows = [];
@@ -395,9 +395,12 @@ FORTE.addEditingLayer = function (layer) {
 
 //
 //  add a layer that displays the dimensional info
+//  - this implementation contains bugs and is obseletely discontinued
 //
 FORTE.addInfoLayer = function (layer) {
     layer._boundingMargin = 16; //px
+    
+    // update dimension info given a changed length per pixel
     layer.updateDimInfo = function () {
         var offset = this._parent.offset();
         // displaying actual width
@@ -412,6 +415,7 @@ FORTE.addInfoLayer = function (layer) {
         FORTE._lbBoundingHeight.css('left', offset.left + this._boundingMargin * 2);
         FORTE._lbBoundingHeight.css('top', offset.top + (this._min.y + this._max.y) / 2);
     }
+
     layer._canvas.mousemove(function (e) {
         if (!this._enabled) return;
         if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
@@ -421,7 +425,6 @@ FORTE.addInfoLayer = function (layer) {
         this._context.strokeStyle = 'rgba(0, 0, 0, ' + opacityInfoLabel + ')';
         this._context.lineWidth = 1;
         if (this._minPrev != undefined && this._maxPrev != undefined) {
-
             this._context.clearRect(this._minPrev.x - this._context.lineWidth,
                 this._canvas[0].height - this._boundingMargin - this._context.lineWidth,
                 this._maxPrev.x - this._minPrev.x + this._context.lineWidth * 2,
