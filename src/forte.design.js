@@ -36,12 +36,13 @@ FORTE.Design.prototype.extrapolateBitmaps = function (step) {
         var width = bmp1[0].length;
         var bmp = XAC.initMDArray([height, width], 0);
         for (var j = 0; j < height; j++) {
+            // handling exception
             if (bmp0[j] == undefined || bmp1[j] == undefined ||
                 bmp0[j].length <= 0 || bmp1[j].length <= 0) {
-                    this.bitmaps.push(bmp1);
-                    this.bitmaps.push(bmp1);
-                    return;
-                }
+                // this.bitmaps.push(bmp1);
+                this.bitmaps.push(bmp1);
+                return;
+            }
             for (var i = 0; i < width; i++) {
                 bmp[j][i] = bmp0[j][i] * step + bmp1[j][i] * (1 - step);
             }
@@ -65,6 +66,7 @@ FORTE.Design.prototype.getData = function () {
         ymax: 0
     };
 
+    // update a bounding box to include a point
     var __updateBbox = function (p, bbox) {
         bbox.xmin = Math.min(p[0], bbox.xmin);
         bbox.xmax = Math.max(p[0], bbox.xmax);
@@ -72,6 +74,7 @@ FORTE.Design.prototype.getData = function () {
         bbox.ymax = Math.max(p[1], bbox.ymax);
     }
 
+    // clip a point to be inside a bounding box, given an origin (x0, y0)
     var __updatePoint = function (p, bbox, x0, y0) {
         p[0] -= bbox.xmin;
         p[0] = x0 + Math.min(Math.max(0, p[0]), bbox.xmax - bbox.xmin - 1);
@@ -85,8 +88,8 @@ FORTE.Design.prototype.getData = function () {
         for (p of lps) __updateBbox(p, bbox);
     for (p of this.boundaryPoints) __updateBbox(p, bbox);
 
-    var margin = ((this.width+this.height) * 0.025) | 0;
-    log('margin: ' + margin);
+    // add margin to avoid effects on the edges
+    var margin = ((this.width + this.height) * 0.025) | 0;
     var xminNew = Math.max(bbox.xmin - margin, 0);
     var xmaxNew = Math.min(bbox.xmax + margin, this.width);
     var yminNew = Math.max(bbox.ymin - margin, 0);
@@ -97,9 +100,10 @@ FORTE.Design.prototype.getData = function () {
     var leftMargin = bbox.xmin - xminNew;
     var topMargin = bbox.ymin - yminNew;
 
-    var width = xmaxNew - xminNew; // bbox.xmax - bbox.xmin;
-    var height = ymaxNew - yminNew; // bbox.ymax - bbox.ymin;
+    var width = xmaxNew - xminNew;
+    var height = ymaxNew - yminNew;
 
+    //  packaging all points (sketch, load, boundary, etc.)
     var designPoints = [];
     for (p of this.designPoints) designPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
     var emptyPoints = [];
@@ -113,13 +117,14 @@ FORTE.Design.prototype.getData = function () {
     var boundaryPoints = [];
     for (p of this.boundaryPoints) boundaryPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
 
+    //  [one time only] points to add to the design
     var favPoints = [];
     if (this.favPoints != undefined) {
         for (p of this.favPoints) favPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
         this.favPoints = [];
     }
 
-    // [one time only] points to slim the design
+    //  [one time only] points to slim the design
     var slimPoints = [];
     if (this.slimPoints != undefined) {
         for (p of this.slimPoints) slimPoints.push(__updatePoint(p.clone(), bbox, leftMargin, topMargin));
