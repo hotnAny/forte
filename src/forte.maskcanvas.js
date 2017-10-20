@@ -1,6 +1,8 @@
 // ......................................................................................................
 //
-//  an inheritance from gridcanvas for drawing mask (rather than sketching)
+//  an inheritance from gridcanvas for drawing mask (like drawing lasso rather than strokes)
+//
+//  - note: using probably not-x-browser available features, e.g., addHitRegion
 //
 //  by xiangchen@acm.org, v1.0, 10/2017
 //
@@ -10,7 +12,7 @@ var FORTE = FORTE || {};
 
 FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
     FORTE.GridCanvas.call(this, parent, width, height, strokeColor);
-    this._canvas.bind('mousewheel', this._update.bind(this));
+    // this._canvas.bind('mousewheel', this._update.bind(this));
     this._nregions = 0;
     this._regions = {};
     this._strokeRadius = 1;
@@ -49,6 +51,7 @@ FORTE.MaskCanvas = function (parent, width, height, strokeColor) {
     };
 };
 
+// class inheritance
 FORTE.MaskCanvas.prototype = Object.create(FORTE.GridCanvas.prototype);
 
 //
@@ -57,7 +60,6 @@ FORTE.MaskCanvas.prototype = Object.create(FORTE.GridCanvas.prototype);
 FORTE.MaskCanvas.prototype.drawDown = function (e) {
     if (!this._enabled || e.button == XAC.RIGHTMOUSE) return;
     this._isDown = true;
-
     this._strokePoints = [];
     this._markPoints = [];
     this._hitRegionOnDown = e.originalEvent.region;
@@ -76,10 +78,8 @@ FORTE.MaskCanvas.prototype.drawDown = function (e) {
 //
 FORTE.MaskCanvas.prototype.drawMove = function (e) {
     this._hitRegion = e.originalEvent.region;
-
     if (!this._enabled) return;
     if (!this._isDown || e.button == XAC.RIGHTMOUSE) return;
-
     var canvasOffset = this._canvas.offset();
     var x = e.clientX - canvasOffset.left;
     var y = e.clientY - canvasOffset.top;
