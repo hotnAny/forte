@@ -5,7 +5,7 @@ The current version is limited to a few platforms. Let me know if you'd like to 
 
 ## Installation
 * Install the latest [MATLAB runtime](https://www.mathworks.com/products/compiler/matlab-runtime.html) to run compiled MATLAB application for topology optimization.
-* Install Python if you haven't.
+* Install [Python](https://www.python.org/downloads/) if you haven't.
 
 
 ## Running Forté
