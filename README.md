@@ -1,9 +1,9 @@
-<aside class="warning">
+<div class="alert alert-success">
 The MATLAB setup is specific for Mac OS.
-</aside>
+</div>
 
 ## Installation
-1. Install [MATLAB runtime](https://www.mathworks.com/products/compiler/matlab-runtime.html) to run compiled MATLAB application for topology optimization
+1. Install the latest [MATLAB runtime](https://www.mathworks.com/products/compiler/matlab-runtime.html) to run compiled MATLAB application for topology optimization
 
 ## Running Forté
 1. Start Chrome using these flags
