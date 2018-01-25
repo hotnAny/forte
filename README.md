@@ -1,11 +1,11 @@
-# Forte: User-Driven Generative Design
+# Forté: User-Driven Generative Design
 ## Caveat
 The current version is limited to a few platforms. Let me know if you'd like to run Forté on something different.
 * The MATLAB setup is specific for Mac OS.
 * The client-server communication currently is set up for Google Chrome only.
 
-## Prerequisits Installation
-* Install the latest [MATLAB runtime](https://www.mathworks.com/products/compiler/matlab-runtime.html) to run compiled MATLAB application for topology optimization.
+## Prerequisites Installation
+* Install the **R2016b(9.1)** [MATLAB runtime](https://www.mathworks.com/products/compiler/matlab-runtime.html) to run compiled MATLAB application for topology optimization.
 * Install [Python](https://www.python.org/downloads/) if you haven't.
 
 

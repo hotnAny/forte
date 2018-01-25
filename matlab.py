@@ -5,7 +5,7 @@ from sys import argv
 import os
 import subprocess
 
-MCRPATH = '/Applications/MATLAB/MATLAB_Runtime/v93'
+MCRPATH = '/Applications/MATLAB/MATLAB_Runtime/v91'
 LIBPATH = '.:' + MCRPATH + '/runtime/maci64'
 LIBPATH = LIBPATH + ':' + MCRPATH + '/bin/maci64'
 LIBPATH = LIBPATH + ':' + MCRPATH + '/sys/os/maci64'
