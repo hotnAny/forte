@@ -30,7 +30,7 @@ cd forte-master
 ./chrome.py
 ```
 
-5. In Chrome, navigate to http://127.0.0.1:8888/. Violà!
+5. In Chrome, navigate to http://127.0.0.1:8888/. Voilà!
 
 ## Resources
 To learn more about Project Forté, please visit the [project page](http://web.xiangchen.me/#forteacute).
