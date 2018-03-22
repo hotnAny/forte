@@ -37,7 +37,7 @@ Let's get you started with Forté by redesigning this leg for a quadruped robot.
 ![alt text](images/forte_tutorial0.png "Redesigning the leg of a quadruped robot")
 
 Forté's tool bar, just for future reference.
-![alt text](images/overview.png "Forté toolbar")
+![alt text](images/overview.jpg "Forté toolbar")
 
 You start by drawing this curve, which represents how you want the new robot leg to look like.
 ![alt text](images/forte_tutorial1.png "You start by drawing this curve")
