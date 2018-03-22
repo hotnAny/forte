@@ -32,6 +32,10 @@ cd forte-master
 
 5. In Chrome, navigate to http://127.0.0.1:8888/. Voilà!
 
+## Hello World
+Let's learn how to use Forté by redesigning this leg for a quadruped robot
+![alt text](images/forte_tutorial0.png "Logo Title Text 1")
+
 ## Resources
 To learn more about Project Forté, please visit the [project page](http://web.xiangchen.me/#forteacute).
 
