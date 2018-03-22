@@ -41,17 +41,19 @@ Forté's tool bar, just for future reference.
 
 ![alt text](images/overview.jpg "Forté toolbar")
 
-You start by drawing this curve, which represents how you want the new robot leg to look like.
+Step 1: You start by drawing this curve, which represents how you want the new robot leg to look like.
 
 ![alt text](images/forte_tutorial1.png "You start by drawing this curve")
 
-You then draw the load (the weight of the robot's body) in red arrow, and the boundary condition (the ground where the leg stands) in blue.
+Step 2: You then draw the load (the weight of the robot's body) in red arrow, and the boundary condition (the ground where the leg stands) in blue.
 
 ![alt text](images/forte_tutorial2.png "You draw the load and boundary condition")
 
-Then hit the ▶ button to play with different techniques you can select from the dropdown list.
+Step 3: Then hit the ▶ button to play with different techniques you can select from the dropdown list.
 
 ![alt text](images/forte_tutorial3.png "You draw the load and boundary condition")
+
+Step 4+: Your turn! Play with the tool.
 
 ## Resources
 To learn more about Project Forté, please visit the [project page](http://web.xiangchen.me/#forteacute).
