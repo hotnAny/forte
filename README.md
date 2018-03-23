@@ -1,4 +1,5 @@
 # Forté: User-Driven Generative Design
+
 ## Caveat
 The current version is limited to a few platforms. Let me know if you'd like to run Forté on something different.
 * The MATLAB setup is specific for Mac OS.
@@ -34,25 +35,26 @@ cd forte-master
 
 ## Hello World
 Let's get you started with Forté by redesigning this leg for a quadruped robot.
+
 ![alt text](images/forte_tutorial0.png "Redesigning the leg of a quadruped robot")
 
 Forté's tool bar, just for future reference.
+
 ![alt text](images/overview.jpg "Forté toolbar")
 
-You start by drawing this curve, which represents how you want the new robot leg to look like.
+Step 1: You start by drawing this curve, which represents how you want the new robot leg to look like.
+
 ![alt text](images/forte_tutorial1.png "You start by drawing this curve")
 
-You then draw the load (the weight of the robot's body) in red arrow, and the boundary condition (the ground where the leg stands) in blue.
+Step 2: You then draw the load (the weight of the robot's body) in red arrow, and the boundary condition (the ground where the leg stands) in blue.
+
 ![alt text](images/forte_tutorial2.png "You draw the load and boundary condition")
 
-Then hit the ▶ button to play with different techniques you can select from the dropdown list.
+Step 3: Then hit the ▶ button to play with different techniques you can select from the dropdown list.
+
 ![alt text](images/forte_tutorial3.png "You draw the load and boundary condition")
 
-## Resources
-To learn more about Project Forté, please visit the [project page](http://web.xiangchen.me/#forteacute).
+Step 4+: Your turn! Play with the tool.
 
-## To Add
-- why you want to use forte
-- a preview video (1min)
-- banner image
-- mit licence
+## Resources
+To learn more about Project Forté, please visit the [project page](http://web.xiangchen.me/#forteacute), or read the Medium [post](https://medium.com/@anthony.xiangchen/fort%C3%A9-user-driven-generative-design-86d43515006b).
