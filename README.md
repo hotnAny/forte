@@ -1,5 +1,9 @@
 # Forté: User-Driven Generative Design
 
+An interactive sketch-based tool that lets you create organic structures such as this robot's new leg.
+
+![alt text](images/robot_leg.jpg "Robot leg design.")
+
 ## Caveat
 The current version is limited to a few platforms. Let me know if you'd like to run Forté on something different.
 * The MATLAB setup is specific for Mac OS.
