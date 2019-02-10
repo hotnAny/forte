@@ -158,7 +158,7 @@ def get_distance_field(elms, nelx, nely, m, alpha):
 #
 def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _log(None)
-    
+
     str_result = '?'
 
     if 'stop' in post_data:
@@ -205,7 +205,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
 
     optinput = {'E':_e, 'NU':_nu, 'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
      'FIXEDDOFS':[], 'LOADNODES':[], 'LOADVALUES':[]}
-    
+
     # boundary
     boundary_nodes = [node_nums_2d(nelx, nely, x[0] + 1, x[1] + 1) for x in _boundaries]
     tb_boundary = empty(dof*(nelx+1)*(nely+1)).tolist()
@@ -233,7 +233,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         for i in xrange(0, nnodes):
             tb_loadvalues.append(v[0]/vsum)
             tb_loadvalues.append(v[1]/vsum)
-    
+
     optinput['LOADNODES'] = tb_loadnodes
     optinput['LOADVALUES'] = tb_loadvalues
 
@@ -264,7 +264,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
 
     # type of optimization
     optinput['TYPE'] = _type
-    
+
     if _type == ADDSTRUCTS:
         # use similarity to set lambda for mass transport
         optinput['LAMBDA'] = MINLAMBDAVARIATION + (MAXLAMBDAVARIATION-MINLAMBDAVARIATION) * _similarity / MAXSIMILARITY
@@ -281,7 +281,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     optinput['EDITWEIGHT'] = 2**_editweight
 
     df = get_distance_field(optinput['ACTVELMS'], nelx, nely, 2**_similarity, 1)
-    s = material * nelx * nely / sum([sum(x) for x in df])    
+    s = material * nelx * nely / sum([sum(x) for x in df])
     optinput['DISTFIELD'] = ';'.join([','.join([format(y*s, '1.2f') for y in x]) for x in df])
 
     optargs = [sdir + '//' + optinput['TRIAL'], optinput['NELX'], optinput['NELY'],\
@@ -310,6 +310,7 @@ class S(BaseHTTPRequestHandler):
 
     def _set_headers(self):
         self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
@@ -332,6 +333,13 @@ class S(BaseHTTPRequestHandler):
 
         print result_msg
         self.wfile.write(result_msg)
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
 
 #
 #   running the server
@@ -359,4 +367,3 @@ if __name__ == "__main__":
     subprocess.call('chmod 777 ' + session_dir, shell=True)
 
     run(port=int(argv[1]))
-    
