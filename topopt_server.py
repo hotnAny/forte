@@ -191,9 +191,12 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _editweight = float(safe_retrieve_one(post_data, 'editweight', 1))
     _e = float(safe_retrieve_one(post_data, 'e', 1))
     nu = safe_retrieve_one(post_data, 'nu', 0.3)
+    ######
+    # HACK: a very weird bug
     if nu.endswith("'"):
         nu = nu[:-1]
     _nu = float(nu)
+    ######
 
     #
     #   convert to matlab input
