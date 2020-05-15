@@ -8,8 +8,9 @@
 #
 ##########################################################################
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from urlparse import urlparse, parse_qs
+# from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 from sys import argv
 import time
 import subprocess
@@ -40,7 +41,7 @@ def _log(msg):
     global T
     t = int(round(time.time() * 1000))
     if msg != None:
-        print msg + ': ' + str(t - T) + 'ms'
+        print(msg + ': ' + str(t - T) + 'ms')
     T = t
     return t
 
@@ -76,16 +77,16 @@ def get_distance_field(elms, nelx, nely, m, alpha):
     inc = []
 
     # initialize distance field
-    for j in xrange(0, nely):
+    for j in range(0, nely):
         row = []
-        for i in xrange(0, nelx):
+        for i in range(0, nelx):
             row.append(infinity)
         df.append(row)
 
     # initialize distance field incrementals
-    for j in xrange(0, nely):
+    for j in range(0, nely):
         row = []
-        for i in xrange(0, nelx):
+        for i in range(0, nelx):
             row.append(1)
         inc.append(row)
 
@@ -113,8 +114,8 @@ def get_distance_field(elms, nelx, nely, m, alpha):
         idx += 1
 
     cnt = 0
-    for j in xrange(0, nely):
-        for i in xrange(0, nelx):
+    for j in range(0, nely):
+        for i in range(0, nelx):
             cnt += 1 if df[j][i] != infinity else 0
 
     while cnt < num:
@@ -138,8 +139,8 @@ def get_distance_field(elms, nelx, nely, m, alpha):
 
     if m >= 1:
         max_val *= 1.0
-        for i in xrange(0, nelx):
-            for j in xrange(0, nely):
+        for i in range(0, nelx):
+            for j in range(0, nely):
                 df[j][i] /= max_val
                 df[j][i] = min(df[j][i], 1)
                 df[j][i] = max(0, df[j][i])
@@ -147,7 +148,7 @@ def get_distance_field(elms, nelx, nely, m, alpha):
                 df[j][i] = alpha * (cos(df[j][i] * pi / 2))**m
 
     # debug, print normalized distance field
-    # for i in xrange(0, nelx):
+    # for i in range(0, nelx):
     #     print ' '.join([(format(x, '1.1f') if x > 0.9 else '   ') for x in df[i]])
     # return [float(format(j, '1.2f')) for i in df for j in i]
 
@@ -172,7 +173,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     #
     # read parameters of the design & function spec.
     #
-    _trial = safe_retrieve_one(post_data, 'trial', str(long(time.time())))
+    # print(post_data)
+    _trial = safe_retrieve_one(post_data, 'trial', str(int(time.time())))
     _designobj = json.loads(post_data['forte'][0])
     _resolution = safe_retrieve_all(_designobj, 'resolution', None)
     _design = safe_retrieve_all(_designobj, 'design', None)
@@ -188,7 +190,10 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     _lastoutput = str(safe_retrieve_all(_designobj, 'lastoutput', None))
     _editweight = float(safe_retrieve_one(post_data, 'editweight', 1))
     _e = float(safe_retrieve_one(post_data, 'e', 1))
-    _nu = float(safe_retrieve_one(post_data, 'nu', 0.3))
+    nu = safe_retrieve_one(post_data, 'nu', 0.3)
+    if nu.endswith("'"):
+        nu = nu[:-1]
+    _nu = float(nu)
 
     #
     #   convert to matlab input
@@ -201,7 +206,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     nely = _resolution[1]
     # material = _material
     material = _material * len(_design) / (nelx * nely)
-    print nelx, nely, material
+    print(nelx, nely, material)
 
     optinput = {'E':_e, 'NU':_nu, 'TRIAL':_trial, 'NELX':nelx, 'NELY':nely, 'VOLFRAC':material,\
      'FIXEDDOFS':[], 'LOADNODES':[], 'LOADVALUES':[]}
@@ -214,7 +219,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         for idx in list_nodes:
             tb_boundary[dof*(idx-1)+0] = 1
             tb_boundary[dof*(idx-1)+1] = 1
-    for idx in xrange(0, len(tb_boundary)):
+    for idx in range(0, len(tb_boundary)):
         if tb_boundary[idx] == 1:
             optinput['FIXEDDOFS'].append(idx+1)
 
@@ -230,7 +235,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
     tb_loadvalues = []
     for v in _loadvalues:
         vsum = sqrt(v[0]**2+v[1]**2)
-        for i in xrange(0, nnodes):
+        for i in range(0, nnodes):
             tb_loadvalues.append(v[0]/vsum)
             tb_loadvalues.append(v[1]/vsum)
     
@@ -248,8 +253,8 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
 
     # [debug] do NOT remove
     # vis_str = ''
-    # for j in xrange(0, nely+1):
-    #     for i in xrange(0, nelx+1):
+    # for j in range(0, nely+1):
+    #     for i in range(0, nelx+1):
     #         idx = i * (nely+1) + j
     #         if tb_boundary[dof*idx]== 1 and tb_boundary[dof*idx+1]==1:
     #             vis_str += ' x '
@@ -277,7 +282,7 @@ def proc_post_data(post_data, res=48, amnt=1.0, sdir=None):
         optinput['LAMBDA'] = MINLAMBDAOPTIN + (MAXLAMBDAOPTIN-MINLAMBDAOPTIN) * (1-_similarity / MAXSIMILARITY)
         _similarity = -1
 
-    print _editweight
+    print(_editweight)
     optinput['EDITWEIGHT'] = 2**_editweight
 
     df = get_distance_field(optinput['ACTVELMS'], nelx, nely, 2**_similarity, 1)
@@ -325,13 +330,13 @@ class S(BaseHTTPRequestHandler):
 
         content_length = int(self.headers['Content-Length'])
         post_str = self.rfile.read(content_length)
-        post_data = parse_qs(urlparse(self.path + post_str).query)
-
+        post_data = parse_qs(urlparse(self.path + str(post_str)).query)
+        
         global session_dir
         result_msg = proc_post_data(post_data, sdir=session_dir)
 
-        print result_msg
-        self.wfile.write(result_msg)
+        print(result_msg)
+        self.wfile.write(result_msg.encode('utf-8'))
 
 #
 #   running the server
@@ -339,7 +344,7 @@ class S(BaseHTTPRequestHandler):
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    print 'topopt input server up...'
+    print('topopt input server up...')
     httpd.serve_forever()
 
 #
@@ -348,13 +353,13 @@ def run(server_class=HTTPServer, handler_class=S, port=80):
 if __name__ == "__main__":
 
     if len(argv) != 3:
-        print 'usage: ./topy_server.py <port_num> <input_file_path>'
+        print('usage: ./topy_server.py <port_num> <input_file_path>')
         quit()
 
     INPUTFILE = argv[2]
     subprocess.call('rm -rf server_session*', shell=True)
     global session_dir
-    session_dir = 'server_session_' + str(long(time.time()))
+    session_dir = 'server_session_' + str(int(time.time()))
     subprocess.call('mkdir ' + session_dir, shell=True)
     subprocess.call('chmod 777 ' + session_dir, shell=True)
 

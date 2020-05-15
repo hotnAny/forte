@@ -588,6 +588,7 @@ FORTE.startOptimization = function () {
             FORTE.similarityRatio, FORTE.editWeightRatio, type,
             1.0, FORTE.nu
         ];
+        console.log(values)
         XAC.pingServer(FORTE.xmlhttp, 'localhost', '1234', fields, values);
         FORTE.state = 'started';
 
