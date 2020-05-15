@@ -1,11 +1,18 @@
 #!/usr/bin/env python
 
+import http.server
+import socketserver
 from sys import argv
-import subprocess
+
+PORT = 8888
+
+Handler = http.server.SimpleHTTPRequestHandler
 
 if __name__ == "__main__":
-	if len(argv) < 2:
-		print 'usage: ./serverup.py <port_number>'
-		quit()
 
-	subprocess.call('nohup python -mSimpleHTTPServer ' + argv[1] + ' > /dev/null 2>&1 &', shell=True)
+    if len(argv) > 1:
+        PORT = argv[1]
+
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        print("Serving at port", PORT)
+        httpd.serve_forever()
