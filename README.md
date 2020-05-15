@@ -61,4 +61,4 @@ Step 3: Then hit the ▶ button to play with different techniques you can select
 Step 4+: Your turn! Play with the tool.
 
 ## Resources
-To learn more about Project Forté, please visit the [project page](http://web.xiangchen.me/#forteacute), or read the Medium [post](https://medium.com/@anthony.xiangchen/fort%C3%A9-user-driven-generative-design-86d43515006b).
+To learn more about Project Forté, please visit the [project page](https://hci.ucla.edu/#projects-forte), or read the Medium [post](https://medium.com/@anthony.xiangchen/fort%C3%A9-user-driven-generative-design-86d43515006b).
